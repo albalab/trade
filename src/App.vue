@@ -39,7 +39,7 @@ export default {
     // Добавляем слушатель на событие message
     window.addEventListener('message', this.handleMessage);
   },
-  beforeDestroy() {
+  beforeUnmount() {
     // Удаляем слушатель при уничтожении компонента
     window.removeEventListener('message', this.handleMessage);
   }
