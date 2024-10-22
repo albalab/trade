@@ -4,6 +4,9 @@
     <div v-if="receivedMessage">
       <p>{{ receivedMessage }}</p>
     </div>
+
+    <router-view />
+
   </div>
 </template>
 
