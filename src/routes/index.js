@@ -4,8 +4,11 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 const routes = [
     {
         path: '/alorcandles',
-        component: () => import('../components/AlorCandles.vue'),
-        meta: { requireAuth: false }, // Мета-данные, если нужно
+        component: () => import('../components/AlorCandles.vue')
+    },
+    {
+        path: '/test',
+        component: () => import('../components/TestView.vue')
     },
 ];
 

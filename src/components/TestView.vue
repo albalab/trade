@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  name: 'testView',
+  name: 'test-view',
   data() {
     return {
 
