@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="background: white;">
     <h2>Real-time Candlestick Data</h2>
 
     <div style="float: left; width: 33%;">
