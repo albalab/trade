@@ -8,18 +8,13 @@
          @mouseup="stopDrag">
 
       <div class="chart-container" :style="[getContainerStyle(), centeredStyle]">
-        <div class="candle" v-for="(candle, index) in candlesticks" :key="candle.time.seconds">
-          <!-- Используем объект свечи напрямую -->
-          <div>{{ candle.open.units }} - {{ candle.close.units }}</div>
+        <div class="candle" v-for="(candle) in candlesticks" :key="candle.time.seconds">
 
-          <div class="candle-body"
-               v-if="index > 1 && candleCloseNorm(candle) !== candleCloseNorm(candlesticks[index-1])"
-               :style="{ bottom: `${(candleCloseNorm(candle.close.units) * 100)}%`, position: 'relative' }">
-            <div class="candle-value">
-              <div class="candle-value-fill"
-                   :style="{height: `${(candle.volume / maxVolume) * 100}%`}"></div>
-            </div>
-          </div>
+          {{candle.open}}<br>
+          {{candle.close}}<br>
+          {{candle.high}}<br>
+          {{candle.low}}<br>
+
         </div>
       </div>
     </div>
