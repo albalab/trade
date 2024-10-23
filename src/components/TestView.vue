@@ -1,85 +1,177 @@
 <template>
-  <div class="outer-container" style="height: 200px;">
-    <div class="candles-chart-container">
-      <div ref="candles-chart"
-           class="chart-scroll-container"
-           @scroll="updateScrollPosition"
-           @mousedown="startDrag('scroll')"
-           @mousemove="dragScroll($event)"
-           @mouseup="stopDrag">
-
-        <div class="chart-container" :style="[getContainerStyle(), centeredStyle]">
-          <div class="candle" v-for="(item, index) in candlesticks" :key="item.id">
-            {{ candlesticks[index] }}
-            {{ item[4] }}
-
-            <div class="candle-body"
-                 v-if="index > 1 && candleCloseNorm(candlesticks[index]) !== candleCloseNorm(candlesticks[index-1])"
-                 :style="{ bottom: `${(candleCloseNorm(item[4]) * 100)}%`, position: 'relative' }">
-              <div class="candle-value">
-                <div class="candle-value-fill"
-                     :style="{height: `${(item[5]/candleVolumeMax[`t${item[0]}`])*100}%`}"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="axis yaxis" @mousedown="startDrag('vertical')" @mousemove="dragging($event)" @mouseup="stopDrag"></div>
-      <div class="axis xaxis" @mousedown="startDrag('horizontal')" @mousemove="dragging($event)" @mouseup="stopDrag"></div>
-
-    </div>
+  <div class="outer-container">
+    <ChartComponent :candlesticks="candlesticks"/>
   </div>
 </template>
 
 <script>
+import ChartComponent from './ChartComponent.vue'; // Убедитесь, что путь правильный
+
 export default {
-  name: "test-view",
+  components: {
+    ChartComponent,
+  },
   data() {
     return {
-      candlesticks: [],
-      candleVolumeMax: {},
+      //candlesticks: [],
+
+      candlesticks: [
+        {
+          "time": {"seconds": 1729683721, "nanos": 710128543},
+          "open": {"units": 196, "nano": 610374236},
+          "high": {"units": 200, "nano": 867795072},
+          "low": {"units": 186, "nano": 20290250},
+          "close": {"units": 188, "nano": 623519344},
+          "volume": 2274
+        },
+        {
+          "time": {"seconds": 1729683781, "nanos": 875398304},
+          "open": {"units": 150, "nano": 822905540},
+          "high": {"units": 154, "nano": 127947864},
+          "low": {"units": 150, "nano": 789266588},
+          "close": {"units": 152, "nano": 616150023},
+          "volume": 5156
+        },
+        {
+          "time": {"seconds": 1729683841, "nanos": 746893661},
+          "open": {"units": 102, "nano": 799016408},
+          "high": {"units": 103, "nano": 352223606},
+          "low": {"units": 99, "nano": 349766877},
+          "close": {"units": 101, "nano": 647874384},
+          "volume": 2705
+        },
+        {
+          "time": {"seconds": 1729683901, "nanos": 949267739},
+          "open": {"units": 113, "nano": 633676690},
+          "high": {"units": 115, "nano": 323863669},
+          "low": {"units": 104, "nano": 638613552},
+          "close": {"units": 108, "nano": 377984583},
+          "volume": 2211
+        },
+        {
+          "time": {"seconds": 1729683961, "nanos": 233806870},
+          "open": {"units": 123, "nano": 998563091},
+          "high": {"units": 134, "nano": 3296579},
+          "low": {"units": 120, "nano": 936211492},
+          "close": {"units": 132, "nano": 170906659},
+          "volume": 9376
+        },
+        {
+          "time": {"seconds": 1729684021, "nanos": 185638062},
+          "open": {"units": 171, "nano": 830255221},
+          "high": {"units": 174, "nano": 986030756},
+          "low": {"units": 170, "nano": 275145658},
+          "close": {"units": 172, "nano": 239080049},
+          "volume": 3356
+        },
+        {
+          "time": {"seconds": 1729684081, "nanos": 245058661},
+          "open": {"units": 121, "nano": 624188687},
+          "high": {"units": 127, "nano": 108720175},
+          "low": {"units": 121, "nano": 121747520},
+          "close": {"units": 124, "nano": 494953965},
+          "volume": 7727
+        },
+        {
+          "time": {"seconds": 1729684141, "nanos": 190107588},
+          "open": {"units": 173, "nano": 156071500},
+          "high": {"units": 177, "nano": 46579147},
+          "low": {"units": 159, "nano": 17298240},
+          "close": {"units": 163, "nano": 182464083},
+          "volume": 7515
+        },
+        {
+          "time": {"seconds": 1729684201, "nanos": 801239315},
+          "open": {"units": 118, "nano": 865359056},
+          "high": {"units": 124, "nano": 207999762},
+          "low": {"units": 116, "nano": 171211354},
+          "close": {"units": 123, "nano": 960370853},
+          "volume": 6080
+        },
+        {
+          "time": {"seconds": 1729684261, "nanos": 184211021},
+          "open": {"units": 129, "nano": 132416530},
+          "high": {"units": 130, "nano": 778681497},
+          "low": {"units": 124, "nano": 720590641},
+          "close": {"units": 126, "nano": 678537910},
+          "volume": 1553
+        },
+        {
+          "time": {"seconds": 1729684321, "nanos": 518059433},
+          "open": {"units": 143, "nano": 528202265},
+          "high": {"units": 143, "nano": 721549793},
+          "low": {"units": 136, "nano": 934872389},
+          "close": {"units": 139, "nano": 448032489},
+          "volume": 7129
+        },
+        {
+          "time": {"seconds": 1729684381, "nanos": 87470797},
+          "open": {"units": 165, "nano": 161574717},
+          "high": {"units": 178, "nano": 438069745},
+          "low": {"units": 162, "nano": 983740206},
+          "close": {"units": 174, "nano": 114487441},
+          "volume": 1400
+        },
+        {
+          "time": {"seconds": 1729684441, "nanos": 610279070},
+          "open": {"units": 193, "nano": 44459113},
+          "high": {"units": 195, "nano": 761150498},
+          "low": {"units": 189, "nano": 161303141},
+          "close": {"units": 191, "nano": 244365210},
+          "volume": 2437
+        },
+        {
+          "time": {"seconds": 1729684501, "nanos": 300160471},
+          "open": {"units": 102, "nano": 480010783},
+          "high": {"units": 104, "nano": 851543123},
+          "low": {"units": 102, "nano": 463598374},
+          "close": {"units": 102, "nano": 512000973},
+          "volume": 8977
+        },
+        {
+          "time": {"seconds": 1729684561, "nanos": 933285185},
+          "open": {"units": 138, "nano": 354328757},
+          "high": {"units": 140, "nano": 70539762},
+          "low": {"units": 128, "nano": 397205930},
+          "close": {"units": 131, "nano": 379127654},
+          "volume": 1010
+        },
+        {
+          "time": {"seconds": 1729684621, "nanos": 223884952},
+          "open": {"units": 169, "nano": 447317427},
+          "high": {"units": 174, "nano": 338508726},
+          "low": {"units": 167, "nano": 140578476},
+          "close": {"units": 168, "nano": 653392814},
+          "volume": 8635
+        },
+        {
+          "time": {"seconds": 1729684681, "nanos": 536734665},
+          "open": {"units": 193, "nano": 44424487},
+          "high": {"units": 194, "nano": 280488110},
+          "low": {"units": 187, "nano": 201930649},
+          "close": {"units": 187, "nano": 969093532},
+          "volume": 9845
+        },
+        {
+          "time": {"seconds": 1729684741, "nanos": 706705487},
+          "open": {"units": 142, "nano": 374339074},
+          "high": {"units": 146, "nano": 677508957},
+          "low": {"units": 136, "nano": 108435945},
+          "close": {"units": 141, "nano": 28830856},
+          "volume": 1635
+        }
+      ]
+,
       socket: null,
       reconnectInterval: 5000,
       connectionStatus: 'disconnected',
       figi: 'BBG004731032',
-      scrollX: 0,
-      scrollY: 0,
-      shiftPressed: false,
-      scaleCoefficient: 0.8,
-      width: 100,
-      height: 100,
-      minScale: 10,
-      maxScale: 600,
-      isDragging: false,
-      dragDirection: null,
-      hasVerticalScroll: false,
-      initialScrollX: 0,
-      initialScrollY: 0,
-      startX: 0,
-      startY: 0,
-      maxCandlesticks: 50,
-      candleCloseMax: null,
-      candleCloseMin: null,
-      candleTime: null,
     };
-  },
-  computed: {
-    centeredStyle() {
-      // Если вертикального скролла нет, центрируем график
-      return this.hasVerticalScroll ? {} : { top: '50%', transform: 'translateY(-50%)' };
-    }
   },
   mounted() {
     this.openSocket();
-    window.addEventListener('keydown', this.handleKeyDown);
-    window.addEventListener('keyup', this.handleKeyUp);
-    this.checkVerticalScroll();
   },
   beforeUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
-    window.removeEventListener('keyup', this.handleKeyUp);
     this.closeSocket();
   },
   methods: {
@@ -119,88 +211,10 @@ export default {
       }
     },
     handleCandlestick(candlestick) {
-      const candleArray = this.convertObjectToArray(candlestick);
-      const t = candleArray[0];
-      this.candleVolumeMax[`t${t}`] = candleArray[5];
-
-      if (!this.candleCloseMax) this.candleCloseMax = candleArray[4];
-      if (!this.candleCloseMin) this.candleCloseMin = candleArray[4];
-
-      if (candleArray[4] > this.candleCloseMax) this.candleCloseMax = candleArray[4];
-      if (candleArray[4] < this.candleCloseMin) this.candleCloseMin = candleArray[4];
-
-      this.candleTime = t;
-      this.candlesticks.push(candleArray);
-
-      if (this.candlesticks.length > this.maxCandlesticks) {
+      if (this.candlesticks.length > 50) {
         this.candlesticks.shift();
       }
-    },
-    convertObjectToArray(candleObject) {
-      const { open, high, low, close, volume, time } = candleObject;
-      return [
-        time.seconds * 1000 + Math.floor(time.nanos / 1e6),
-        open.units + open.nano / 1e9,
-        high.units + high.nano / 1e9,
-        low.units + low.nano / 1e9,
-        close.units + close.nano / 1e9,
-        volume
-      ];
-    },
-    candleCloseNorm(candleClose) {
-      return (candleClose - this.candleCloseMin) / (this.candleCloseMax - this.candleCloseMin);
-    },
-    updateScrollPosition() {
-      // Обработка скролла
-    },
-    startDrag(direction) {
-      this.isDragging = true;
-      this.dragDirection = direction;
-      const scrollContainer = this.$refs['candles-chart'];
-      this.initialScrollX = scrollContainer.scrollLeft;
-      this.initialScrollY = scrollContainer.scrollTop;
-      this.startX = event.clientX;
-      this.startY = event.clientY;
-    },
-    dragScroll(event) {
-      if (!this.isDragging || this.dragDirection !== 'scroll') return;
-      const scrollContainer = this.$refs['candles-chart'];
-      const deltaX = this.startX - event.clientX;
-      const deltaY = this.startY - event.clientY;
-      scrollContainer.scrollLeft = this.initialScrollX + deltaX;
-      scrollContainer.scrollTop = this.initialScrollY + deltaY;
-    },
-    dragging(event) {
-      if (!this.isDragging) return;
-      if (this.dragDirection === 'horizontal') {
-        const newHeight = this.height - event.movementY * this.scaleCoefficient;
-        this.height = Math.max(this.minScale, Math.min(this.maxScale, newHeight));
-      }
-      if (this.dragDirection === 'vertical') {
-        const newWidth = this.width + event.movementX * this.scaleCoefficient;
-        this.width = Math.max(this.minScale, Math.min(this.maxScale, newWidth));
-      }
-      this.checkVerticalScroll();
-    },
-    stopDrag() {
-      this.isDragging = false;
-      this.dragDirection = null;
-    },
-    handleKeyDown(event) {
-      if (event.key === 'Shift') this.shiftPressed = true;
-    },
-    handleKeyUp(event) {
-      if (event.key === 'Shift') this.shiftPressed = false;
-    },
-    getContainerStyle() {
-      return {
-        width: `${this.width}%`,
-        height: `${this.height}%`,
-      };
-    },
-    checkVerticalScroll() {
-      const scrollContainer = this.$refs['candles-chart'];
-      this.hasVerticalScroll = scrollContainer.scrollHeight > scrollContainer.clientHeight;
+      this.candlesticks.push(candlestick); // Передаем объект свечи, как он пришел от API
     }
   }
 };
@@ -209,67 +223,7 @@ export default {
 <style scoped>
 .outer-container {
   width: 100%;
-  height: 100%;
+  height: 500px;
   position: relative;
-  overflow: hidden;
-}
-.candles-chart-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-.chart-scroll-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: scroll;
-}
-.chart-container {
-  position: relative;
-  margin: auto;
-  display: flex;
-  background: #eee;
-}
-.candle {
-  width: 100%;
-}
-.candle-body {
-  width: 80%;
-  height: 100%;
-  position: relative;
-  margin: 0 auto;
-}
-.candle-value {
-  width: 100%;
-  height: 20%;
-  background: rgba(0, 0, 0, 0.1);
-  position: absolute;
-  bottom: 40px;
-}
-.candle-value-fill {
-  position: absolute;
-  bottom: 0;
-  background: blue;
-  width: 90%;
-  margin: 0 auto;
-}
-.axis {
-  position: absolute;
-}
-.xaxis {
-  top: 0;
-  right: 0;
-  width: 40px;
-  height: 100%;
-  background: green;
-  opacity: 0.2;
-}
-.yaxis {
-  bottom: 0;
-  width: 100%;
-  height: 40px;
-  background: red;
-  opacity: 0.2;
 }
 </style>
