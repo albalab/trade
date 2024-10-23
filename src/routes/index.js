@@ -7,8 +7,8 @@ const routes = [
         component: () => import('../components/AlorCandles.vue')
     },
     {
-        path: '/test',
-        component: () => import('../components/TestView.vue')
+        path: '/tcscandles',
+        component: () => import('../components/TcsCandles.vue')
     },
 ];
 
