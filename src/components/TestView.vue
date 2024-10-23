@@ -77,7 +77,7 @@ export default {
     window.addEventListener('keyup', this.handleKeyUp);
     this.checkVerticalScroll();
   },
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
     this.closeSocket();
