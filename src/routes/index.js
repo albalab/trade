@@ -10,6 +10,10 @@ const routes = [
         path: '/tcscandles',
         component: () => import('../components/TcsCandles.vue')
     },
+    {
+        path: '/tcstrades',
+        component: () => import('../components/TcsTrades.vue')
+    },
 ];
 
 // Создаем роутер
