@@ -1,5 +1,5 @@
 <template>
-  <div class="outer-container">
+  <div class="outer-container" style="height: 200px;">
     <div class="candles-chart-container">
       <div ref="candles-chart"
            class="chart-scroll-container"
