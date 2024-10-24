@@ -1,6 +1,6 @@
 <template>
   <div class="outer-container">
-    {{trade}}
+
     <!-- График для сделок (BUY) -->
     <div v-if="trades.length" style="overflow: hidden;">
       <div v-for="(trade, index) in trades.filter(item => item.direction === 'TRADE_DIRECTION_BUY')" :key="index"
@@ -57,19 +57,17 @@ export default {
     },
 
     updateTradeStatistics() {
-      const currentTime = Date.now() / 1000;
-      const oneMinuteAgo = currentTime - 60;
+      //const currentTime = Date.now() / 1000;
+      //const oneMinuteAgo = currentTime - 60;
       let buyVolume = 0;
       let sellVolume = 0;
 
       this.trades.forEach(trade => {
         //if (trade.time.seconds >= oneMinuteAgo) {
-          // Проверяем, что quantities существует и является массивом
-          const tradeVolume = Array.isArray(trade.quantities) ? trade.quantities.reduce((acc, quantity) => acc + quantity, 0) : 0;
           if (trade.direction === "TRADE_DIRECTION_BUY") {
-            buyVolume += tradeVolume;
+            buyVolume += trade.quantity;
           } else if (trade.direction === "TRADE_DIRECTION_SELL") {
-            sellVolume += tradeVolume;
+            sellVolume += trade.quantity;
           }
         //}
       });
