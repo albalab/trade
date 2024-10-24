@@ -62,7 +62,7 @@ export default {
       let sellVolume = 0;
 
       this.trades.forEach(trade => {
-        if (trade.time.seconds >= oneMinuteAgo) {
+        //if (trade.time.seconds >= oneMinuteAgo) {
           // Проверяем, что quantities существует и является массивом
           const tradeVolume = Array.isArray(trade.quantities) ? trade.quantities.reduce((acc, quantity) => acc + quantity, 0) : 0;
           if (trade.direction === "TRADE_DIRECTION_BUY") {
@@ -70,7 +70,7 @@ export default {
           } else if (trade.direction === "TRADE_DIRECTION_SELL") {
             sellVolume += tradeVolume;
           }
-        }
+        //}
       });
 
       this.buyVolumeLastMinute = buyVolume;
