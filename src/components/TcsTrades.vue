@@ -1,5 +1,6 @@
 <template>
   <div class="outer-container">
+    {{trade}}
     <!-- График для сделок (BUY) -->
     <div v-if="trades.length" style="overflow: hidden;">
       <div v-for="(trade, index) in trades.filter(item => item.direction === 'TRADE_DIRECTION_BUY')" :key="index"
