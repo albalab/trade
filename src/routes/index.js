@@ -7,6 +7,10 @@ const routes = [
         component: () => import('../components/AlorCandles.vue')
     },
     {
+        path: '/alortrades',
+        component: () => import('../components/AlorTrades.vue')
+    },
+    {
         path: '/tcscandles',
         component: () => import('../components/TcsCandles.vue')
     },
