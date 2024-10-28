@@ -1,19 +1,61 @@
 <template>
   <div>
     <h2>Real-time Trade Data</h2>
-    Total count trades: {{ totalCountTrades }}<br />
-    <h3>Trade History Statistics (Log):</h3>
+    <div>Total count trades: {{ totalCountTrades }}</div>
 
+    <!-- All Trades Statistics with Buy/Sell Comparison -->
+    <h3>Trade History Statistics (All):</h3>
     <div class="container" style="max-width: 200px;">
       <div
           class="row"
           v-for="(trade, index) in tradeHistory"
-          :key="index"
+          :key="'all-' + index"
           style="display: grid; grid-template-columns: 1fr 5fr;"
       >
         <div>{{ Math.floor(trade) }}</div>
         <div :style="{ width: `${(trade / Math.max(...tradeHistory)) * 100}%` }">
-          <div class="block"></div>
+          <div class="block">
+            <div
+                class="buy-bar"
+                :style="{ width: `${(tradeHistoryBuy[index] / trade) * 100}%` }"
+            ></div>
+            <div
+                class="sell-bar"
+                :style="{ width: `${(tradeHistorySell[index] / trade) * 100}%` }"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buy Trades Statistics -->
+    <h3>Trade History Statistics (Buy):</h3>
+    <div class="container" style="max-width: 200px;">
+      <div
+          class="row"
+          v-for="(trade, index) in tradeHistoryBuy"
+          :key="'buy-' + index"
+          style="display: grid; grid-template-columns: 1fr 5fr;"
+      >
+        <div>{{ Math.floor(trade) }}</div>
+        <div :style="{ width: `${(trade / Math.max(...tradeHistoryBuy)) * 100}%` }">
+          <div class="block" style="background-color: green;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sell Trades Statistics -->
+    <h3>Trade History Statistics (Sell):</h3>
+    <div class="container" style="max-width: 200px;">
+      <div
+          class="row"
+          v-for="(trade, index) in tradeHistorySell"
+          :key="'sell-' + index"
+          style="display: grid; grid-template-columns: 1fr 5fr;"
+      >
+        <div>{{ Math.floor(trade) }}</div>
+        <div :style="{ width: `${(trade / Math.max(...tradeHistorySell)) * 100}%` }">
+          <div class="block" style="background-color: red;"></div>
         </div>
       </div>
     </div>
@@ -22,9 +64,7 @@
       <p>Latest Trades Data:</p>
       <ul>
         <li v-for="(trade, index) in reversedTrades.slice(0,100)" :key="index">
-          <div
-              :style="{ color: trade.side === 'buy' ? 'green' : 'red' }"
-          >
+          <div :style="{ color: trade.side === 'buy' ? 'green' : 'red' }">
             <strong>Ticker: {{ trade.ticker }}</strong> Price: {{ trade.price }},
             Side: {{ trade.side }}, Quantity: {{ trade.qty }},
             Time: {{ new Date(trade.time).toLocaleString() }}
@@ -48,20 +88,28 @@ export default {
       trades: [],
       totalCountTrades: 0,
       tradeHistory: [],
-      intervalCounters: Array.from({ length: 25 }, () => ({ count: 0, lastUpdate: null, accumulatedTrades: 0 })),
+      tradeHistoryBuy: [],
+      tradeHistorySell: [],
+      intervalCounters: Array.from({ length: 25 }, () => ({
+        count: 0, lastUpdate: null, accumulatedTrades: 0
+      })),
+      intervalCountersBuy: Array.from({ length: 25 }, () => ({
+        count: 0, lastUpdate: null, accumulatedTrades: 0
+      })),
+      intervalCountersSell: Array.from({ length: 25 }, () => ({
+        count: 0, lastUpdate: null, accumulatedTrades: 0
+      })),
       intervals: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216],
-      startCountingTime: Date.now(), // Инициализируем текущим временем
+      startCountingTime: Date.now(),
       newTradesCount: 0,
+      newTradesCountBuy: 0,
+      newTradesCountSell: 0,
       staticHistory: false
     };
   },
   computed: {
     reversedTrades() {
       return this.trades.slice().reverse();
-    },
-    tradesLastSecond() {
-      const oneSecondAgo = Date.now() - 1000;
-      return this.trades.filter(trade => trade.time >= oneSecondAgo).length;
     }
   },
   mounted() {
@@ -76,13 +124,16 @@ export default {
         this.totalCountTrades++;
         this.newTradesCount++;
 
+        if (trade.side === 'buy') {
+          this.newTradesCountBuy++;
+        } else if (trade.side === 'sell') {
+          this.newTradesCountSell++;
+        }
+
         if (this.trades.length > 1000) this.trades.shift();
 
         this.updateTradeHistory();
       };
-      socket.onopen = () => console.log('Connected to WebSocket');
-      socket.onerror = (error) => console.error('WebSocket Error:', error);
-      socket.onclose = () => console.log('WebSocket Disconnected');
     },
     toggleStaticHistory() {
       this.staticHistory = !this.staticHistory;
@@ -90,33 +141,41 @@ export default {
     updateTradeHistory() {
       const latestTradeTime = Date.now();
 
+      this.calculateIntervalStats(this.tradeHistory, this.intervalCounters, this.newTradesCount, latestTradeTime);
+      this.calculateIntervalStats(this.tradeHistoryBuy, this.intervalCountersBuy, this.newTradesCountBuy, latestTradeTime);
+      this.calculateIntervalStats(this.tradeHistorySell, this.intervalCountersSell, this.newTradesCountSell, latestTradeTime);
+
+      this.newTradesCount = 0;
+      this.newTradesCountBuy = 0;
+      this.newTradesCountSell = 0;
+    },
+    calculateIntervalStats(history, counters, newCount, latestTime) {
       this.intervals.forEach((interval, index) => {
         const intervalMillis = interval * 1000;
-        const counter = this.intervalCounters[index];
+        const counter = counters[index];
 
         if (counter.lastUpdate === null) {
           counter.lastUpdate = this.startCountingTime;
         }
 
-        const elapsedTime = latestTradeTime - counter.lastUpdate;
+        const elapsedTime = latestTime - counter.lastUpdate;
 
         if (elapsedTime >= intervalMillis) {
-          const intervalTrades = this.newTradesCount + counter.accumulatedTrades;
+          const intervalTrades = newCount + counter.accumulatedTrades;
           const averageTrades = intervalTrades / interval;
 
-          if (this.tradeHistory.length <= index) {
-            this.tradeHistory.push(averageTrades);
+          if (history.length <= index) {
+            history.push(averageTrades);
           } else {
-            this.tradeHistory[index] = averageTrades;
+            history[index] = averageTrades;
           }
 
           counter.accumulatedTrades = 0;
-          counter.lastUpdate = latestTradeTime;
+          counter.lastUpdate = latestTime;
         } else {
-          counter.accumulatedTrades += this.newTradesCount;
+          counter.accumulatedTrades += newCount;
         }
       });
-      this.newTradesCount = 0;
     }
   }
 };
@@ -143,6 +202,16 @@ li {
 
 .block {
   height: 10px;
-  background-color: blue;
+  background: #ccc;
+}
+
+.buy-bar {
+  height: 50%;
+  background-color: green;
+}
+
+.sell-bar {
+  height: 50%;
+  background-color: red;
 }
 </style>
