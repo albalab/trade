@@ -30,11 +30,11 @@ export const addCustomMenuItem = (widgetConfig, createWidgetFunction) => {
 };
 
 // Наблюдение за изменениями меню для добавления кастомных пунктов
-export const observeMenuChanges = (widgetsConfig, addCustomMenuItem) => {
+export const observeMenuChanges = (widgetsConfig, addCustomMenuItem, createCandlesWidget) => {
     const observer = new MutationObserver((mutations) => {
         mutations.forEach(() => {
             widgetsConfig.forEach(widgetConfig => {
-                addCustomMenuItem(widgetConfig, createCandlesWidget);
+                addCustomMenuItem(widgetConfig, createCandlesWidget); // Передаем createCandlesWidget
             });
         });
     });

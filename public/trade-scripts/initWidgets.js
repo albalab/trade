@@ -1,7 +1,7 @@
 // initWidgets.js
 export const initWidgets = async () => {
     const { addCustomMenuItem, observeMenuChanges } = await import('https://trade-6rl.pages.dev/trade-scripts/menuManager.js');
-    const { initializeIframes } = await import('https://trade-6rl.pages.dev/trade-scripts/widgetManager.js');
+    const { createCandlesWidget, initializeIframes } = await import('https://trade-6rl.pages.dev/trade-scripts/widgetManager.js');
 
     const widgetsConfig = [
         {
@@ -21,7 +21,7 @@ export const initWidgets = async () => {
         }
     ];
 
-    observeMenuChanges(widgetsConfig, addCustomMenuItem); // Обработка добавления пунктов меню
+    observeMenuChanges(widgetsConfig, addCustomMenuItem, createCandlesWidget); // Передаем createCandlesWidget
     initializeIframes(widgetsConfig); // Инициализация iframe
 };
 
