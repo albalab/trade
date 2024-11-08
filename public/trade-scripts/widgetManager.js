@@ -27,7 +27,7 @@ const createCustomWidget = (widgetConfig) => {
     });
 };
 
-export const createCandlesWidget = (widgetConfig) => {
+export const createWidget = (widgetConfig) => {
     const widget = createCustomWidget(widgetConfig);
     if (!widget) {
         console.error("Не удалось создать виджет.");
