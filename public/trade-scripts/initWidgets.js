@@ -32,6 +32,7 @@ export const initWidgets = async () => {
 };
 
 // Асинхронный вызов initWidgets с ожиданием
-(async () => {
+document.addEventListener("DOMContentLoaded", async () => {
     await initWidgets();
-})();
+});
+
