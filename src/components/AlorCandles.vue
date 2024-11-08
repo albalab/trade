@@ -274,7 +274,9 @@ export default {
     postMessage() {
       setInterval(() => {
 
-        window.parent.postMessage({ message: JSON.parse(JSON.stringify(this.tickerStats)) }, "*");
+        window.parent.postMessage({
+          robot1message: JSON.parse(JSON.stringify(this.tickerStats))
+        }, "*");
 
       }, 100);
     },

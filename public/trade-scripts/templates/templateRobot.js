@@ -13,11 +13,11 @@
     }, 3000);*/
 
 
-    window.addEventListener("message", (event) => {
+    window.addEventListener("robot1message", (event) => {
         // Проверка на источник, чтобы убедиться, что данные приходят от ожидаемого `iframe`
         console.log("Получено сообщение от iframe:", event.data);
         if (event.origin === "https://trade-6rl.pages.dev/#/alorcandles") {
-            console.log("Получено сообщение от iframe:", event.data);
+            //console.log("Получено сообщение от iframe:", event.data);
         }
     });
 
