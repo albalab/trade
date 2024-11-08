@@ -263,10 +263,21 @@ export default {
 
 
   },
+
   mounted() {
     this.connectToWebSocket();
+    this.postMessage();
   },
+
   methods: {
+
+    postMessage() {
+      setInterval(() => {
+
+        window.parent.postMessage(this.tickerStats, "*");
+
+      }, 100);
+    },
 
     sortedTickerStats() {
 
