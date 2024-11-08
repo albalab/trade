@@ -12,6 +12,16 @@
         console.log(window.alorTrade);
     }, 3000);*/
 
+
+    window.addEventListener("message", (event) => {
+        // Проверка на источник, чтобы убедиться, что данные приходят от ожидаемого `iframe`
+        if (event.origin === "https://trade-6rl.pages.dev/#/alorcandles") {
+            console.log("Получено сообщение от iframe:", event.data);
+        }
+    });
+
+
+
     const checkAlorTradeInterval = setInterval(() => {
         // Проверяем доступность window.myStorage и window.myStorage.alorTrade
         if (window.myStorage && window.myStorage.alorTrade) {
