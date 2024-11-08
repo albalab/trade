@@ -274,7 +274,7 @@ export default {
     postMessage() {
       setInterval(() => {
 
-        window.parent.postMessage(this.tickerStats, "*");
+        window.parent.postMessage(JSON.parse(JSON.stringify(this.tickerStats)), "*");
 
       }, 100);
     },
