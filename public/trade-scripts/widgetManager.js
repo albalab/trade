@@ -41,3 +41,36 @@ export const createCandlesWidget = (widgetConfig) => {
 
     console.log(`Создан виджет с ID: ${widgetId}`);
 };
+
+// Инициализация iframe для каждого виджета и отправка сообщений
+export const initializeIframes = (widgetsConfig) => {
+    setTimeout(() => {
+        widgetsConfig.forEach(widgetConfig => {
+            let widgets = localStorage.getItem(widgetConfig.localStorageKey);
+            if (widgets) {
+                try {
+                    widgets = JSON.parse(widgets);
+                    widgets.forEach(widgetId => {
+                        let elements = document.querySelectorAll(`[data-widget-id="${widgetId}"]`);
+                        elements.forEach(element => {
+                            let widgetBlock = element.querySelector('.widget');
+                            if (widgetBlock) {
+                                widgetBlock.innerHTML = `<iframe src="${widgetConfig.iframeUrl}" style="width: 100%; height: 100%;" class="custom-iframe"></iframe>`;
+                                let iframe = widgetBlock.querySelector('iframe.custom-iframe');
+                                if (iframe) {
+                                    function sendMessage() {
+                                        const message = { time: new Date().toISOString(), data: "Your message here" };
+                                        iframe.contentWindow.postMessage(message, '*');
+                                    }
+                                    setInterval(sendMessage, 10000); // 10 секунд
+                                }
+                            }
+                        });
+                    });
+                } catch (e) {
+                    console.error(`Ошибка при обработке ${widgetConfig.localStorageKey}:`, e);
+                }
+            }
+        });
+    }, 10000); // Задержка в 10 секунд
+};

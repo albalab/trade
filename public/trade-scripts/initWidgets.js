@@ -1,7 +1,7 @@
 // initWidgets.js
 export const initWidgets = async () => {
-    const { addCustomMenuItem } = await import('https://trade-6rl.pages.dev/trade-scripts/menuManager.js');
-    const { createCandlesWidget } = await import('https://trade-6rl.pages.dev/trade-scripts/widgetManager.js');
+    const { addCustomMenuItem, observeMenuChanges } = await import('https://trade-6rl.pages.dev/trade-scripts/menuManager.js');
+    const { initializeIframes } = await import('https://trade-6rl.pages.dev/trade-scripts/widgetManager.js');
 
     const widgetsConfig = [
         {
@@ -21,45 +21,8 @@ export const initWidgets = async () => {
         }
     ];
 
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach(() => {
-            widgetsConfig.forEach(widgetConfig => {
-                addCustomMenuItem(widgetConfig, createCandlesWidget);
-            });
-        });
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Добавляем логику вставки iframe и отправки сообщений
-    setTimeout(() => {
-        widgetsConfig.forEach(widgetConfig => {
-            let widgets = localStorage.getItem(widgetConfig.localStorageKey);
-            if (widgets) {
-                try {
-                    widgets = JSON.parse(widgets);
-                    widgets.forEach(widgetId => {
-                        let elements = document.querySelectorAll(`[data-widget-id="${widgetId}"]`);
-                        elements.forEach(element => {
-                            let widgetBlock = element.querySelector('.widget');
-                            if (widgetBlock) {
-                                widgetBlock.innerHTML = `<iframe src="${widgetConfig.iframeUrl}" style="width: 100%; height: 100%;" class="custom-iframe"></iframe>`;
-                                let iframe = widgetBlock.querySelector('iframe.custom-iframe');
-                                if (iframe) {
-                                    function sendMessage() {
-                                        const message = { time: new Date().toISOString(), data: "Your message here" };
-                                        iframe.contentWindow.postMessage(message, '*');
-                                    }
-                                    setInterval(sendMessage, 10000); // 10 секунд
-                                }
-                            }
-                        });
-                    });
-                } catch (e) {
-                    console.error(`Ошибка при обработке ${widgetConfig.localStorageKey}:`, e);
-                }
-            }
-        });
-    }, 10000); // Задержка в 10 секунд
+    observeMenuChanges(widgetsConfig, addCustomMenuItem); // Обработка добавления пунктов меню
+    initializeIframes(widgetsConfig); // Инициализация iframe
 };
 
 // Асинхронный вызов initWidgets с ожиданием

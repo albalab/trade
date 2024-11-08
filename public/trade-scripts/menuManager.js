@@ -28,3 +28,15 @@ export const addCustomMenuItem = (widgetConfig, createWidgetFunction) => {
         menu.appendChild(newMenuItemWrapper);
     }
 };
+
+// Наблюдение за изменениями меню для добавления кастомных пунктов
+export const observeMenuChanges = (widgetsConfig, addCustomMenuItem) => {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach(() => {
+            widgetsConfig.forEach(widgetConfig => {
+                addCustomMenuItem(widgetConfig, createCandlesWidget);
+            });
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+};
