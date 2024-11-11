@@ -1,10 +1,10 @@
 <template>
   <div style="background: white; overflow: hidden;">
     <h2>Real-time Order Book Data</h2>
-    <div v-for="(orders, ticker) in groupedOrders" :key="ticker" style="margin-bottom: 20px;">
-      <h3>{{ ticker }}</h3>
-      <div>Last Bid: {{ orders.bids[0]?.price }} | Volume: {{ orders.bids[0]?.volume }}</div>
-      <div>Last Ask: {{ orders.asks[0]?.price }} | Volume: {{ orders.asks[0]?.volume }}</div>
+    <div v-for="(order, index) in orderBookData.slice(-10).reverse()" :key="index" style="margin-bottom: 20px;">
+      <h3>{{ order.ticker }}</h3>
+      <div>Last Bid: {{ order.bids[0]?.price }} | Volume: {{ order.bids[0]?.volume }}</div>
+      <div>Last Ask: {{ order.asks[0]?.price }} | Volume: {{ order.asks[0]?.volume }}</div>
     </div>
   </div>
 </template>
@@ -176,18 +176,6 @@ export default {
       ],
       orderBookData: [] // Массив для хранения данных о стаканах
     };
-  },
-  computed: {
-    groupedOrders() {
-      // Группировка данных о стаканах по тикеру
-      return this.orderBookData.reduce((acc, order) => {
-        const ticker = order.ticker;
-        if (!acc[ticker]) acc[ticker] = {bids: [], asks: []};
-        acc[ticker].bids = order.bids;
-        acc[ticker].asks = order.asks;
-        return acc;
-      }, {});
-    }
   },
   mounted() {
     this.connectToWebSocket();
