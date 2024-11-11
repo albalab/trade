@@ -15,6 +15,12 @@
         },
 
         {
+            widgetName: 'Alor Orderbooks', // Название виджета
+            localStorageKey: 'albalab_alor_orderbooks', // Ключ для хранения в localStorage
+            iframeUrl: 'https://trade-6rl.pages.dev/#/alororderbooks' // URL для iframe
+        },
+
+        {
             widgetName: 'Robot1', // Название виджета
             localStorageKey: 'albalab_robot_1', // Ключ для хранения в localStorage
             iframeUrl: 'https://trade-6rl.pages.dev/#/alortrades' // URL для iframe
