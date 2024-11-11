@@ -28,24 +28,24 @@
       </div>
     </div>
 
-    <h3>Trade History Statistics (SBER):</h3>
+    <h3>Trade History Statistics: <input v-model="selectedTicker"></h3>
     <div class="container" style="max-width: 200px;">
       <div
           class="row"
-          v-for="(trade, index) in tickerStats['SBER']?.tradeHistory"
+          v-for="(trade, index) in tickerStats[selectedTicker]?.tradeHistory"
           :key="'all-' + index"
           style="display: grid; grid-template-columns: 1fr 5fr;"
       >
         <div>{{ Math.floor(trade) }}</div>
-        <div :style="{ width: `${(trade / Math.max(...tickerStats['SBER']?.tradeHistory)) * 100}%` }">
+        <div :style="{ width: `${(trade / Math.max(...tickerStats[selectedTicker]?.tradeHistory)) * 100}%` }">
           <div class="block">
             <div
                 class="buy-bar"
-                :style="{ width: `${(tickerStats['SBER']?.tradeHistoryBuy[index] / trade) * 100}%` }"
+                :style="{ width: `${(tickerStats[selectedTicker]?.tradeHistoryBuy[index] / trade) * 100}%` }"
             ></div>
             <div
                 class="sell-bar"
-                :style="{ width: `${(tickerStats['SBER']?.tradeHistorySell[index] / trade) * 100}%` }"
+                :style="{ width: `${(tickerStats[selectedTicker]?.tradeHistorySell[index] / trade) * 100}%` }"
             ></div>
           </div>
         </div>
@@ -111,6 +111,9 @@ export default {
   name: 'TradeData',
   data() {
     return {
+
+      selectedTicker: 'FLOT',
+
       // Ваш исходный код
       //tickers: [...],
       trades: [],
