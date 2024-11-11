@@ -1,11 +1,14 @@
 <template>
   <div style="background: white; overflow: hidden;">
+    <div style="background: rgba(255, 0, 0, 0.3); padding: 10px;">Срочно покупай!</div>
+    <div style="padding: 10px;"><button>Купить лимиткой</button></div>
     <h2>Real-time Order Book Data</h2>
     <div v-for="(order, index) in orderBookData.slice(-10).reverse()" :key="index" style="margin-bottom: 20px;">
       <h3>{{ order.ticker }}</h3>
       <div>Last Bid: {{ order.bids[0]?.price }} | Volume: {{ order.bids[0]?.volume }}</div>
       <div>Last Ask: {{ order.asks[0]?.price }} | Volume: {{ order.asks[0]?.volume }}</div>
     </div>
+
   </div>
 </template>
 
