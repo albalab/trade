@@ -12,7 +12,7 @@
           :key="'all-' + index"
           style="display: grid; grid-template-columns: 1fr 5fr;"
       >
-        <div>{{ Math.floor(trade) }}</div>
+        <div class="trade-cell">{{ trade }}</div>
         <div :style="{ width: `${(trade / Math.max(...tradeHistory)) * 100}%` }">
           <div class="block">
             <div
@@ -36,7 +36,7 @@
           :key="'all-' + index"
           style="display: grid; grid-template-columns: 1fr 5fr;"
       >
-        <div>{{ Math.floor(trade) }}</div>
+        <div class="trade-cell">{{ trade }}</div>
         <div :style="{ width: `${(trade / Math.max(...tickerStats[selectedTicker]?.tradeHistory)) * 100}%` }">
           <div class="block">
             <div
@@ -61,12 +61,19 @@
           :key="'buy-' + index"
           style="display: grid; grid-template-columns: 1fr 5fr;"
       >
-        <div>{{ Math.floor(trade) }}</div>
+        <div class="trade-cell">{{ trade }}</div>
         <div :style="{ width: `${(trade / Math.max(...tradeHistoryBuy)) * 100}%` }">
           <div class="block" style="background-color: green;"></div>
         </div>
       </div>
     </div>
+
+    <input v-model="priceOrder" placeholder="price"><br>
+    <input v-model="tickerOrder" placeholder="ticker"><br>
+    <input v-model="sideOrder" placeholder="side"><br>
+    <button @click="sendLimitOrder(1, priceOrder, tickerOrder, 'MOEX', sideOrder, 'D88141')">
+      Отправить лимитный ордер
+    </button>
 
     <!-- Sell Trades Statistics -->
     <h3>Trade History Statistics (Sell):</h3>
@@ -77,7 +84,7 @@
           :key="'sell-' + index"
           style="display: grid; grid-template-columns: 1fr 5fr;"
       >
-        <div>{{ Math.floor(trade) }}</div>
+        <div class="trade-cell">{{ trade }}</div>
         <div :style="{ width: `${(trade / Math.max(...tradeHistorySell)) * 100}%` }">
           <div class="block" style="background-color: red;"></div>
         </div>
@@ -107,10 +114,17 @@
 </template>
 
 <script>
+
+import { sendLimitOrder as importedSendLimitOrder } from '../modules/LimitOrderModule.js';
+
 export default {
   name: 'TradeData',
   data() {
     return {
+
+      sideOrder: 'buy',
+      priceOrder: null,
+      tickerOrder: '',
 
       selectedTicker: 'FLOT',
 
@@ -148,6 +162,8 @@ export default {
     this.connectToWebSocket();
   },
   methods: {
+    sendLimitOrder: importedSendLimitOrder,
+
     connectToWebSocket() {
       const socket = new WebSocket('ws://localhost:4444');
       socket.onmessage = (event) => {
@@ -290,5 +306,12 @@ li {
 .sell-bar {
   height: 50%;
   background-color: red;
+}
+
+.trade-cell{
+  width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
 }
 </style>
