@@ -18,7 +18,12 @@ export const initWidgets = async () => {
             widgetName: 'Robot1',
             localStorageKey: 'albalab_robot_1',
             iframeUrl: 'https://trade-6rl.pages.dev/#/alortrades'
-        }
+        },
+        {
+            widgetName: 'Alor Orderbooks', // Название виджета
+            localStorageKey: 'albalab_alor_orderbooks', // Ключ для хранения в localStorage
+            iframeUrl: 'https://trade-6rl.pages.dev/#/alororderbooks' // URL для iframe
+        },
     ];
 
     observeMenuChanges(widgetsConfig, addCustomMenuItem, createWidget); // Передаем createCandlesWidget
