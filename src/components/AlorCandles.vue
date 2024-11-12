@@ -32,9 +32,10 @@
     </div>
 
     <div style="float: left; width: 33%;">
+      <input v-model="tickerInput" placeholder="Введите тикеры через запятую" />
       <div v-for="item in sortedTickerStats()"
            :key="item.id">
-        <div v-if="item.ticker === 'ALRS' || item.ticker === 'CHMF'"
+        <div v-if="tickerArray.includes(item.ticker)"
              style="display: flex;">
           <div style="width: 50px;">{{item.ticker}}:</div>
           <div style="width: 50px;">{{item.count}}</div>
@@ -52,6 +53,9 @@ export default {
   name: 'alor-candles',
   data() {
     return {
+
+      tickerInput: "",
+
       tickerStats: {},
 
       tickers: [
@@ -219,6 +223,11 @@ export default {
     };
   },
   computed: {
+
+    tickerArray() {
+      return this.tickerInput.split(',').map(ticker => ticker.trim()); // Преобразуем строку в массив
+    },
+
     // Обратный порядок для отображения актуальных данных в начале
     reversedCandles() {
       return this.candles.slice().reverse(); // Возвращаем перевернутую копию массива
@@ -307,27 +316,42 @@ export default {
 
       // Обрабатываем получение сообщений от WebSocket сервера
       socket.onmessage = (event) => {
-        const candle = JSON.parse(event.data);
+        const candles = JSON.parse(event.data);
 
-        // Проверка на наличие всех необходимых полей
-        if (candle.ticker && candle.time && candle.open !== undefined &&
-            candle.close !== undefined && candle.high !== undefined &&
-            candle.low !== undefined && candle.volume !== undefined) {
+        // Проверяем, что пришедшие данные — массив
+        if (Array.isArray(candles)) {
+          // Локальные переменные для накопления данных
+          const newCandles = [...this.candles];
+          const newTickerStats = { ...this.tickerStats };
 
+          candles.forEach(candle => {
+            // Проверка на наличие всех необходимых полей
+            if (candle.ticker && candle.time && candle.open !== undefined &&
+                candle.close !== undefined && candle.high !== undefined &&
+                candle.low !== undefined && candle.volume !== undefined) {
 
-          if (this.tickerStats[candle.ticker]) {
-            this.tickerStats[candle.ticker]++;
-          } else {
-            this.tickerStats[candle.ticker] = 1;
-          }
+              if (newTickerStats[candle.ticker]) {
+                newTickerStats[candle.ticker]++;
+              } else {
+                newTickerStats[candle.ticker] = 1;
+              }
 
-          this.candles.push(candle);
-          // Сохраняем только последние 100 свечей для оптимизации
-          if (this.candles.length > 100) {
-            this.candles.shift();
-          }
+              newCandles.push(candle);
+
+              // Сохраняем только последние 100 свечей для оптимизации
+              if (newCandles.length > 100) {
+                newCandles.shift();
+              }
+            } else {
+              console.warn('Received invalid candle data:', candle); // Логирование некорректных данных
+            }
+          });
+
+          // Обновляем реактивные свойства один раз после цикла
+          this.candles = newCandles;
+          this.tickerStats = newTickerStats;
         } else {
-          console.warn('Received invalid candle data:', candle); // Логирование некорректных данных
+          console.warn('Received non-array data:', candles); // Логирование данных, если это не массив
         }
       };
 
@@ -343,6 +367,7 @@ export default {
         console.log('WebSocket connection closed');
       };
     }
+
   }
 };
 </script>
