@@ -414,22 +414,38 @@ export default {
 
       // Обрабатываем получение сообщений от WebSocket сервера
       socket.onmessage = (event) => {
-        const orderBook = JSON.parse(event.data);
+        const orderBooks = JSON.parse(event.data);
 
-        // Проверяем, содержит ли сообщение нужные данные
-        if (orderBook.ticker && orderBook.bids && orderBook.asks) {
-          this.orderBookData.push(orderBook);
+        // Проверяем, что пришедшие данные — массив
+        if (Array.isArray(orderBooks)) {
+          // Локальные переменные для накопления данных
+          const newOrderBookData = [...this.orderBookData];
+          let newGlobalCounter = this.globalCounter;
+          const newOrderBookStats = { ...this.orderBookStats };
 
-          this.globalCounter++;
+          orderBooks.forEach(orderBook => {
+            // Проверяем, содержит ли каждый объект в массиве нужные данные
+            if (orderBook.ticker && orderBook.bids && orderBook.asks) {
+              newOrderBookData.push(orderBook);
 
-          this.orderBookStats[orderBook.ticker]++;
+              newGlobalCounter++;
+              newOrderBookStats[orderBook.ticker] = (newOrderBookStats[orderBook.ticker] || 0) + 1;
 
-          // Ограничиваем массив последних 1000 объектов
-          if (this.orderBookData.length > 1000) {
-            this.orderBookData.shift();
-          }
+              // Ограничиваем массив последних 1000 объектов
+              if (newOrderBookData.length > 1000) {
+                newOrderBookData.shift();
+              }
+            } else {
+              console.warn('Received invalid order book data:', orderBook); // Логирование некорректных данных
+            }
+          });
+
+          // Обновляем реактивные свойства один раз после цикла
+          this.orderBookData = newOrderBookData;
+          this.globalCounter = newGlobalCounter;
+          this.orderBookStats = newOrderBookStats;
         } else {
-          console.warn('Received invalid order book data:', orderBook); // Логирование некорректных данных
+          console.warn('Received non-array data:', orderBooks); // Логирование данных, если это не массив
         }
       };
 
@@ -446,6 +462,7 @@ export default {
       };
     }
   }
+
 };
 </script>
 
