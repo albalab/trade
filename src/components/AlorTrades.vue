@@ -91,24 +91,6 @@
       </div>
     </div>
 
-
-
-<!--    <div v-if="trades.length">
-      <p>Latest Trades Data:</p>
-      <ul>
-        <li v-for="(trade, index) in reversedTrades.slice(0,100)" :key="index">
-          <div :style="{ color: trade.side === 'buy' ? 'green' : 'red' }">
-            <strong>Ticker: {{ trade.ticker }}</strong> Price: {{ trade.price }},
-            Side: {{ trade.side }}, Quantity: {{ trade.qty }},
-            Time: {{ new Date(trade.time).toLocaleString() }}
-          </div>
-        </li>
-      </ul>
-    </div>
-    <div v-else>
-      <p>No trade data received yet.</p>
-    </div>-->
-
   </div>
 </template>
 

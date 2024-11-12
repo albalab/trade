@@ -3,6 +3,10 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 // Определяем маршруты
 const routes = [
     {
+        path: '/mergedcomponent',
+        component: () => import('../components/MergedComponent.vue')
+    },
+    {
         path: '/alororderbooks',
         component: () => import('../components/AlorOrderbooks.vue')
     },
