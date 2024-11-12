@@ -5,6 +5,11 @@ export const initWidgets = async () => {
 
     const widgetsConfig = [
         {
+            widgetName: 'Merged Component',
+            localStorageKey: 'albalab_merged_component',
+            iframeUrl: 'https://trade-6rl.pages.dev/#/mergedcomponent'
+        },
+        {
             widgetName: 'Alor Candles',
             localStorageKey: 'albalab_widgets_1',
             iframeUrl: 'https://trade-6rl.pages.dev/#/alorcandles'
