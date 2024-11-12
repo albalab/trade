@@ -93,7 +93,7 @@
 
 
 
-    <div v-if="trades.length">
+<!--    <div v-if="trades.length">
       <p>Latest Trades Data:</p>
       <ul>
         <li v-for="(trade, index) in reversedTrades.slice(0,100)" :key="index">
@@ -107,9 +107,8 @@
     </div>
     <div v-else>
       <p>No trade data received yet.</p>
-    </div>
+    </div>-->
 
-    <button @click="toggleStaticHistory">Toggle Static History</button>
   </div>
 </template>
 
@@ -167,40 +166,47 @@ export default {
     connectToWebSocket() {
       const socket = new WebSocket('ws://localhost:4444');
       socket.onmessage = (event) => {
-        const trade = JSON.parse(event.data);
-        this.trades.push(trade);
-        this.totalCountTrades++;
-        this.newTradesCount++;
+        // Декодируем данные как массив
+        const trades = JSON.parse(event.data);
 
-        if (trade.side === 'buy') {
-          this.newTradesCountBuy++;
-        } else if (trade.side === 'sell') {
-          this.newTradesCountSell++;
+        // Проверяем, является ли trades массивом
+        if (Array.isArray(trades)) {
+          trades.forEach(trade => {
+            this.trades.push(trade);
+            this.totalCountTrades++;
+            this.newTradesCount++;
+
+            if (trade.side === 'buy') {
+              this.newTradesCountBuy++;
+            } else if (trade.side === 'sell') {
+              this.newTradesCountSell++;
+            }
+
+            // Создание структуры для нового тикера
+            if (!this.tickerStats[trade.ticker] && trade.ticker) {
+              this.tickerStats[trade.ticker] = {
+                tradeHistory: Array(this.intervals.length).fill(0),
+                tradeHistoryBuy: Array(this.intervals.length).fill(0),
+                tradeHistorySell: Array(this.intervals.length).fill(0),
+                intervalCounters: Array.from({ length: this.intervals.length }, () => ({
+                  count: 0, lastUpdate: null, accumulatedTrades: 0
+                })),
+                intervalCountersBuy: Array.from({ length: this.intervals.length }, () => ({
+                  count: 0, lastUpdate: null, accumulatedTrades: 0
+                })),
+                intervalCountersSell: Array.from({ length: this.intervals.length }, () => ({
+                  count: 0, lastUpdate: null, accumulatedTrades: 0
+                }))
+              };
+            }
+
+            // Обновление статистики для тикера
+            this.updateTradeHistoryForTicker(trade);
+          });
         }
-
-        // Создание структуры для нового тикера
-        if (!this.tickerStats[trade.ticker] && trade.ticker) {
-          this.tickerStats[trade.ticker] = {
-            tradeHistory: Array(this.intervals.length).fill(0),
-            tradeHistoryBuy: Array(this.intervals.length).fill(0),
-            tradeHistorySell: Array(this.intervals.length).fill(0),
-            intervalCounters: Array.from({ length: this.intervals.length }, () => ({
-              count: 0, lastUpdate: null, accumulatedTrades: 0
-            })),
-            intervalCountersBuy: Array.from({ length: this.intervals.length }, () => ({
-              count: 0, lastUpdate: null, accumulatedTrades: 0
-            })),
-            intervalCountersSell: Array.from({ length: this.intervals.length }, () => ({
-              count: 0, lastUpdate: null, accumulatedTrades: 0
-            }))
-          };
-        }
-
-        // Обновление статистики для тикера
-        this.updateTradeHistoryForTicker(trade);
 
         // Ограничение размера массива trades
-        if (this.trades.length > 1000) this.trades.shift();
+        if (this.trades.length > 1000) this.trades.splice(0, this.trades.length - 1000);
 
         // Обновление общей статистики
         this.updateTradeHistory();
