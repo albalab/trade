@@ -1,7 +1,9 @@
 <template>
   <div>
     <h2>Real-time Trade Data</h2>
-    <div>Total count trades: {{ totalCountTrades }}</div>
+    <div>totalCountTrades: {{ totalCountTrades }}</div>
+    <div>tradesCountBuy: {{tradesCountBuy}}</div>
+    <div>tradesCountSell: {{tradesCountSell}}</div>
 
     <!-- All Trades Statistics with Buy/Sell Comparison -->
     <h3>Trade History Statistics (All):</h3>
@@ -111,8 +113,7 @@ export default {
 
       selectedTicker: 'FLOT',
 
-      // Ваш исходный код
-      //tickers: [...],
+
       trades: [],
       totalCountTrades: 0,
       tradeHistory: [],
@@ -129,15 +130,16 @@ export default {
       })),
       intervals: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216],
       startCountingTime: Date.now(),
-      newTradesCount: 0,
-      newTradesCountBuy: 0,
-      newTradesCountSell: 0,
+
+      tradesCountBuy: 0,
+      tradesCountSell: 0,
       staticHistory: false,
       tickerStats: {}  // Новый объект для хранения статистики по каждому тикеру
     };
   },
-  computed: {
 
+
+  computed: {
     marketSummary() {
       const summary = {};
 
@@ -162,10 +164,7 @@ export default {
       return this.trades.slice().reverse();
     }
   },
-  mounted() {
-    this.connectToWebSocket();
-    this.updateTrades();
-  },
+
   methods: {
     sendLimitOrder: importedSendLimitOrder,
 
@@ -179,44 +178,43 @@ export default {
     connectToWebSocket() {
       const socket = new WebSocket('ws://localhost:4444');
       socket.onmessage = (event) => {
-        // Декодируем данные как массив
+
         const trades = JSON.parse(event.data);
 
-        // Проверяем, является ли trades массивом
-        if (Array.isArray(trades)) {
-          trades.forEach(trade => {
-            this.trades.push(trade);
-            this.totalCountTrades++;
-            this.newTradesCount++;
+        if (!Array.isArray(trades)) return;
 
-            if (trade.side === 'buy') {
-              this.newTradesCountBuy++;
-            } else if (trade.side === 'sell') {
-              this.newTradesCountSell++;
-            }
+        trades.forEach(trade => {
 
-            // Создание структуры для нового тикера
-            if (!this.tickerStats[trade.ticker] && trade.ticker) {
-              this.tickerStats[trade.ticker] = {
-                tradeHistory: Array(this.intervals.length).fill(0),
-                tradeHistoryBuy: Array(this.intervals.length).fill(0),
-                tradeHistorySell: Array(this.intervals.length).fill(0),
-                intervalCounters: Array.from({ length: this.intervals.length }, () => ({
-                  count: 0, lastUpdate: null, accumulatedTrades: 0
-                })),
-                intervalCountersBuy: Array.from({ length: this.intervals.length }, () => ({
-                  count: 0, lastUpdate: null, accumulatedTrades: 0
-                })),
-                intervalCountersSell: Array.from({ length: this.intervals.length }, () => ({
-                  count: 0, lastUpdate: null, accumulatedTrades: 0
-                }))
-              };
-            }
+          this.trades.push(trade);
+          this.totalCountTrades++;
 
-            // Обновление статистики для тикера
-            this.updateTradeHistoryForTicker(trade);
-          });
-        }
+          if (trade.side === 'buy') {
+            this.tradesCountBuy++;
+          } else if (trade.side === 'sell') {
+            this.tradesCountSell++;
+          }
+
+          // Создание структуры для нового тикера
+          if (!this.tickerStats[trade.ticker] && trade.ticker) {
+            this.tickerStats[trade.ticker] = {
+              tradeHistory: Array(this.intervals.length).fill(0),
+              tradeHistoryBuy: Array(this.intervals.length).fill(0),
+              tradeHistorySell: Array(this.intervals.length).fill(0),
+              intervalCounters: Array.from({ length: this.intervals.length }, () => ({
+                count: 0, lastUpdate: null, accumulatedTrades: 0
+              })),
+              intervalCountersBuy: Array.from({ length: this.intervals.length }, () => ({
+                count: 0, lastUpdate: null, accumulatedTrades: 0
+              })),
+              intervalCountersSell: Array.from({ length: this.intervals.length }, () => ({
+                count: 0, lastUpdate: null, accumulatedTrades: 0
+              }))
+            };
+          }
+
+          // Обновление статистики для тикера
+          this.updateTradeHistoryForTicker(trade);
+        });
 
         // Ограничение размера массива trades
         if (this.trades.length > 1000) this.trades.splice(0, this.trades.length - 1000);
@@ -225,19 +223,18 @@ export default {
         this.updateTradeHistory();
       };
     },
+
     toggleStaticHistory() {
       this.staticHistory = !this.staticHistory;
     },
+
     updateTradeHistory() {
       const latestTradeTime = Date.now();
-      this.calculateIntervalStats(this.tradeHistory, this.intervalCounters, this.newTradesCount, latestTradeTime);
-      this.calculateIntervalStats(this.tradeHistoryBuy, this.intervalCountersBuy, this.newTradesCountBuy, latestTradeTime);
-      this.calculateIntervalStats(this.tradeHistorySell, this.intervalCountersSell, this.newTradesCountSell, latestTradeTime);
-
-      this.newTradesCount = 0;
-      this.newTradesCountBuy = 0;
-      this.newTradesCountSell = 0;
+      this.calculateIntervalStats(this.tradeHistory, this.intervalCounters, this.totalCountTrades, latestTradeTime);
+      this.calculateIntervalStats(this.tradeHistoryBuy, this.intervalCountersBuy, this.tradesCountBuy, latestTradeTime);
+      this.calculateIntervalStats(this.tradeHistorySell, this.intervalCountersSell, this.tradesCountSell, latestTradeTime);
     },
+
     updateTradeHistoryForTicker(trade) {
 
       if(!trade.ticker) return;
@@ -250,7 +247,7 @@ export default {
 
       // Обновление для buy/sell сделок по тикеру
       if (trade.side === 'buy') {
-        this.calculateIntervalStats(tickerData.tickerStats, tickerData.intervalCountersBuy, 1, latestTradeTime);
+        this.calculateIntervalStats(tickerData.tradeHistoryBuy, tickerData.intervalCountersBuy, 1, latestTradeTime);
       } else if (trade.side === 'sell') {
         this.calculateIntervalStats(tickerData.tradeHistorySell, tickerData.intervalCountersSell, 1, latestTradeTime);
       }
@@ -259,7 +256,9 @@ export default {
       //console.log(this.tickerStats);
       //console.log(this.tradeHistory);
     },
+
     calculateIntervalStats(history, counters, newCount, latestTime) {
+      if (!Array.isArray(history)) return;
       this.intervals.forEach((interval, index) => {
         const intervalMillis = interval * 1000;
         const counter = counters[index];
@@ -287,7 +286,13 @@ export default {
         }
       });
     }
-  }
+  },
+
+  mounted() {
+    this.connectToWebSocket();
+    this.updateTrades();
+  },
+
 };
 </script>
 
