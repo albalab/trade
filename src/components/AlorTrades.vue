@@ -139,7 +139,7 @@ export default {
     // Запускаем таймер для сохранения состояния каждые 5 секунд
     let saveInterval = null;
     onMounted(() => {
-      saveInterval = setInterval(saveState, 5000); // Сохраняем каждые 5 секунд
+      saveInterval = setInterval(saveState, 15000); // Сохраняем каждые 15 секунд
     });
 
     // Очищаем таймер при размонтировании компонента
@@ -193,6 +193,7 @@ export default {
 
 
   computed: {
+
     marketSummary() {
       const summary = {};
 
@@ -225,31 +226,35 @@ export default {
       setTimeout(() => {
         this.$emit('update-trades', this.marketSummary);
         this.updateTrades();
-      }, 100);
+      }, 200);
     },
 
     connectToWebSocket() {
       const socket = new WebSocket('ws://localhost:4444');
       socket.onmessage = (event) => {
-
         const trades = JSON.parse(event.data);
-
         if (!Array.isArray(trades)) return;
 
-        trades.forEach(trade => {
+        // Локальные переменные для накопления данных
+        const localTrades = [];
+        let localTotalCountTrades = this.totalCountTrades;
+        let localTradesCountBuy = this.tradesCountBuy;
+        let localTradesCountSell = this.tradesCountSell;
+        const localTickerStats = JSON.parse(JSON.stringify(this.tickerStats)); // Глубокая копия для избежания реактивности
 
-          this.trades.push(trade);
-          this.totalCountTrades++;
+        trades.forEach(trade => {
+          localTrades.push(trade);
+          localTotalCountTrades++;
 
           if (trade.side === 'buy') {
-            this.tradesCountBuy++;
+            localTradesCountBuy++;
           } else if (trade.side === 'sell') {
-            this.tradesCountSell++;
+            localTradesCountSell++;
           }
 
-          // Создание структуры для нового тикера
-          if (!this.tickerStats[trade.ticker] && trade.ticker) {
-            this.tickerStats[trade.ticker] = {
+          // Создание структуры для нового тикера, если её нет в локальных данных
+          if (!localTickerStats[trade.ticker] && trade.ticker) {
+            localTickerStats[trade.ticker] = {
               tradeHistory: Array(this.intervals.length).fill(0),
               tradeHistoryBuy: Array(this.intervals.length).fill(0),
               tradeHistorySell: Array(this.intervals.length).fill(0),
@@ -265,14 +270,21 @@ export default {
             };
           }
 
-          // Обновление статистики для тикера
-          this.updateTradeHistoryForTicker(trade);
+          // Обновление статистики для тикера в локальных данных
+          this.updateTradeHistoryForTicker(trade, localTickerStats);
         });
 
         // Ограничение размера массива trades
-        if (this.trades.length > 1000) this.trades.splice(0, this.trades.length - 1000);
+        if (localTrades.length > 1000) localTrades.splice(0, localTrades.length - 1000);
 
-        // Обновление общей статистики
+        // Присваивание локальных значений после завершения цикла
+        this.trades.push(...localTrades);
+        this.totalCountTrades = localTotalCountTrades;
+        this.tradesCountBuy = localTradesCountBuy;
+        this.tradesCountSell = localTradesCountSell;
+        this.tickerStats = localTickerStats; // Замена тикерной статистики целиком
+
+        // Обновление общей статистики в конце
         this.updateTradeHistory();
       };
     },
@@ -283,31 +295,55 @@ export default {
 
     updateTradeHistory() {
       const latestTradeTime = Date.now();
-      this.calculateIntervalStats(this.tradeHistory, this.intervalCounters, this.totalCountTrades, latestTradeTime);
-      this.calculateIntervalStats(this.tradeHistoryBuy, this.intervalCountersBuy, this.tradesCountBuy, latestTradeTime);
-      this.calculateIntervalStats(this.tradeHistorySell, this.intervalCountersSell, this.tradesCountSell, latestTradeTime);
+
+      // Создаем локальные копии массивов для истории
+      const localTradeHistory = [...this.tradeHistory];
+      const localTradeHistoryBuy = [...this.tradeHistoryBuy];
+      const localTradeHistorySell = [...this.tradeHistorySell];
+
+      // Выполняем вычисления с локальными копиями
+      this.calculateIntervalStats(localTradeHistory, this.intervalCounters, this.totalCountTrades, latestTradeTime);
+      this.calculateIntervalStats(localTradeHistoryBuy, this.intervalCountersBuy, this.tradesCountBuy, latestTradeTime);
+      this.calculateIntervalStats(localTradeHistorySell, this.intervalCountersSell, this.tradesCountSell, latestTradeTime);
+
+      // Присваиваем обновленные данные обратно в реактивные свойства
+      this.tradeHistory = localTradeHistory;
+      this.tradeHistoryBuy = localTradeHistoryBuy;
+      this.tradeHistorySell = localTradeHistorySell;
     },
 
-    updateTradeHistoryForTicker(trade) {
-
-      if(!trade.ticker) return;
+    updateTradeHistoryForTicker(trade, localTickerStats) {
+      if (!trade.ticker) return;
 
       const latestTradeTime = Date.now();
-      const tickerData = this.tickerStats[trade.ticker];
 
-      // Обновление для всех сделок по тикеру
+      // Делаем временную копию данных по конкретному тикеру
+      const tickerData = localTickerStats[trade.ticker] || {
+        tradeHistory: Array(this.intervals.length).fill(0),
+        tradeHistoryBuy: Array(this.intervals.length).fill(0),
+        tradeHistorySell: Array(this.intervals.length).fill(0),
+        intervalCounters: Array.from({ length: this.intervals.length }, () => ({
+          count: 0, lastUpdate: null, accumulatedTrades: 0
+        })),
+        intervalCountersBuy: Array.from({ length: this.intervals.length }, () => ({
+          count: 0, lastUpdate: null, accumulatedTrades: 0
+        })),
+        intervalCountersSell: Array.from({ length: this.intervals.length }, () => ({
+          count: 0, lastUpdate: null, accumulatedTrades: 0
+        }))
+      };
+
+      // Обновляем временную копию данных по тикеру
       this.calculateIntervalStats(tickerData.tradeHistory, tickerData.intervalCounters, 1, latestTradeTime);
 
-      // Обновление для buy/sell сделок по тикеру
       if (trade.side === 'buy') {
         this.calculateIntervalStats(tickerData.tradeHistoryBuy, tickerData.intervalCountersBuy, 1, latestTradeTime);
       } else if (trade.side === 'sell') {
         this.calculateIntervalStats(tickerData.tradeHistorySell, tickerData.intervalCountersSell, 1, latestTradeTime);
       }
 
-      // Вывод в консоль для проверки структуры
-      //console.log(this.tickerStats);
-      //console.log(this.tradeHistory);
+      // Присваиваем обновленные данные тикера обратно во временную копию `localTickerStats`
+      localTickerStats[trade.ticker] = tickerData;
     },
 
     calculateIntervalStats(history, counters, newCount, latestTime) {

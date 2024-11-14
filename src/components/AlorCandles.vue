@@ -149,7 +149,7 @@ export default {
       setTimeout(() => {
         this.$emit('update-candles', this.marketSummary);
         this.updateCandles();
-      }, 100);
+      }, 200);
     },
 
     postMessage() {
@@ -159,7 +159,7 @@ export default {
           robot1message: JSON.parse(JSON.stringify(this.tickerStats))
         }, "*");
 
-      }, 100);
+      }, 200);
     },
 
     sortedTickerStats() {
