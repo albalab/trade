@@ -5,6 +5,11 @@
     <div>tradesCountBuy: {{tradesCountBuy}}</div>
     <div>tradesCountSell: {{tradesCountSell}}</div>
 
+    {{tradeHistory}}<br>
+    {{tradeHistoryBuy}}<br>
+    {{tradeHistorySell}}<br>
+
+
     <!-- All Trades Statistics with Buy/Sell Comparison -->
     <h3>Trade History Statistics (All):</h3>
     <div class="container" style="max-width: 200px;">
@@ -101,9 +106,9 @@
 import { sendLimitOrder as importedSendLimitOrder } from '../modules/LimitOrderModule.js';
 import { tickersSteps } from '../tickersSteps.js';
 
-import { ref, watch } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useCacheStore } from '@/stores/cacheStore';
-import { throttle } from '@/stores/helper.js';
+//import { throttle } from '@/stores/helper.js';
 
 export default {
   name: 'TradeData',
@@ -111,31 +116,45 @@ export default {
   setup() {
     const cacheStore = useCacheStore();
 
-    // Инициализируем локальные значения
+    // Локальные переменные, которые будем сохранять
     const totalCountTrades = ref(cacheStore.totalCountTrades || 0);
-    const localComponentAValue = ref(cacheStore.componentAValue || 'Initial A');
-    const localComponentBValue = ref(cacheStore.componentBValue || 'Initial B');
+    const tradesCountBuy = ref(cacheStore.tradesCountBuy || 0);
+    const tradesCountSell = ref(cacheStore.tradesCountSell || 0);
 
-    // Функция для обновления кэша с троттлингом (раз в секунду)
-    const throttledUpdateCache = throttle((key, value) => {
-      cacheStore[key] = value;
-    }, 5000);
+    const tradeHistory = ref(cacheStore.tradeHistory || []);
+    const tradeHistoryBuy = ref(cacheStore.tradeHistoryBuy || []);
+    const tradeHistorySell = ref(cacheStore.tradeHistorySell || []);
 
-    // Отслеживаем изменения и вызываем троттлинг функцию для записи в Pinia
-    watch(totalCountTrades, (newValue) => {
-      throttledUpdateCache('totalCountTrades', newValue);
+    // Функция для периодического сохранения состояния
+    const saveState = () => {
+      cacheStore.totalCountTrades = totalCountTrades.value;
+      cacheStore.tradesCountBuy = tradesCountBuy.value;
+      cacheStore.tradesCountSell = tradesCountSell.value;
+
+      cacheStore.tradeHistory = tradeHistory.value;
+      cacheStore.tradeHistoryBuy = tradeHistoryBuy.value;
+      cacheStore.tradeHistorySell = tradeHistorySell.value;
+      // Добавьте сохранение других необходимых переменных
+    };
+
+    // Запускаем таймер для сохранения состояния каждые 5 секунд
+    let saveInterval = null;
+    onMounted(() => {
+      saveInterval = setInterval(saveState, 5000); // Сохраняем каждые 5 секунд
     });
-    watch(localComponentAValue, (newValue) => {
-      throttledUpdateCache('componentAValue', newValue);
-    });
-    watch(localComponentBValue, (newValue) => {
-      throttledUpdateCache('componentBValue', newValue);
+
+    // Очищаем таймер при размонтировании компонента
+    onUnmounted(() => {
+      clearInterval(saveInterval);
     });
 
     return {
       totalCountTrades,
-      localComponentAValue,
-      localComponentBValue
+      tradesCountBuy,
+      tradesCountSell,
+      tradeHistory,
+      tradeHistoryBuy,
+      tradeHistorySell,
     };
   },
 
@@ -152,9 +171,9 @@ export default {
 
       trades: [],
       //totalCountTrades: 0,
-      tradeHistory: [],
-      tradeHistoryBuy: [],
-      tradeHistorySell: [],
+      //tradeHistory: [],
+      //tradeHistoryBuy: [],
+      //tradeHistorySell: [],
       intervalCounters: Array.from({ length: 25 }, () => ({
         count: 0, lastUpdate: null, accumulatedTrades: 0
       })),
@@ -167,8 +186,6 @@ export default {
       intervals: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216],
       startCountingTime: Date.now(),
 
-      tradesCountBuy: 0,
-      tradesCountSell: 0,
       staticHistory: false,
       tickerStats: {}  // Новый объект для хранения статистики по каждому тикеру
     };

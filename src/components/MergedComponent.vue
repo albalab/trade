@@ -1,5 +1,8 @@
 <template>
   <div>
+    <div style="margin: 0 0 10px;">
+      <button @click="resetCache">Reset Cache</button>
+    </div>
     <input type="text" v-model="selectedTicker"/>
     {{ cachedData[selectedTicker] }}<br>
 
@@ -32,8 +35,23 @@ import AlorTrades from './AlorTrades.vue';
 import AlorOrderbooks from './AlorOrderbooks.vue';
 import AlorCandles from './AlorCandles.vue';
 
+import { useCacheStore } from '@/stores/cacheStore';
+
 export default {
   name: 'MergedComponent',
+
+  setup() {
+    const cacheStore = useCacheStore();
+
+    // Функция для сброса состояния в Pinia
+    const resetCache = () => {
+      cacheStore.resetStore(); // Вызов метода сброса в Pinia
+    };
+
+    return {
+      resetCache,
+    };
+  },
 
   components: {
     AlorTrades,
