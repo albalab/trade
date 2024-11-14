@@ -15,7 +15,7 @@
           style="display: grid; grid-template-columns: 1fr 5fr;"
       >
         <div class="trade-cell">{{ trade }}</div>
-        <div :style="{ width: `${(trade / Math.max(...tradeHistory)) * 100}%` }">
+        <div :style="{ width: `${(trade / maxTradeHistory) * 100}%` }">
           <div class="block">
             <div
                 class="buy-bar"
@@ -64,7 +64,7 @@
           style="display: grid; grid-template-columns: 1fr 5fr;"
       >
         <div class="trade-cell">{{ trade }}</div>
-        <div :style="{ width: `${(trade / Math.max(...tradeHistoryBuy)) * 100}%` }">
+        <div :style="{ width: `${(trade / maxTradeHistoryBuy) * 100}%` }">
           <div class="block" style="background-color: green;"></div>
         </div>
       </div>
@@ -87,7 +87,7 @@
           style="display: grid; grid-template-columns: 1fr 5fr;"
       >
         <div class="trade-cell">{{ trade }}</div>
-        <div :style="{ width: `${(trade / Math.max(...tradeHistorySell)) * 100}%` }">
+        <div :style="{ width: `${(trade / maxTradeHistorySell) * 100}%` }">
           <div class="block" style="background-color: red;"></div>
         </div>
       </div>
@@ -193,7 +193,15 @@ export default {
 
 
   computed: {
-
+    maxTradeHistory() {
+      return Math.max(...this.tradeHistory);
+    },
+    maxTradeHistoryBuy() {
+      return Math.max(...this.tradeHistoryBuy);
+    },
+    maxTradeHistorySell() {
+      return Math.max(...this.tradeHistorySell);
+    },
     marketSummary() {
       const summary = {};
 
@@ -226,7 +234,7 @@ export default {
       setTimeout(() => {
         this.$emit('update-trades', this.marketSummary);
         this.updateTrades();
-      }, 200);
+      }, 500);
     },
 
     connectToWebSocket() {

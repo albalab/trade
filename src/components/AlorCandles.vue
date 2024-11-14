@@ -159,7 +159,7 @@ export default {
           robot1message: JSON.parse(JSON.stringify(this.tickerStats))
         }, "*");
 
-      }, 200);
+      }, 500);
     },
 
     sortedTickerStats() {

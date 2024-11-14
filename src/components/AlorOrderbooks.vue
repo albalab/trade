@@ -283,7 +283,7 @@ export default {
       setTimeout(() => {
         this.$emit('update-orderbooks', this.marketSummary);
         this.updateOrderbooks();
-      }, 200);
+      }, 500);
     },
 
     connectToWebSocket() {
