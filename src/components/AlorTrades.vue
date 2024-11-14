@@ -125,6 +125,8 @@ export default {
     const tradeHistoryBuy = ref(cacheStore.tradeHistoryBuy || []);
     const tradeHistorySell = ref(cacheStore.tradeHistorySell || []);
 
+    const tickerStats = ref(cacheStore.tickerStats || []);
+
     // Функция для периодического сохранения состояния
     const saveState = () => {
       cacheStore.totalCountTrades = totalCountTrades.value;
@@ -134,7 +136,9 @@ export default {
       cacheStore.tradeHistory = tradeHistory.value;
       cacheStore.tradeHistoryBuy = tradeHistoryBuy.value;
       cacheStore.tradeHistorySell = tradeHistorySell.value;
-      // Добавьте сохранение других необходимых переменных
+
+      cacheStore.tickerStats = tickerStats.value;
+
     };
 
     // Запускаем таймер для сохранения состояния каждые 5 секунд
@@ -155,6 +159,7 @@ export default {
       tradeHistory,
       tradeHistoryBuy,
       tradeHistorySell,
+      tickerStats,
     };
   },
 
@@ -187,7 +192,7 @@ export default {
       startCountingTime: Date.now(),
 
       staticHistory: false,
-      tickerStats: {}  // Новый объект для хранения статистики по каждому тикеру
+      //tickerStats: {}  // Новый объект для хранения статистики по каждому тикеру
     };
   },
 
