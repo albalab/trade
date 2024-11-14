@@ -5,11 +5,6 @@
     <div>tradesCountBuy: {{tradesCountBuy}}</div>
     <div>tradesCountSell: {{tradesCountSell}}</div>
 
-    {{tradeHistory}}<br>
-    {{tradeHistoryBuy}}<br>
-    {{tradeHistorySell}}<br>
-
-
     <!-- All Trades Statistics with Buy/Sell Comparison -->
     <h3>Trade History Statistics (All):</h3>
     <div class="container" style="max-width: 200px;">
