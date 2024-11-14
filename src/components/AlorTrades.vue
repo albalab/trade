@@ -97,11 +97,13 @@
 <script>
 
 import { sendLimitOrder as importedSendLimitOrder } from '../modules/LimitOrderModule.js';
+import { tickersSteps } from '../tickersSteps.js';
 
 export default {
   name: 'TradeData',
   data() {
     return {
+      tickersSteps,
 
       sideOrder: 'buy',
       priceOrder: null,
@@ -135,15 +137,44 @@ export default {
     };
   },
   computed: {
+
+    marketSummary() {
+      const summary = {};
+
+      // Обработка данных сделок
+      this.trades.forEach((trade) => {
+        const { ticker, price, qty, side } = trade;
+        summary[ticker] = summary[ticker] || {};
+
+        summary[ticker].lastTradePriceLevel = Math.round(price / this.tickersSteps[ticker]);
+        summary[ticker].lastTradePrice = price;
+        summary[ticker].lastTradeVolume = qty;
+        summary[ticker].lastTradeSide = side;
+
+        summary[ticker].buyVolume = (summary[ticker].buyVolume || 0) + (side === "buy" ? qty : 0);
+        summary[ticker].sellVolume = (summary[ticker].sellVolume || 0) + (side === "sell" ? qty : 0);
+      });
+
+      return summary;
+    },
+
     reversedTrades() {
       return this.trades.slice().reverse();
     }
   },
   mounted() {
     this.connectToWebSocket();
+    this.updateTrades();
   },
   methods: {
     sendLimitOrder: importedSendLimitOrder,
+
+    updateTrades() {
+      setTimeout(() => {
+        this.$emit('update-trades', this.marketSummary);
+        this.updateTrades();
+      }, 100);
+    },
 
     connectToWebSocket() {
       const socket = new WebSocket('ws://localhost:4444');
@@ -219,7 +250,7 @@ export default {
 
       // Обновление для buy/sell сделок по тикеру
       if (trade.side === 'buy') {
-        this.calculateIntervalStats(tickerData.tradeHistoryBuy, tickerData.intervalCountersBuy, 1, latestTradeTime);
+        this.calculateIntervalStats(tickerData.tickerStats, tickerData.intervalCountersBuy, 1, latestTradeTime);
       } else if (trade.side === 'sell') {
         this.calculateIntervalStats(tickerData.tradeHistorySell, tickerData.intervalCountersSell, 1, latestTradeTime);
       }

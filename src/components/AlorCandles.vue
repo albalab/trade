@@ -2,6 +2,7 @@
   <div style="background: white; overflow: hidden;">
     <h2>Real-time Candlestick Data</h2>
 
+
     <div style="float: left; width: 33%;">
       <div v-for="(candles, ticker) in groupedCandles"
            :key='candles.id'
@@ -49,6 +50,8 @@
 </template>
 
 <script>
+import { tickersSteps } from '../tickersSteps.js';
+import { tickers } from '../tickers.js';
 export default {
   name: 'alor-candles',
   data() {
@@ -58,171 +61,32 @@ export default {
 
       tickerStats: {},
 
-      tickers: [
-        'KRKNP',
-        'VSMO',
-        'LNZL',
-        'RKKE',
-        'UNKL',
-        'CHMK',
-        'LNZLP',
-        'AKRN',
-        'MGTSP',
-        'BELU',
-        'HEAD',
-        'KROT',
-        'PHOR',
-        'AQUA',
-        'BANE',
-        'BANEP',
-        'DIAS',
-        'GCHE',
-        'KAZTP',
-        'LENT',
-        'LKOH',
-        'MBNK',
-        'MGNT',
-        'NKHP',
-        'NSVZ',
-        'OZON',
-        'PLZL',
-        'SMLT',
-        'SVAV',
-        'TCSG',
-        'TRNFP',
-        'VRSB',
-        'YDEX',
-        'ABRD',
-        'AGRO',
-        'CHMF',
-        'CIAN',
-        'KAZT',
-        'LSRG',
-        'NVTK',
-        'PMSBP',
-        'POSI',
-        'QIWI',
-        'SFIN',
-        'VKCO',
-        'FIXP',
-        'GEMC',
-        'GTRK',
-        'HNFG',
-        'KMAZ',
-        'KZOS',
-        'LEAS',
-        'MDMG',
-        'MVID',
-        'PIKK',
-        'PMSB',
-        'RNFT',
-        'SPBE',
-        'TATN',
-        'TATNP',
-        'ASTR',
-        'DELI',
-        'ENPG',
-        'EUTR',
-        'GLTR',
-        'IRKT',
-        'IVAT',
-        'LSNGP',
-        'MSTT',
-        'MTLRP',
-        'MTSS',
-        //'NKNC ',
-        'PRMD',
-        'RASP',
-        'ROSN',
-        'RTKMP',
-        'SIBN',
-        'UWGN',
-        'VEON-RX',
-        'VSEH',
-        'YAKG',
-        'ZAYM',
-        'ABIO',
-        'AMEZ',
-        'CNTL',
-        'CNTLP',
-        'DATA',
-        'DSKY',
-        'ETLN',
-        'GMKN',
-        'NKNCP',
-        'NLMK',
-        'RENI',
-        'SOFL',
-        'TRMK',
-        'AFLT',
-        'ALRS',
-        'BLNG',
-        'BSPB',
-        'FESH',
-        'FLOT',
-        'GAZP',
-        'GECO',
-        'KLSB',
-        'KZOSP',
-        'LSNG',
-        'MAGEP',
-        'MOEX',
-        'MTLR',
-        'OKEY',
-        'RTKM',
-        'SBER',
-        'SBERP',
-        'SELG',
-        'VTBR',
-        'WUSH',
-        'LIFE',
-        'MAGN',
-        'NMTP',
-        'RBCM',
-        'RUAL',
-        'SNGS',
-        'SNGSP',
-        'SVCB',
-        'APTK',
-        'KLVZ',
-        'PRFN',
-        'AFKS',
-        'CBOM',
-        'DVEC',
-        'SGZH',
-        'UPRO',
-        'CARM',
-        'IRAO',
-        'MGKL',
-        'MRKS',
-        'MSNG',
-        'MSRS',
-        'TTLK',
-        'UNAC',
-        'ELFV',
-        'MRKC',
-        'MRKU',
-        'ROLO',
-        'HYDR',
-        'MRKP',
-        'OGKB',
-        'UGLD',
-        'MRKV',
-        'MRKY',
-        'MRKZ',
-        'ELMT',
-        'FEES',
-        'TGKBP',
-        'TGKN',
-        'TGKB',
-        'TGKA',
-        'IMOEX2'
-      ],
+      tickersSteps,
+      tickers,
 
       candles: [], // Массив для хранения данных о свечах
     };
   },
   computed: {
+
+
+
+    marketSummary() {
+      const summary = {};
+
+      // Обработка данных свечей
+      this.candles.forEach((candle) => {
+        const { ticker, close, volume, time } = candle;
+        summary[ticker] = summary[ticker] || {};
+
+        summary[ticker].lastClosePriceLevel = Math.round(close/this.tickersSteps[ticker]);
+        summary[ticker].lastClosePrice = close;
+        summary[ticker].candleVolume = volume;
+        summary[ticker].timestampCandle = time;
+      });
+
+      return summary;
+    },
 
     tickerArray() {
       return this.tickerInput.split(',').map(ticker => ticker.trim()); // Преобразуем строку в массив
@@ -276,9 +140,17 @@ export default {
   mounted() {
     this.connectToWebSocket();
     this.postMessage();
+    this.updateCandles();
   },
 
   methods: {
+
+    updateCandles() {
+      setTimeout(() => {
+        this.$emit('update-candles', this.marketSummary);
+        this.updateCandles();
+      }, 100);
+    },
 
     postMessage() {
       setInterval(() => {
