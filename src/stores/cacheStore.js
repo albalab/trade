@@ -4,7 +4,10 @@ import { defineStore } from 'pinia';
 export const useCacheStore = defineStore({
     id: 'cacheStore',
     state: () => ({
-        cachedData: {}  // Объект, который нужно сохранять
+        totalCountTrades: 0,
+        componentAValue: null,  // Значения для хранения
+        componentBValue: null,
+        otherData: {}
     }),
-    persist: true  // Включаем автоматическое сохранение состояния в localStorage
+    persist: true // Включаем сохранение состояния в localStorage
 });

@@ -101,8 +101,44 @@
 import { sendLimitOrder as importedSendLimitOrder } from '../modules/LimitOrderModule.js';
 import { tickersSteps } from '../tickersSteps.js';
 
+import { ref, watch } from 'vue';
+import { useCacheStore } from '@/stores/cacheStore';
+import { throttle } from '@/stores/helper.js';
+
 export default {
   name: 'TradeData',
+
+  setup() {
+    const cacheStore = useCacheStore();
+
+    // Инициализируем локальные значения
+    const totalCountTrades = ref(cacheStore.totalCountTrades || 0);
+    const localComponentAValue = ref(cacheStore.componentAValue || 'Initial A');
+    const localComponentBValue = ref(cacheStore.componentBValue || 'Initial B');
+
+    // Функция для обновления кэша с троттлингом (раз в секунду)
+    const throttledUpdateCache = throttle((key, value) => {
+      cacheStore[key] = value;
+    }, 5000);
+
+    // Отслеживаем изменения и вызываем троттлинг функцию для записи в Pinia
+    watch(totalCountTrades, (newValue) => {
+      throttledUpdateCache('totalCountTrades', newValue);
+    });
+    watch(localComponentAValue, (newValue) => {
+      throttledUpdateCache('componentAValue', newValue);
+    });
+    watch(localComponentBValue, (newValue) => {
+      throttledUpdateCache('componentBValue', newValue);
+    });
+
+    return {
+      totalCountTrades,
+      localComponentAValue,
+      localComponentBValue
+    };
+  },
+
   data() {
     return {
       tickersSteps,
@@ -115,7 +151,7 @@ export default {
 
 
       trades: [],
-      totalCountTrades: 0,
+      //totalCountTrades: 0,
       tradeHistory: [],
       tradeHistoryBuy: [],
       tradeHistorySell: [],
