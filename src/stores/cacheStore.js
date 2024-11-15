@@ -12,7 +12,7 @@ export const useCacheStore = defineStore({
         tradeHistorySell: [],
         tickerStats: {},
     }),
-    persist: true, // Включаем сохранение состояния в localStorage
+    persist: false, //true, // Включаем сохранение состояния в localStorage
 
     actions: {
         resetStore() {

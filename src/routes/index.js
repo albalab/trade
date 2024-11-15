@@ -15,6 +15,10 @@ const routes = [
         component: () => import('../components/AlorCandles.vue')
     },
     {
+        path: '/alorquotes',
+        component: () => import('../components/AlorQuotes.vue')
+    },
+    {
         path: '/alortrades',
         component: () => import('../components/AlorTrades.vue')
     },

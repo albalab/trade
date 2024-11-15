@@ -3,17 +3,22 @@
     <div style="margin: 0 0 10px;">
       <button @click="resetCache">Reset Cache</button>
     </div>
-    <input type="text" v-model="selectedTicker"/>
-    {{ cachedData[selectedTicker] }}<br>
+    <input type="text" v-model="selectedTicker"/><br>
+    <div style="padding: 10px;">
+      {{ cachedData[selectedTicker] }}<br>
+    </div>
 
-    <div class="items" v-for="(item,key) in sortedBuyVolume"
-         :key="item.id" style="display: flex;">
-
-      <div class="item" style="width: 60px;">{{key}}:</div>
-      <div class="item" :style="{color: item?.lastTradeSide === 'buy' ? 'green' : 'red' }">{{item?.lastTradeSide}}</div>
-      <div class="item" :style="{color: 'green'}">{{item?.buyVolume}}</div>
-      <div class="item" :style="{color: 'red'}">{{item?.sellVolume}}</div>
-
+    <div class="items">
+      <div class="items-wrap"
+           v-for="(item,key) in sortedBuyVolume"
+           :key="item.id">
+          <div class="item" style="width: 60px;">{{key}}:</div>
+          <div class="item">{{item?.lastClosePrice}}</div>
+          <div class="item">{{item?.lastClosePriceLevel}}</div>
+          <div class="item" :style="{color: item?.lastTradeSide === 'buy' ? 'green' : 'red' }">{{item?.lastTradeSide}}</div>
+          <div class="item" :style="{color: 'green'}">{{item?.buyVolume}}</div>
+          <div class="item" :style="{color: 'red'}">{{item?.sellVolume}}</div>
+      </div>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr;">
@@ -122,9 +127,14 @@ export default {
 
 <style>
 .items{
-  display: flex;
+  display: table;
+}
+.items-wrap{
+  display: table-row;
+  border-bottom: solid 1px #eee;
 }
 .items .item{
-  padding: 2px 10px;
+  display: table-cell;
+  padding: 1px 10px;
 }
 </style>
