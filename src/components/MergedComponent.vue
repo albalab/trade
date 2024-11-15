@@ -8,20 +8,21 @@
       {{ cachedData[selectedTicker] }}<br>
     </div>
 
-    <div class="items">
-      <div class="items-wrap"
-           v-for="(item,key) in sortedBuyVolume"
-           :key="item.id">
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr;">
+      <div class="items">
+        <div class="items-wrap"
+             v-for="(item,key) in sortedBuyVolume"
+             :key="item.id">
           <div class="item" style="width: 60px;">{{key}}:</div>
           <div class="item">{{item?.lastClosePrice}}</div>
           <div class="item">{{item?.lastClosePriceLevel}}</div>
           <div class="item" :style="{color: item?.lastTradeSide === 'buy' ? 'green' : 'red' }">{{item?.lastTradeSide}}</div>
           <div class="item" :style="{color: 'green'}">{{item?.buyVolume}}</div>
           <div class="item" :style="{color: 'red'}">{{item?.sellVolume}}</div>
+        </div>
       </div>
-    </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr;">
       <div>
         <AlorTrades @update-trades="updateTrades"/>
       </div>
@@ -31,6 +32,9 @@
       <div>
         <AlorCandles @update-candles="updateCandles"/>
       </div>
+      <div>
+        <AlorQuotes @update-quotes="updateQuotes"/>
+      </div>
     </div>
   </div>
 </template>
@@ -39,6 +43,7 @@
 import AlorTrades from './AlorTrades.vue';
 import AlorOrderbooks from './AlorOrderbooks.vue';
 import AlorCandles from './AlorCandles.vue';
+import AlorQuotes from './AlorQuotes.vue';
 
 import { useCacheStore } from '@/stores/cacheStore';
 
@@ -62,6 +67,7 @@ export default {
     AlorTrades,
     AlorOrderbooks,
     AlorCandles,
+    AlorQuotes,
   },
 
   data() {
@@ -96,6 +102,9 @@ export default {
     },
     updateCandles(candles) {
       this.globalData.candles = candles;
+    },
+    updateQuotes(quotes) {
+      this.globalData.quotes = quotes;
     },
 
     updateCachedData() {
