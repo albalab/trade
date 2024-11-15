@@ -225,7 +225,7 @@ export default {
 
     connectToWebSocket() {
       // Устанавливаем соединение с WebSocket сервером на порту 3333
-      const socket = new WebSocket('ws://165.227.71.25:3333');
+      const socket = new WebSocket('ws://165.227.71.25');
 
       // Обрабатываем получение сообщений от WebSocket сервера
       socket.onmessage = (event) => {
