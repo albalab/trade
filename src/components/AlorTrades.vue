@@ -5,7 +5,7 @@
     <div>tradesCountBuy: {{tradesCountBuy}}</div>
     <div>tradesCountSell: {{tradesCountSell}}</div>
 
-    <div style="float: left; width: 200px; border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
+    <div style="width: 200px; border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Топ 10 тикеров с наибольшим изменением последней цены
       <div v-for="item in percentageDifferencesSorted.slice(0,10)" :key="item.ticker">
         {{ item.ticker }}: {{ item.difference }}%
