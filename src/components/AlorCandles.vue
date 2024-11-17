@@ -9,24 +9,27 @@
     <div style="float: left; width: 200px; border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Процентная разница между минимальной и максимальной ценой закрытия за последние 100 свечей
       <div v-for="item in percentageDifferencesSorted.splice(0,10)" :key="item.id">
-        {{item.ticker}}: {{item.difference}}
+        {{item.ticker}}: {{item.difference}}%
       </div>
     </div>
 
     <div style="float: left; width: 200px; height: 500px; overflow: hidden; padding: 10px; border: solid 1px #ccc;">
       Статистика распределения количества свечей по тикерам
-      <div v-for="(candles, ticker) in groupedCandles"
-           :key='candles.id'
-           style="display: flex;">
+      <div style="display: table;">
 
-        <div style="width: 60px;">{{ticker}}:</div>
+        <div v-for="(candles, ticker) in groupedCandles"
+             :key='candles.id'
+             style="display: table-row;">
+          <div style="display: table-cell; width: 60px;">{{ticker}}:</div>
 
-        <div style="width: 80px">{{candles[candles.length-1].close}}</div>
+          <div style="display: table-cell; width: 80px">{{candles[candles.length-1].close}}</div>
 
-        <div v-for="candle in candles" :key="candle.id">
-          .
-          <!--{{candle.close}} | {{ candle.volume }}-->
-          <!--Time: {{ new Date(candle.time * 1000).toLocaleString() }}-->
+          <div style="display: table-cell; width: 100px;">
+            <div style="position: relative;">
+              <div style="position: absolute; height: 2px; background: black;"
+                   :style="{ width: `${10*candles.length}%` }"></div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -225,7 +228,7 @@ export default {
 
     connectToWebSocket() {
       // Устанавливаем соединение с WebSocket сервером на порту 3333
-      const socket = new WebSocket('ws://165.227.71.25');
+      const socket = new WebSocket('wss://refine.video/candles/');
 
       // Обрабатываем получение сообщений от WebSocket сервера
       socket.onmessage = (event) => {

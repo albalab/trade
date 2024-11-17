@@ -1,27 +1,15 @@
 <template>
   <div style="background: white; overflow: hidden;">
 
-    <div style="background: rgba(255, 0, 0, 0.3); padding: 10px;">Срочно покупай!</div>
-
-    <div style="padding: 10px;"><button>Купить лимиткой</button></div>
-
     <h2>Real-time Order Book Data</h2>
 
     {{ globalCounter }}<br>
 
 
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr;">
       <div>
-        <h3>Сортировка по названиям</h3>
-        <ul>
-          <li v-for="(value, key) in sortedByName" :key="key">
-            {{ key }}: {{ value }}
-          </li>
-        </ul>
-      </div>
-      <div>
-        <h3>Сортировка по числу</h3>
+        <h3>Сортировка по накопленному</h3>
         <ul>
           <li v-for="(value, key) in sortedByValue" :key="key">
             {{ key }}: {{ value }}
@@ -29,7 +17,7 @@
         </ul>
       </div>
       <div>
-        <h3>Сортировка статистики по последним 1000</h3>
+        <h3>Сортировка по окну</h3>
         <ul>
           <li v-for="(value, key) in sortedByValueRange" :key="key">
             {{ key }}: {{ value }}

@@ -1,9 +1,9 @@
 <template>
   <div id="app" class="ttrade-app">
 
-    <div v-if="receivedMessage">
+<!--    <div v-if="receivedMessage">
       <p>{{ receivedMessage }}</p>
-    </div>
+    </div>-->
 
     <router-view />
 
@@ -45,6 +45,13 @@ export default {
 </script>
 
 <style>
+html, body{
+  padding: 0;
+  margin: 0;
+  font-family: 'Tahoma';
+  font-size: 12px;
+}
+
 .ttrade-app{
   background: white;
 }

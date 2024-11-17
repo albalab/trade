@@ -5,6 +5,14 @@
     <div>tradesCountBuy: {{tradesCountBuy}}</div>
     <div>tradesCountSell: {{tradesCountSell}}</div>
 
+    <div style="float: left; width: 200px; border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
+      Топ 10 тикеров с наибольшим изменением последней цены
+      <div v-for="item in percentageDifferencesSorted.slice(0,10)" :key="item.ticker">
+        {{ item.ticker }}: {{ item.difference }}%
+      </div>
+    </div>
+
+
     <!-- All Trades Statistics with Buy/Sell Comparison -->
     <h3>Trade History Statistics (All):</h3>
     <div class="container" style="max-width: 200px;">
@@ -188,11 +196,38 @@ export default {
 
       staticHistory: false,
       //tickerStats: {}  // Новый объект для хранения статистики по каждому тикеру
+
+      collectedLastPrices: {}, // Хранилище для коллекции последних цен
+      maxLength: 100, // Максимальная длина массива для каждого тикера
     };
   },
 
 
   computed: {
+
+    percentageDifferencesSorted() {
+      return Object.entries(this.percentageDifferences)
+          .sort(([, a], [, b]) => b - a)
+          .map(([ticker, difference]) => ({ ticker, difference }));
+    },
+
+    percentageDifferences() {
+      const differences = {};
+
+      for (const [ticker, prices] of Object.entries(this.collectedLastPrices)) {
+        if (prices.length === 0) {
+          differences[ticker] = null;
+          continue;
+        }
+
+        const min = Math.min(...prices);
+        const max = Math.max(...prices);
+
+        differences[ticker] = min === max ? 0 : ((max - min) / min * 100).toFixed(2);
+      }
+
+      return differences;
+    },
 
     marketSummary() {
       const summary = {};
@@ -221,6 +256,28 @@ export default {
 
   methods: {
     sendLimitOrder: importedSendLimitOrder,
+
+    collectBuyTradeData(trades) {
+      const updatedLastPrices = { ...this.collectedLastPrices };
+
+      trades.forEach((trade) => {
+        if (trade.side !== "buy") return; // Пропускаем сделки не на покупку
+
+        const { ticker, price } = trade;
+
+        if (!updatedLastPrices[ticker]) {
+          updatedLastPrices[ticker] = [];
+        }
+
+        updatedLastPrices[ticker].push(price);
+
+        if (updatedLastPrices[ticker].length > this.maxLength) {
+          updatedLastPrices[ticker] = updatedLastPrices[ticker].slice(-this.maxLength);
+        }
+      });
+
+      this.collectedLastPrices = updatedLastPrices;
+    },
 
     updateTrades() {
       setTimeout(() => {
@@ -283,6 +340,9 @@ export default {
         this.tradesCountBuy = localTradesCountBuy;
         this.tradesCountSell = localTradesCountSell;
         this.tickerStats = localTickerStats; // Замена тикерной статистики целиком
+
+        // Обновление только для сделок на покупку
+        this.collectBuyTradeData(trades);
 
         // Обновление общей статистики в конце
         this.updateTradeHistory();

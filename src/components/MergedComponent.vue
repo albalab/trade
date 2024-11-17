@@ -1,38 +1,47 @@
 <template>
-  <div>
+  <div class="panels-container">
+
+    <div style="background: rgba(255, 0, 0, 0.3); padding: 10px;">Срочно покупай!</div>
+
+    <div style="padding: 10px;"><button>Купить лимиткой</button></div>
+
     <div style="margin: 0 0 10px;">
       <button @click="resetCache">Reset Cache</button>
     </div>
+
     <input type="text" v-model="selectedTicker"/><br>
     <div style="padding: 10px;">
       {{ cachedData[selectedTicker] }}<br>
     </div>
 
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr;">
-      <div class="items">
-        <div class="items-wrap"
-             v-for="(item,key) in sortedBuyVolume"
-             :key="item.id">
-          <div class="item" style="width: 60px;">{{key}}:</div>
-          <div class="item">{{item?.lastClosePrice}}</div>
-          <div class="item">{{item?.lastClosePriceLevel}}</div>
-          <div class="item" :style="{color: item?.lastTradeSide === 'buy' ? 'green' : 'red' }">{{item?.lastTradeSide}}</div>
-          <div class="item" :style="{color: 'green'}">{{item?.buyVolume}}</div>
-          <div class="item" :style="{color: 'red'}">{{item?.sellVolume}}</div>
+    <div class="panels-grid">
+
+      <div class="panel">
+        <div class="items">
+          <div class="items-wrap"
+               v-for="(item,key) in sortedBuyVolume"
+               :key="item.id">
+            <div class="item" style="width: 60px;">{{key}}:</div>
+            <div class="item">{{item?.lastClosePrice}}</div>
+            <div class="item">{{item?.lastClosePriceLevel}}</div>
+            <div class="item" :style="{color: item?.lastTradeSide === 'buy' ? 'green' : 'red' }">{{item?.lastTradeSide}}</div>
+            <div class="item" :style="{color: 'green'}">{{item?.buyVolume}}</div>
+            <div class="item" :style="{color: 'red'}">{{item?.sellVolume}}</div>
+          </div>
         </div>
       </div>
 
-      <div>
+      <div class="panel">
         <AlorTrades @update-trades="updateTrades"/>
       </div>
-      <div>
+      <div class="panel">
         <AlorOrderbooks @update-orderbooks="updateOrderbooks"/>
       </div>
-      <div>
+      <div class="panel">
         <AlorCandles @update-candles="updateCandles"/>
       </div>
-      <div>
+      <div class="panel">
         <AlorQuotes @update-quotes="updateQuotes"/>
       </div>
     </div>
@@ -135,6 +144,23 @@ export default {
 </script>
 
 <style>
+
+.panels-container{
+  padding: 20px;
+  background: #e5e5e5;
+}
+.panels-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+.panel{
+  margin: 4px;
+  padding: 10px;
+  border: solid 1px #ccc;
+  border-radius: 6px;
+  background: white;
+}
+
 .items{
   display: table;
 }
