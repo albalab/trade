@@ -140,7 +140,7 @@ export default {
     },
 
     connectToWebSocket() {
-      const socket = new WebSocket("ws://165.227.71.25:5555/");
+      const socket = new WebSocket('wss://refine.video/quotes/');
 
       socket.onmessage = (event) => {
         const quotes = JSON.parse(event.data);

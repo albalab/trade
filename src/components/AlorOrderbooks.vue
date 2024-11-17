@@ -276,7 +276,7 @@ export default {
 
     connectToWebSocket() {
       // Устанавливаем соединение с WebSocket сервером
-      const socket = new WebSocket('ws://165.227.71.25:2506');
+      const socket = new WebSocket('wss://refine.video/orderbooks/');
 
       // Обрабатываем получение сообщений от WebSocket сервера
       socket.onmessage = (event) => {

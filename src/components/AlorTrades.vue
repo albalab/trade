@@ -287,7 +287,7 @@ export default {
     },
 
     connectToWebSocket() {
-      const socket = new WebSocket('ws://165.227.71.25:4444');
+      const socket = new WebSocket('wss://refine.video/trades/');
       socket.onmessage = (event) => {
         const trades = JSON.parse(event.data);
         if (!Array.isArray(trades)) return;
