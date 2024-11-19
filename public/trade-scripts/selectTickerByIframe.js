@@ -1,3 +1,3 @@
-window.addEventListener("selectTickerMessage", (event) => {
-    console.log("selectTickerMessage", event.data);
+window.addEventListener("selecttickermessage", (event) => {
+    console.log("selecttickermessage", event.data);
 });
