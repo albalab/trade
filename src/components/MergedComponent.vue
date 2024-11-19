@@ -3,7 +3,14 @@
 
     <div style="background: rgba(255, 0, 0, 0.3); padding: 10px;">Срочно покупай!</div>
 
-    <div style="padding: 10px;"><button>Купить лимиткой</button></div>
+    <div style="padding: 10px;">
+      <input v-model="priceOrder" placeholder="price"><br>
+      <input v-model="tickerOrder" placeholder="ticker"><br>
+      <input v-model="sideOrder" placeholder="side"><br>
+      <button @click="sendLimitOrder(1, priceOrder, tickerOrder, 'MOEX', sideOrder, 'D88141')">
+        Отправить лимитный ордер
+      </button>
+    </div>
 
     <div style="margin: 0 0 10px;">
       <button @click="resetCache">Reset Cache</button>
@@ -49,6 +56,7 @@
 </template>
 
 <script>
+import { sendLimitOrder as importedSendLimitOrder } from '../modules/LimitOrderModule.js';
 import AlorTrades from './AlorTrades.vue';
 import AlorOrderbooks from './AlorOrderbooks.vue';
 import AlorCandles from './AlorCandles.vue';
@@ -81,6 +89,10 @@ export default {
 
   data() {
     return {
+
+      sideOrder: 'buy',
+      priceOrder: null,
+      tickerOrder: '',
 
       globalData: {},
       selectedTicker: 'SBER',
@@ -115,6 +127,8 @@ export default {
     updateQuotes(quotes) {
       this.globalData.quotes = quotes;
     },
+
+    sendLimitOrder: importedSendLimitOrder,
 
     updateCachedData() {
       const data = this.globalData;

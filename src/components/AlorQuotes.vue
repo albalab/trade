@@ -6,29 +6,26 @@
       {{ item }}
     </div>
 
-    <div style="float: left; width: 200px; border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
+    <div style="float: left; border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Топ 10 тикеров с наибольшим изменением последней цены
       <div v-for="item in percentageDifferencesSorted.slice(0,10)" :key="item.ticker">
         {{ item.ticker }}: {{ item.difference }}%
       </div>
     </div>
 
-    <div style="float: left; width: 200px; height: 500px; overflow: hidden; padding: 10px; border: solid 1px #ccc;">
+    <div style="float: left; height: 500px; overflow: hidden; padding: 10px; border: solid 1px #ccc;">
       Статистика распределения количества котировок по тикерам
-      <div style="float: left; width: 200px; height: 500px; overflow: hidden; padding: 10px; border: solid 1px #ccc;">
-        Статистика распределения количества котировок по тикерам
-        <div v-for="(quotes, ticker) in groupedQuotes"
-             :key='quotes.id'
-             style="display: table-row;">
-          <div style="display: table-cell; width: 60px;">{{ticker}}:</div>
+      <div v-for="(quotes, ticker) in groupedQuotes"
+           :key='quotes.id'
+           style="display: table-row;">
+        <div style="display: table-cell; width: 60px;">{{ticker}}:</div>
 
-          <div style="display: table-cell; width: 80px">{{quotes[quotes.length-1].last_price}}</div>
+        <div style="display: table-cell; width: 80px">{{quotes[quotes.length-1].last_price}}</div>
 
-          <div style="display: table-cell; width: 100px;">
-            <div style="position: relative;">
-              <div style="position: absolute; height: 2px; background: black;"
-                   :style="{ width: `${10*quotes.length}%` }"></div>
-            </div>
+        <div style="display: table-cell; width: 100px;">
+          <div style="position: relative;">
+            <div style="position: absolute; height: 2px; background: black;"
+                 :style="{ width: `${10*quotes.length}%` }"></div>
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@
     <div>tradesCountBuy: {{tradesCountBuy}}</div>
     <div>tradesCountSell: {{tradesCountSell}}</div>
 
-    <div style="width: 200px; border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
+    <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Топ 10 тикеров с наибольшим изменением последней цены
       <div v-for="item in percentageDifferencesSorted.slice(0,10)" :key="item.ticker">
         {{ item.ticker }}: {{ item.difference }}%
@@ -78,12 +78,7 @@
       </div>
     </div>
 
-    <input v-model="priceOrder" placeholder="price"><br>
-    <input v-model="tickerOrder" placeholder="ticker"><br>
-    <input v-model="sideOrder" placeholder="side"><br>
-    <button @click="sendLimitOrder(1, priceOrder, tickerOrder, 'MOEX', sideOrder, 'D88141')">
-      Отправить лимитный ордер
-    </button>
+
 
     <!-- Sell Trades Statistics -->
     <h3>Trade History Statistics (Sell):</h3>
@@ -106,7 +101,7 @@
 
 <script>
 
-import { sendLimitOrder as importedSendLimitOrder } from '../modules/LimitOrderModule.js';
+
 import { tickersSteps } from '../tickersSteps.js';
 
 import { ref, onMounted, onUnmounted } from 'vue';
@@ -255,7 +250,6 @@ export default {
   },
 
   methods: {
-    sendLimitOrder: importedSendLimitOrder,
 
     collectBuyTradeData(trades) {
       const updatedLastPrices = { ...this.collectedLastPrices };
