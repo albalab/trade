@@ -231,12 +231,12 @@ export default {
 
         summary[ticker].orderbookBestBidPriceLevel = Math.round(bids[0]?.price/this.tickersSteps[ticker]) || null;
         summary[ticker].orderbookBestAskPriceLevel = Math.round(asks[0]?.price/this.tickersSteps[ticker]) || null;
-        summary[ticker].orderbookSpreadLevel = Math.round(summary[ticker].bestAskPriceLevel - summary[ticker].bestBidPriceLevel);
+        summary[ticker].orderbookSpreadLevel = Math.round(summary[ticker].orderbookBestAskPriceLevel - summary[ticker].orderbookBestBidPriceLevel);
 
         summary[ticker].orderbookBestBidPrice = bids[0]?.price || null;
         summary[ticker].orderbookBestAskPrice = asks[0]?.price || null;
         summary[ticker].orderbookSpread = (asks[0]?.price || 0) - (bids[0]?.price || 0);
-        summary[ticker].orderbookSpreadPercent = summary[ticker].spread / ((asks[0]?.price + bids[0]?.price) / 2) * 100;
+        summary[ticker].orderbookSpreadPercent = summary[ticker].orderbookSpread / ((asks[0]?.price + bids[0]?.price) / 2) * 100;
         summary[ticker].orderbookTimestamp = timestamp;
 
         Object.entries(orderbook).forEach(([key, value]) => {
