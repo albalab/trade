@@ -310,7 +310,7 @@ export default {
 
     selectTicker(ticker){
       window.parent.postMessage({
-        'selecttickermessage': ticker
+        'selectTicker': ticker
       }, "*");
 
       //console.log('Select ticker', ticker);
