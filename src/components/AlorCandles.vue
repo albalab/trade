@@ -2,17 +2,8 @@
   <div style="background: white; overflow: hidden;">
     <h2>Real-time Candlestick Data</h2>
 
-    {{candles[candles.length-1]}}<br>
-
     <div v-for="item in cacheCandles" :key="item.id">
       {{item}}
-    </div>
-
-    <div style="float: left; border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
-      Процентная разница между минимальной и максимальной ценой закрытия за последние 100 свечей
-      <div v-for="item in percentageDifferencesSorted.splice(0,10)" :key="item.id">
-        {{item.ticker}}: {{item.difference}}%
-      </div>
     </div>
 
     <div style="float: left; height: 500px; overflow: hidden; padding: 10px; border: solid 1px #ccc;">
@@ -64,33 +55,6 @@ export default {
     };
   },
   computed: {
-
-    percentageDifferencesSorted() {
-      // Преобразуем в массив и сортируем по значению разницы
-      return Object.entries(this.percentageDifferences)
-          .sort(([, a], [, b]) => b - a) // Сортировка по убыванию значений
-          .map(([ticker, difference]) => ({ ticker, difference }));
-    },
-
-    percentageDifferences() {
-      const differences = {};
-
-      for (const [ticker, prices] of Object.entries(this.collectedClosePrice)) {
-        if (prices.length === 0) {
-          differences[ticker] = null;
-          continue;
-        }
-
-        const min = Math.min(...prices);
-        const max = Math.max(...prices);
-
-        // Проверка, чтобы избежать деления на ноль
-        differences[ticker] = min === max ? 0 : ((max - min) / min * 100).toFixed(2);
-      }
-
-      return differences;
-    },
-
 
     marketSummary() {
       const summary = {};

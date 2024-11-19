@@ -6,17 +6,8 @@
     <div>quotes{{quotes[0]?.description}}</div>
     <div>{{quotes[0]?.prev_close_price}}</div>
 
-    {{quotes[quotes.length-1]}}
-
     <div v-for="item in cacheQuotes" :key="item.id">
       {{ item }}
-    </div>
-
-    <div style="float: left; border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
-      Топ 10 тикеров с наибольшим изменением последней цены
-      <div v-for="item in percentageDifferencesSorted.slice(0,10)" :key="item.ticker">
-        {{ item.ticker }}: {{ item.difference }}%
-      </div>
     </div>
 
     <div style="float: left; height: 500px; overflow: hidden; padding: 10px; border: solid 1px #ccc;">
@@ -57,11 +48,6 @@ export default {
     };
   },
   computed: {
-    percentageDifferencesSorted() {
-      return Object.entries(this.percentageDifferences)
-          .sort(([, a], [, b]) => b - a)
-          .map(([ticker, difference]) => ({ ticker, difference }));
-    },
 
     marketSummary() {
       const summary = {};
@@ -83,24 +69,6 @@ export default {
       });
 
       return summary;
-    },
-
-    percentageDifferences() {
-      const differences = {};
-
-      for (const [ticker, prices] of Object.entries(this.collectedLastPrices)) {
-        if (prices.length === 0) {
-          differences[ticker] = null;
-          continue;
-        }
-
-        const min = Math.min(...prices);
-        const max = Math.max(...prices);
-
-        differences[ticker] = min === max ? 0 : ((max - min) / min * 100).toFixed(2);
-      }
-
-      return differences;
     },
 
     groupedQuotes() {

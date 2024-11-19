@@ -30,11 +30,11 @@
                v-for="(item,key) in sortedBuyVolume"
                :key="item.id">
             <div class="item" style="width: 60px;">{{key}}:</div>
-            <div class="item">{{item?.lastClosePrice}}</div>
-            <div class="item">{{item?.lastClosePriceLevel}}</div>
-            <div class="item" :style="{color: item?.lastTradeSide === 'buy' ? 'green' : 'red' }">{{item?.lastTradeSide}}</div>
-            <div class="item" :style="{color: 'green'}">{{item?.buyVolume}}</div>
-            <div class="item" :style="{color: 'red'}">{{item?.sellVolume}}</div>
+            <div class="item">{{item?.candleLastClosePrice}}</div>
+            <div class="item">{{item?.candleLastClosePriceLevel}}</div>
+            <div class="item" :style="{color: item?.tradeLastSide === 'buy' ? 'green' : 'red' }">{{item?.tradeLastSide}}</div>
+            <div class="item" :style="{color: 'green'}">{{item?.tradeBuyVolume}}</div>
+            <div class="item" :style="{color: 'red'}">{{item?.tradeSellVolume}}</div>
           </div>
         </div>
       </div>

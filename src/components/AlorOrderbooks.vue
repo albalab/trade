@@ -5,9 +5,6 @@
 
     {{ globalCounter }}<br>
 
-
-    {{orderBookData[orderBookData.length-1]}}<br>
-
     <div style="display: grid; grid-template-columns: 1fr 1fr;">
       <div>
         <h3>Сортировка по накопленному</h3>

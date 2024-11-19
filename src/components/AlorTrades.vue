@@ -5,15 +5,26 @@
     <div>tradesCountBuy: {{tradesCountBuy}}</div>
     <div>tradesCountSell: {{tradesCountSell}}</div>
 
-    {{trades[trades.length-1]}}<br>
-
     <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Топ 10 тикеров с наибольшим изменением последней цены
       <div v-for="item in percentageDifferencesSorted.slice(0,10)" :key="item.ticker">
-        {{ item.ticker }}: {{ item.difference }}%
+        <span class="select-ticker"
+              @click="selectTicker(item.ticker)">
+          {{ item.ticker }}
+        </span>:
+        {{ item.difference.percentage }}% {{ item.difference.min }} {{ item.difference.max }}
       </div>
     </div>
 
+    <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
+      Топ 10 тикеров с наибольшим изменением последней цены (Продажи)
+      <div v-for="item in percentageDifferencesSellSorted.slice(0,10)" :key="item.ticker">
+        <span class="select-ticker"
+              @click="selectTicker(item.ticker)">{{ item.ticker }}
+        </span>:
+        {{ item.difference.percentage }}% {{ item.difference.min }} {{ item.difference.max }}
+      </div>
+    </div>
 
     <!-- All Trades Statistics with Buy/Sell Comparison -->
     <h3>Trade History Statistics (All):</h3>
@@ -142,14 +153,15 @@ export default {
     };
 
     // Запускаем таймер для сохранения состояния каждые 5 секунд
-    let saveInterval = null;
+
     onMounted(() => {
-      saveInterval = setInterval(saveState, 15000); // Сохраняем каждые 15 секунд
+      setInterval(saveState, 15000); // Сохраняем каждые 15 секунд
     });
 
     // Очищаем таймер при размонтировании компонента
     onUnmounted(() => {
-      clearInterval(saveInterval);
+      //clearInterval(saveInterval);
+      //clearInterval(this.clearDataInterval);
     });
 
     return {
@@ -165,6 +177,9 @@ export default {
 
   data() {
     return {
+
+      expirationTime: 5000,
+
       tickersSteps,
 
       sideOrder: 'buy',
@@ -195,6 +210,7 @@ export default {
       //tickerStats: {}  // Новый объект для хранения статистики по каждому тикеру
 
       collectedLastPrices: {}, // Хранилище для коллекции последних цен
+      collectedLastPricesSell: {},
       maxLength: 100, // Максимальная длина массива для каждого тикера
     };
   },
@@ -203,24 +219,45 @@ export default {
   computed: {
 
     percentageDifferencesSorted() {
-      return Object.entries(this.percentageDifferences)
-          .sort(([, a], [, b]) => b - a)
-          .map(([ticker, difference]) => ({ ticker, difference }));
+      return Object.entries(this.buyPercentageDifferences)
+          .sort(([, a], [, b]) => b.percentage - a.percentage) // Сортируем по `percentage`
+          .map(([ticker, difference]) => ({ ticker, difference })); // Возвращаем объект с тикером и данными
     },
 
-    percentageDifferences() {
+    percentageDifferencesSellSorted() {
+      return Object.entries(this.sellPercentageDifferences)
+          .sort(([, a], [, b]) => b.percentage - a.percentage) // Сортируем по `percentage`
+          .map(([ticker, difference]) => ({ ticker, difference })); // Возвращаем объект с тикером и данными
+    },
+
+    sellPercentageDifferences() {
       const differences = {};
 
-      for (const [ticker, prices] of Object.entries(this.collectedLastPrices)) {
-        if (prices.length === 0) {
-          differences[ticker] = null;
+      for (const [ticker, { min, max }] of Object.entries(this.collectedLastPricesSell)) {
+        if (!min || !max || min === max) {
+          differences[ticker] = { percentage: 0, min, max };
           continue;
         }
 
-        const min = Math.min(...prices);
-        const max = Math.max(...prices);
+        const percentage = ((max - min) / min * 100).toFixed(2);
+        differences[ticker] = { percentage, min, max };
+      }
 
-        differences[ticker] = min === max ? 0 : ((max - min) / min * 100).toFixed(2);
+      return differences;
+    },
+
+
+    buyPercentageDifferences() {
+      const differences = {};
+
+      for (const [ticker, { min, max }] of Object.entries(this.collectedLastPrices)) {
+        if (!min || !max || min === max) {
+          differences[ticker] = { percentage: 0, min, max };
+          continue;
+        }
+
+        const percentage = ((max - min) / min * 100).toFixed(2);
+        differences[ticker] = { percentage, min, max };
       }
 
       return differences;
@@ -271,7 +308,45 @@ export default {
       return obj;
     },*/
 
+    selectTicker(ticker){
+      window.parent.postMessage({
+        selectTickerMessage: ticker
+      }, "*");
+
+      console.log('Select ticker', ticker);
+    },
+
+    collectSellTradeData(trades) {
+      const now = Date.now(); // Текущее время в миллисекундах
+      const updatedLastPricesSell = { ...this.collectedLastPricesSell };
+
+      trades.forEach((trade) => {
+        if (trade.side !== "sell") return; // Пропускаем сделки не на продажу
+
+        const { ticker, price } = trade;
+
+        // Если тикера еще нет, создаем запись с массивом цен и таймстемпом
+        if (!updatedLastPricesSell[ticker]) {
+          updatedLastPricesSell[ticker] = { prices: [], lastUpdate: now, min: price, max: price };
+        }
+
+        // Обновляем массив цен, время последнего обновления, минимальную и максимальную цену
+        updatedLastPricesSell[ticker].prices.push(price);
+        updatedLastPricesSell[ticker].lastUpdate = now;
+        updatedLastPricesSell[ticker].min = Math.min(updatedLastPricesSell[ticker].min, price);
+        updatedLastPricesSell[ticker].max = Math.max(updatedLastPricesSell[ticker].max, price);
+
+        // Ограничиваем длину массива до maxLength
+        if (updatedLastPricesSell[ticker].prices.length > this.maxLength) {
+          updatedLastPricesSell[ticker].prices.shift(); // Удаляем старейший элемент
+        }
+      });
+
+      this.collectedLastPricesSell = updatedLastPricesSell;
+    },
+
     collectBuyTradeData(trades) {
+      const now = Date.now(); // Текущее время в миллисекундах
       const updatedLastPrices = { ...this.collectedLastPrices };
 
       trades.forEach((trade) => {
@@ -279,18 +354,42 @@ export default {
 
         const { ticker, price } = trade;
 
+        // Если тикера еще нет, создаем запись с массивом цен и таймстемпом
         if (!updatedLastPrices[ticker]) {
-          updatedLastPrices[ticker] = [];
+          updatedLastPrices[ticker] = { prices: [], lastUpdate: now, min: price, max: price };
         }
 
-        updatedLastPrices[ticker].push(price);
+        // Обновляем массив цен, время последнего обновления, минимальную и максимальную цену
+        updatedLastPrices[ticker].prices.push(price);
+        updatedLastPrices[ticker].lastUpdate = now;
+        updatedLastPrices[ticker].min = Math.min(updatedLastPrices[ticker].min, price);
+        updatedLastPrices[ticker].max = Math.max(updatedLastPrices[ticker].max, price);
 
-        if (updatedLastPrices[ticker].length > this.maxLength) {
-          updatedLastPrices[ticker] = updatedLastPrices[ticker].slice(-this.maxLength);
+        // Ограничиваем длину массива до maxLength
+        if (updatedLastPrices[ticker].prices.length > this.maxLength) {
+          updatedLastPrices[ticker].prices.shift(); // Удаляем старейший элемент
         }
       });
 
       this.collectedLastPrices = updatedLastPrices;
+    },
+
+    clearOldData() {
+      const now = Date.now();
+
+      // Очистка данных покупок
+      for (const ticker in this.collectedLastPrices) {
+        if (now - this.collectedLastPrices[ticker].lastUpdate > this.expirationTime) {
+          delete this.collectedLastPrices[ticker];
+        }
+      }
+
+      // Очистка данных продаж
+      for (const ticker in this.collectedLastPricesSell) {
+        if (now - this.collectedLastPricesSell[ticker].lastUpdate > this.expirationTime) {
+          delete this.collectedLastPricesSell[ticker];
+        }
+      }
     },
 
     updateTrades() {
@@ -348,6 +447,7 @@ export default {
 
           // Обновление статистики для тикера в локальных данных
           this.updateTradeHistoryForTicker(trade, localTickerStats);
+
         });
 
         // Ограничение размера массива trades
@@ -361,6 +461,7 @@ export default {
         this.tickerStats = localTickerStats; // Замена тикерной статистики целиком
 
         // Обновление только для сделок на покупку
+        this.collectSellTradeData(trades);
         this.collectBuyTradeData(trades);
 
         // Обновление общей статистики в конце
@@ -459,6 +560,8 @@ export default {
   mounted() {
     this.connectToWebSocket();
     this.updateTrades();
+
+    this.clearDataInterval = setInterval(this.clearOldData, this.expirationTime);
   },
 
 };
@@ -505,5 +608,8 @@ li {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 11px;
+}
+.select-ticker{
+  cursor: pointer;
 }
 </style>
