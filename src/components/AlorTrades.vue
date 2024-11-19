@@ -234,13 +234,19 @@ export default {
         const { ticker, price, qty, side } = trade;
         summary[ticker] = summary[ticker] || {};
 
-        summary[ticker].lastTradePriceLevel = Math.round(price / this.tickersSteps[ticker]);
-        summary[ticker].lastTradePrice = price;
-        summary[ticker].lastTradeVolume = qty;
-        summary[ticker].lastTradeSide = side;
+        summary[ticker].tradeLastPriceLevel = Math.round(price / this.tickersSteps[ticker]);
+        summary[ticker].tradeLastPrice = price;
+        summary[ticker].tradeLastVolume = qty;
+        summary[ticker].tradeLastSide = side;
 
-        summary[ticker].buyVolume = (summary[ticker].buyVolume || 0) + (side === "buy" ? qty : 0);
-        summary[ticker].sellVolume = (summary[ticker].sellVolume || 0) + (side === "sell" ? qty : 0);
+        summary[ticker].tradeBuyVolume = (summary[ticker].buyVolume || 0) + (side === "buy" ? qty : 0);
+        summary[ticker].tradeSellVolume = (summary[ticker].sellVolume || 0) + (side === "sell" ? qty : 0);
+
+        Object.entries(trade).forEach(([key, value]) => {
+          const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+          summary[ticker][`trade${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
+        });
+
       });
 
       return summary;
@@ -253,7 +259,7 @@ export default {
 
   methods: {
 
-    extendObject(obj, prefix) {
+    /*extendObject(obj, prefix) {
       function toCamelCase(str) {
         return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
       }
@@ -263,7 +269,7 @@ export default {
         obj[newKey] = obj[key];
       });
       return obj;
-    },
+    },*/
 
     collectBuyTradeData(trades) {
       const updatedLastPrices = { ...this.collectedLastPrices };
@@ -311,9 +317,9 @@ export default {
 
         trades.forEach(trade => {
 
-          const tradeExtended = this.extendObject(trade, "trade");
+          //const tradeExtended = this.extendObject(trade, "trade");
 
-          localTrades.push(tradeExtended);
+          localTrades.push(trade);
           localTotalCountTrades++;
 
           if (trade.side === 'buy') {

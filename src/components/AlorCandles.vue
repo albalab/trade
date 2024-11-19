@@ -97,13 +97,19 @@ export default {
 
       // Обработка данных свечей
       this.candles.forEach((candle) => {
-        const { ticker, close, volume, time } = candle;
+        const { ticker, close } = candle;
         summary[ticker] = summary[ticker] || {};
 
-        summary[ticker].lastClosePriceLevel = Math.round(close/this.tickersSteps[ticker]);
-        summary[ticker].lastClosePrice = close;
-        summary[ticker].candleVolume = volume;
-        summary[ticker].timestampCandle = time;
+        summary[ticker].candleLastClosePriceLevel = Math.round(close/this.tickersSteps[ticker]);
+
+        Object.entries(candle).forEach(([key, value]) => {
+          const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+          summary[ticker][`candle${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
+        });
+
+        //summary[ticker].lastClosePrice = close;
+        //summary[ticker].candleVolume = volume;
+        //summary[ticker].timestampCandle = time;
       });
 
       return summary;
@@ -268,8 +274,7 @@ export default {
                 newTickerStats[candle.ticker] = 1;
               }
 
-              const candleExtended = this.extendObject(candle, "candle");
-              newCandles.push(candleExtended);
+              newCandles.push(candle);
 
               // Сохраняем только последние 100 свечей для оптимизации
               if (newCandles.length > 500) {

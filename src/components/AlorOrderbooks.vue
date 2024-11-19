@@ -229,15 +229,21 @@ export default {
         const { ticker, bids, asks, timestamp } = orderbook;
         summary[ticker] = summary[ticker] || {};
 
-        summary[ticker].bestBidPriceLevel = Math.round(bids[0]?.price/this.tickersSteps[ticker]) || null;
-        summary[ticker].bestAskPriceLevel = Math.round(asks[0]?.price/this.tickersSteps[ticker]) || null;
-        summary[ticker].spreadLevel = Math.round(summary[ticker].bestAskPriceLevel - summary[ticker].bestBidPriceLevel);
+        summary[ticker].orderbookBestBidPriceLevel = Math.round(bids[0]?.price/this.tickersSteps[ticker]) || null;
+        summary[ticker].orderbookBestAskPriceLevel = Math.round(asks[0]?.price/this.tickersSteps[ticker]) || null;
+        summary[ticker].orderbookSpreadLevel = Math.round(summary[ticker].bestAskPriceLevel - summary[ticker].bestBidPriceLevel);
 
-        summary[ticker].bestBidPrice = bids[0]?.price || null;
-        summary[ticker].bestAskPrice = asks[0]?.price || null;
-        summary[ticker].spread = (asks[0]?.price || 0) - (bids[0]?.price || 0);
-        summary[ticker].spreadPercent = summary[ticker].spread / ((asks[0]?.price + bids[0]?.price) / 2) * 100;
-        summary[ticker].timestampOrderbook = timestamp;
+        summary[ticker].orderbookBestBidPrice = bids[0]?.price || null;
+        summary[ticker].orderbookBestAskPrice = asks[0]?.price || null;
+        summary[ticker].orderbookSpread = (asks[0]?.price || 0) - (bids[0]?.price || 0);
+        summary[ticker].orderbookSpreadPercent = summary[ticker].spread / ((asks[0]?.price + bids[0]?.price) / 2) * 100;
+        summary[ticker].orderbookTimestamp = timestamp;
+
+        Object.entries(orderbook).forEach(([key, value]) => {
+          const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+          summary[ticker][`orderbook${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
+        });
+
       });
 
       return summary;
@@ -268,7 +274,7 @@ export default {
 
   methods: {
 
-    extendObject(obj, prefix) {
+    /*extendObject(obj, prefix) {
       function toCamelCase(str) {
         return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
       }
@@ -278,7 +284,7 @@ export default {
         obj[newKey] = obj[key];
       });
       return obj;
-    },
+    },*/
 
     updateOrderbooks() {
       setTimeout(() => {
@@ -307,9 +313,9 @@ export default {
             // Проверяем, содержит ли каждый объект в массиве нужные данные
             if (orderBook.ticker && orderBook.bids && orderBook.asks) {
 
-              const orderbookExtended = this.extendObject(orderBook, "orderbook");
+              //const orderbookExtended = this.extendObject(orderBook, "orderbook");
 
-              newOrderBookData.push(orderbookExtended);
+              newOrderBookData.push(orderBook);
 
               newGlobalCounter++;
               newOrderBookStats[orderBook.ticker] = (newOrderBookStats[orderBook.ticker] || 0) + 1;

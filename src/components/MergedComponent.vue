@@ -16,7 +16,9 @@
 
     <input type="text" v-model="selectedTicker"/><br>
     <div style="padding: 10px;">
-      {{ cachedData[selectedTicker] }}<br>
+      <div v-for="(item, key) in cachedData[selectedTicker]" :key="item?.id">
+        {{key}}: {{item}}
+      </div>
     </div>
 
 

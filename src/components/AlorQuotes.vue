@@ -68,12 +68,17 @@ export default {
 
       // Обработка данных котировок
       this.quotes.forEach((quote) => {
-        const { ticker, description, volume } = quote;
+        const { ticker } = quote;
         summary[ticker] = summary[ticker] || {};
 
+        Object.entries(quote).forEach(([key, value]) => {
+          const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+          summary[ticker][`quote${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
+        });
+
         //summary[ticker].lastClosePrice = close;
-        summary[ticker].quoteDescription = description;
-        summary[ticker].quoteVolume = volume;
+        //summary[ticker].quoteDescription = description;
+        //summary[ticker].quoteVolume = volume;
         //summary[ticker].timestampCandle = time;
       });
 
@@ -169,7 +174,7 @@ export default {
       }, 500);
     },
 
-    extendObject(obj, prefix) {
+    /*extendObject(obj, prefix) {
       function toCamelCase(str) {
         return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
       }
@@ -179,7 +184,7 @@ export default {
         obj[newKey] = obj[key];
       });
       return obj;
-    },
+    },*/
 
     connectToWebSocket() {
       const socket = new WebSocket('wss://refine.video/quotes/');
@@ -203,8 +208,8 @@ export default {
                 newTickerStats[quote.ticker] = 1;
               }
 
-              const quoteExtended = this.extendObject(quote, "quote");
-              newQuotes.push(quoteExtended);
+              //const quoteExtended = this.extendObject(quote, "quote");
+              newQuotes.push(quote);
 
               if (newQuotes.length > 500) {
                 newQuotes.shift();
