@@ -5,6 +5,8 @@
     <div>tradesCountBuy: {{tradesCountBuy}}</div>
     <div>tradesCountSell: {{tradesCountSell}}</div>
 
+    {{trades[trades.length-1]}}<br>
+
     <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Топ 10 тикеров с наибольшим изменением последней цены
       <div v-for="item in percentageDifferencesSorted.slice(0,10)" :key="item.ticker">
@@ -251,6 +253,18 @@ export default {
 
   methods: {
 
+    extendObject(obj, prefix) {
+      function toCamelCase(str) {
+        return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      }
+      Object.keys(obj).forEach(key => {
+        const camelCaseKey = toCamelCase(key);
+        const newKey = `${prefix}${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`;
+        obj[newKey] = obj[key];
+      });
+      return obj;
+    },
+
     collectBuyTradeData(trades) {
       const updatedLastPrices = { ...this.collectedLastPrices };
 
@@ -275,7 +289,9 @@ export default {
 
     updateTrades() {
       setTimeout(() => {
-        this.$emit('update-trades', this.marketSummary);
+        //const mergedTrades = {...this.marketSummary, ...this.trades[this.trades.length-1]};
+
+        this.$emit('update-trades-summary', this.marketSummary);
         this.updateTrades();
       }, 200);
     },
@@ -294,7 +310,10 @@ export default {
         const localTickerStats = JSON.parse(JSON.stringify(this.tickerStats)); // Глубокая копия для избежания реактивности
 
         trades.forEach(trade => {
-          localTrades.push(trade);
+
+          const tradeExtended = this.extendObject(trade, "trade");
+
+          localTrades.push(tradeExtended);
           localTotalCountTrades++;
 
           if (trade.side === 'buy') {

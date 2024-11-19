@@ -2,6 +2,8 @@
   <div style="background: white; overflow: hidden;">
     <h2>Real-time Candlestick Data</h2>
 
+    {{candles[candles.length-1]}}<br>
+
     <div v-for="item in cacheCandles" :key="item.id">
       {{item}}
     </div>
@@ -164,9 +166,23 @@ export default {
 
   methods: {
 
+    extendObject(obj, prefix) {
+      function toCamelCase(str) {
+        return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      }
+      Object.keys(obj).forEach(key => {
+        const camelCaseKey = toCamelCase(key);
+        const newKey = `${prefix}${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`;
+        obj[newKey] = obj[key];
+      });
+      return obj;
+    },
+
     updateCandles() {
       setTimeout(() => {
-        this.$emit('update-candles', this.marketSummary);
+        //const mergedCandles = {...this.marketSummary, ...this.candles[this.candles.length-1]};
+        //console.log(this.marketSummary);
+        this.$emit('update-candles-summary', this.marketSummary);
         this.updateCandles();
       }, 200);
     },
@@ -252,7 +268,8 @@ export default {
                 newTickerStats[candle.ticker] = 1;
               }
 
-              newCandles.push(candle);
+              const candleExtended = this.extendObject(candle, "candle");
+              newCandles.push(candleExtended);
 
               // Сохраняем только последние 100 свечей для оптимизации
               if (newCandles.length > 500) {

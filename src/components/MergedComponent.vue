@@ -1,8 +1,6 @@
 <template>
   <div class="panels-container">
 
-    <div style="background: rgba(255, 0, 0, 0.3); padding: 10px;">Срочно покупай!</div>
-
     <div style="padding: 10px;">
       <input v-model="priceOrder" placeholder="price"><br>
       <input v-model="tickerOrder" placeholder="ticker"><br>
@@ -40,16 +38,16 @@
       </div>
 
       <div class="panel">
-        <AlorTrades @update-trades="updateTrades"/>
+        <AlorTrades @update-trades-summary="updateTrades"/>
       </div>
       <div class="panel">
-        <AlorOrderbooks @update-orderbooks="updateOrderbooks"/>
+        <AlorOrderbooks @update-orderbooks-summary="updateOrderbooks"/>
       </div>
       <div class="panel">
-        <AlorCandles @update-candles="updateCandles"/>
+        <AlorCandles @update-candles-summary="updateCandles"/>
       </div>
       <div class="panel">
-        <AlorQuotes @update-quotes="updateQuotes"/>
+        <AlorQuotes @update-quotes-summary="updateQuotes"/>
       </div>
     </div>
   </div>

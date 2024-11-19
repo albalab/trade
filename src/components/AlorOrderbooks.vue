@@ -6,6 +6,7 @@
     {{ globalCounter }}<br>
 
 
+    {{orderBookData[orderBookData.length-1]}}<br>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr;">
       <div>
@@ -267,9 +268,22 @@ export default {
 
   methods: {
 
+    extendObject(obj, prefix) {
+      function toCamelCase(str) {
+        return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      }
+      Object.keys(obj).forEach(key => {
+        const camelCaseKey = toCamelCase(key);
+        const newKey = `${prefix}${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`;
+        obj[newKey] = obj[key];
+      });
+      return obj;
+    },
+
     updateOrderbooks() {
       setTimeout(() => {
-        this.$emit('update-orderbooks', this.marketSummary);
+        //const mergedOrderbooks = {...this.marketSummary, ...this.orderBookData[this.orderBookData.length-1]};
+        this.$emit('update-orderbooks-summary', this.marketSummary);
         this.updateOrderbooks();
       }, 500);
     },
@@ -292,7 +306,10 @@ export default {
           orderBooks.forEach(orderBook => {
             // Проверяем, содержит ли каждый объект в массиве нужные данные
             if (orderBook.ticker && orderBook.bids && orderBook.asks) {
-              newOrderBookData.push(orderBook);
+
+              const orderbookExtended = this.extendObject(orderBook, "orderbook");
+
+              newOrderBookData.push(orderbookExtended);
 
               newGlobalCounter++;
               newOrderBookStats[orderBook.ticker] = (newOrderBookStats[orderBook.ticker] || 0) + 1;

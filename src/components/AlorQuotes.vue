@@ -2,6 +2,12 @@
   <div style="background: white; overflow: hidden;">
     <h2>Real-time Quotes Data</h2>
 
+    <div>quotesTicker: {{quotes[0]?.ticker}}</div>
+    <div>quotes{{quotes[0]?.description}}</div>
+    <div>{{quotes[0]?.prev_close_price}}</div>
+
+    {{quotes[quotes.length-1]}}
+
     <div v-for="item in cacheQuotes" :key="item.id">
       {{ item }}
     </div>
@@ -47,6 +53,7 @@ export default {
 
       collectedLastPrices: {}, // Хранилище для коллекции последних цен
       maxLength: 100, // Максимальная длина массива для каждого тикера
+
     };
   },
   computed: {
@@ -54,6 +61,23 @@ export default {
       return Object.entries(this.percentageDifferences)
           .sort(([, a], [, b]) => b - a)
           .map(([ticker, difference]) => ({ ticker, difference }));
+    },
+
+    marketSummary() {
+      const summary = {};
+
+      // Обработка данных котировок
+      this.quotes.forEach((quote) => {
+        const { ticker, description, volume } = quote;
+        summary[ticker] = summary[ticker] || {};
+
+        //summary[ticker].lastClosePrice = close;
+        summary[ticker].quoteDescription = description;
+        summary[ticker].quoteVolume = volume;
+        //summary[ticker].timestampCandle = time;
+      });
+
+      return summary;
     },
 
     percentageDifferences() {
@@ -114,6 +138,7 @@ export default {
   },
   mounted() {
     this.connectToWebSocket();
+    this.updateQuotes();
   },
   methods: {
     collectQuoteData(quotes) {
@@ -136,6 +161,26 @@ export default {
       this.collectedLastPrices = updatedLastPrices;
     },
 
+    updateQuotes() {
+      setTimeout(() => {
+        //const mergedOrderbooks = {...this.marketSummary, ...this.orderBookData[this.orderBookData.length-1]};
+        this.$emit('update-quotes-summary', this.marketSummary);
+        this.updateQuotes();
+      }, 500);
+    },
+
+    extendObject(obj, prefix) {
+      function toCamelCase(str) {
+        return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      }
+      Object.keys(obj).forEach(key => {
+        const camelCaseKey = toCamelCase(key);
+        const newKey = `${prefix}${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`;
+        obj[newKey] = obj[key];
+      });
+      return obj;
+    },
+
     connectToWebSocket() {
       const socket = new WebSocket('wss://refine.video/quotes/');
 
@@ -147,14 +192,19 @@ export default {
           const newTickerStats = { ...this.tickerStats };
 
           quotes.forEach((quote) => {
+
+            //const quote = this.extendQuote(_quote);
+
             if (quote.ticker && quote.last_price !== undefined) {
+
               if (newTickerStats[quote.ticker]) {
                 newTickerStats[quote.ticker]++;
               } else {
                 newTickerStats[quote.ticker] = 1;
               }
 
-              newQuotes.push(quote);
+              const quoteExtended = this.extendObject(quote, "quote");
+              newQuotes.push(quoteExtended);
 
               if (newQuotes.length > 500) {
                 newQuotes.shift();
