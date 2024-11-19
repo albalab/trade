@@ -310,10 +310,10 @@ export default {
 
     selectTicker(ticker){
       window.parent.postMessage({
-        selectTickerMessage: ticker
+        'selectTickerMessage': ticker
       }, "*");
 
-      console.log('Select ticker', ticker);
+      //console.log('Select ticker', ticker);
     },
 
     collectSellTradeData(trades) {
