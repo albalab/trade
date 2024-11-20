@@ -6,6 +6,28 @@
     <div>tradesCountSell: {{tradesCountSell}}</div>
 
     <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
+      Топ 10 выгодных сделок (Покупки)
+      <div v-for="(item, ticker) in advantageousBuyDifferences" :key="ticker">
+    <span class="select-ticker"
+          @click="selectTicker(ticker)">
+      {{ ticker }}
+    </span>:
+        {{ item.percentage }}% (Buy: {{ item.buyPrice }} → Sell: {{ item.sellPrice }})
+      </div>
+    </div>
+
+    <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
+      Топ 10 выгодных сделок (Продажи)
+      <div v-for="(item, ticker) in advantageousSellDifferences" :key="ticker">
+    <span class="select-ticker"
+          @click="selectTicker(ticker)">
+      {{ ticker }}
+    </span>:
+        {{ item.percentage }}% (Sell: {{ item.sellPrice }} → Buy: {{ item.buyPrice }})
+      </div>
+    </div>
+
+    <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Топ 10 тикеров с наибольшим изменением последней цены
       <div v-for="item in percentageDifferencesSorted.slice(0,10)" :key="item.ticker">
         <span class="select-ticker"
@@ -178,6 +200,8 @@ export default {
   data() {
     return {
 
+      collectedClosePrice: {},
+
       expirationTime: 5000,
 
       tickersSteps,
@@ -309,7 +333,114 @@ export default {
         }
       }
 
-      return differences;
+      // Сортируем тикеры по процентной разнице и оставляем только топ-10
+      return Object.entries(differences)
+          .sort(([, a], [, b]) => b.percentage - a.percentage) // Сортируем по убыванию процента
+          .slice(0, 10) // Берем первые 10
+          .reduce((acc, [ticker, data]) => {
+            acc[ticker] = data;
+            return acc;
+          }, {}); // Преобразуем обратно в объект
+    },
+
+    advantageousBuyDifferences() {
+      const differences = {};
+
+      const closePrices = this.collectedClosePrice || {};
+
+      for (const [ticker, { buy, sell }] of Object.entries(closePrices)) {
+        // Проверяем, есть ли хотя бы одна покупка и одна продажа
+        if (!buy.length || !sell.length) {
+          differences[ticker] = { percentage: "0.00", buyPrice: null, sellPrice: null };
+          continue;
+        }
+
+        let maxDifference = 0;
+        let buyPrice = null;
+        let sellPrice = null;
+
+        // Перебираем все комбинации покупок и продаж
+        buy.forEach((buyPriceCandidate) => {
+          sell.forEach((sellPriceCandidate) => {
+            // Если продажа выше покупки, вычисляем разницу
+            if (sellPriceCandidate > buyPriceCandidate) {
+              const diff = ((sellPriceCandidate - buyPriceCandidate) / buyPriceCandidate) * 100;
+
+              if (diff > maxDifference) {
+                maxDifference = diff;
+                buyPrice = buyPriceCandidate;
+                sellPrice = sellPriceCandidate;
+              }
+            }
+          });
+        });
+
+        // Сохраняем результат для текущего тикера
+        differences[ticker] = {
+          percentage: maxDifference.toFixed(2),
+          buyPrice,
+          sellPrice
+        };
+      }
+
+      // Сортируем тикеры по процентной разнице и оставляем только топ-10
+      return Object.entries(differences)
+          .sort(([, a], [, b]) => b.percentage - a.percentage) // Сортируем по убыванию
+          .slice(0, 10) // Берем только топ-10
+          .reduce((acc, [ticker, data]) => {
+            acc[ticker] = data;
+            return acc;
+          }, {}); // Преобразуем обратно в объект
+    },
+
+    advantageousSellDifferences() {
+      const differences = {};
+
+      const closePrices = this.collectedClosePrice || {};
+
+      for (const [ticker, { sell, buy }] of Object.entries(closePrices)) {
+        // Проверяем, есть ли хотя бы одна продажа и одна покупка
+        if (!sell.length || !buy.length) {
+          differences[ticker] = { percentage: "0.00", sellPrice: null, buyPrice: null };
+          continue;
+        }
+
+        let maxDifference = 0;
+        let sellPrice = null;
+        let buyPrice = null;
+
+        // Перебираем все комбинации продаж и покупок
+        sell.forEach((sellPriceCandidate) => {
+          buy.forEach((buyPriceCandidate) => {
+            // Если покупка ниже продажи, вычисляем разницу
+            if (sellPriceCandidate > buyPriceCandidate) {
+              const diff = ((sellPriceCandidate - buyPriceCandidate) / sellPriceCandidate) * 100;
+
+              if (diff > maxDifference) {
+                maxDifference = diff;
+                sellPrice = sellPriceCandidate;
+                buyPrice = buyPriceCandidate;
+              }
+            }
+          });
+        });
+
+        // Сохраняем результат для текущего тикера
+        differences[ticker] = {
+          percentage: maxDifference.toFixed(2),
+          sellPrice,
+          buyPrice
+        };
+      }
+
+      // Сортируем тикеры по процентной разнице и оставляем только топ-10
+      return Object.entries(differences)
+          .sort(([, a], [, b]) => b.percentage - a.percentage) // Сортируем по убыванию
+          .slice(0, 10) // Берем только топ-10
+          .reduce((acc, [ticker, data]) => {
+            acc[ticker] = data;
+            return acc;
+          }, {}); // Преобразуем обратно в объект
     },
 
     marketSummary() {
@@ -317,16 +448,15 @@ export default {
 
       // Обработка данных сделок
       this.trades.forEach((trade) => {
-        const { ticker, price, qty, side } = trade;
+        const { ticker, qty, side } = trade;
 
         summary[ticker] = summary[ticker] || {};
 
         summary[ticker].tradeVolumeAbsoluteRub = parseFloat(trade.price) * trade.qty;
 
         //summary[ticker].tradeLastPriceLevel = Math.round(price / this.tickersSteps[ticker]);
-        summary[ticker].tradeLastPrice = price;
-        summary[ticker].tradeLastVolume = qty;
-        summary[ticker].tradeLastSide = side;
+
+        summary[ticker].tradeVolume = qty;
 
         summary[ticker].tradeLastBuyVolume = (summary[ticker].buyVolume || 0) + (side === "buy" ? qty : 0);
         summary[ticker].tradeLastSellVolume = (summary[ticker].sellVolume || 0) + (side === "sell" ? qty : 0);
@@ -361,6 +491,34 @@ export default {
       });
       return obj;
     },*/
+
+    collectTradeData(trades) {
+      const updatedClosePrices = { ...this.collectedClosePrice };
+
+      trades.forEach((trade) => {
+        const { ticker, price, side } = trade;
+
+        // Если тикер отсутствует, создаем объект для него
+        if (!updatedClosePrices[ticker]) {
+          updatedClosePrices[ticker] = { buy: [], sell: [] };
+        }
+
+        // Заполняем массивы buy и sell
+        if (side === 'buy') {
+          updatedClosePrices[ticker].buy.push(price);
+          if (updatedClosePrices[ticker].buy.length > this.maxLength) {
+            updatedClosePrices[ticker].buy.shift(); // Удаляем старейшие данные
+          }
+        } else if (side === 'sell') {
+          updatedClosePrices[ticker].sell.push(price);
+          if (updatedClosePrices[ticker].sell.length > this.maxLength) {
+            updatedClosePrices[ticker].sell.shift();
+          }
+        }
+      });
+
+      this.collectedClosePrice = updatedClosePrices;
+    },
 
     selectTicker(ticker){
       window.parent.postMessage({
@@ -460,6 +618,8 @@ export default {
       socket.onmessage = (event) => {
         const trades = JSON.parse(event.data);
         if (!Array.isArray(trades)) return;
+
+        this.collectTradeData(trades);
 
         // Локальные переменные для накопления данных
         const localTrades = [];
