@@ -618,6 +618,30 @@ export default {
           delete this.collectedLastPricesSell[ticker];
         }
       }
+
+      // Очистка данных collectedClosePrice
+      for (const ticker in this.collectedClosePrice) {
+        const { buy, sell } = this.collectedClosePrice[ticker];
+
+        // Удаляем устаревшие покупки
+        this.collectedClosePrice[ticker].buy = buy.filter(
+            entry => now - entry.timestamp <= this.expirationTime
+        );
+
+        // Удаляем устаревшие продажи
+        this.collectedClosePrice[ticker].sell = sell.filter(
+            entry => now - entry.timestamp <= this.expirationTime
+        );
+
+        // Если ни покупок, ни продаж не осталось, удаляем тикер
+        if (
+            !this.collectedClosePrice[ticker].buy.length &&
+            !this.collectedClosePrice[ticker].sell.length
+        ) {
+          delete this.collectedClosePrice[ticker];
+        }
+      }
+
     },
 
     updateTrades() {
