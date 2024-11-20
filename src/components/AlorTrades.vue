@@ -233,31 +233,80 @@ export default {
     sellPercentageDifferences() {
       const differences = {};
 
-      for (const [ticker, { min, max }] of Object.entries(this.collectedLastPricesSell)) {
-        if (!min || !max || min === max) {
-          differences[ticker] = { percentage: 0, min, max };
+      for (const [ticker, { prices }] of Object.entries(this.collectedLastPricesSell)) {
+        if (!prices || prices.length < 2) {
+          differences[ticker] = { percentage: 0, min: null, max: null };
           continue;
         }
 
-        const percentage = ((max - min) / min * 100).toFixed(2);
-        differences[ticker] = { percentage, min, max };
+        let max = -Infinity;
+        let min = Infinity;
+        let maxIndex = -1;
+        let minIndex = -1;
+
+        // Находим максимум и его индекс
+        prices.forEach((price, index) => {
+          if (price > max) {
+            max = price;
+            maxIndex = index;
+          }
+        });
+
+        // Находим минимум, начиная с позиции maxIndex
+        prices.forEach((price, index) => {
+          if (index > maxIndex && price < min) {
+            min = price;
+            minIndex = index;
+          }
+        });
+
+        if (minIndex > maxIndex && max > min) {
+          const percentage = ((max - min) / max * 100).toFixed(2);
+          differences[ticker] = { percentage, min, max };
+        } else {
+          differences[ticker] = { percentage: 0, min, max };
+        }
       }
 
       return differences;
     },
 
-
     buyPercentageDifferences() {
       const differences = {};
 
-      for (const [ticker, { min, max }] of Object.entries(this.collectedLastPrices)) {
-        if (!min || !max || min === max) {
-          differences[ticker] = { percentage: 0, min, max };
+      for (const [ticker, { prices }] of Object.entries(this.collectedLastPrices)) {
+        if (!prices || prices.length < 2) {
+          differences[ticker] = { percentage: 0, min: null, max: null };
           continue;
         }
 
-        const percentage = ((max - min) / min * 100).toFixed(2);
-        differences[ticker] = { percentage, min, max };
+        let max = -Infinity;
+        let min = Infinity;
+        let maxIndex = -1;
+        let minIndex = -1;
+
+        // Находим минимум и его индекс
+        prices.forEach((price, index) => {
+          if (price < min) {
+            min = price;
+            minIndex = index;
+          }
+        });
+
+        // Находим максимум, начиная с позиции minIndex
+        prices.forEach((price, index) => {
+          if (index > minIndex && price > max) {
+            max = price;
+            maxIndex = index;
+          }
+        });
+
+        if (maxIndex > minIndex && max > min) {
+          const percentage = ((max - min) / min * 100).toFixed(2);
+          differences[ticker] = { percentage, min, max };
+        } else {
+          differences[ticker] = { percentage: 0, min, max };
+        }
       }
 
       return differences;
