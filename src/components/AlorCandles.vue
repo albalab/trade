@@ -71,7 +71,19 @@ export default {
           summary[ticker][`candle${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
         });
 
-        //summary[ticker].lastClosePrice = close;
+        //console.log(candle);
+
+        summary[ticker].candleBodySize = Math.abs(parseFloat(candle.close) - parseFloat(candle.open));
+        summary[ticker].candleDirection = parseFloat(candle.close) > parseFloat(candle.open) ? "up" : "down";
+        summary[ticker].candleRange = parseFloat(candle.high) - parseFloat(candle.low);
+        summary[ticker].candleShadowSize = summary[ticker].candleRange - summary[ticker].candleBodySize;
+        summary[ticker].candleUpperShadow = parseFloat(candle.high) - Math.max(parseFloat(candle.open), parseFloat(candle.close));
+        summary[ticker].candleLowerShadow = Math.min(parseFloat(candle.open), parseFloat(candle.close)) - parseFloat(candle.low);
+        summary[ticker].candleRealBodyToRangeRatio = summary[ticker].candleBodySize / summary[ticker].candleRange;
+        summary[ticker].candleVolumePerRange = candle.volume / summary[ticker].candleRange;
+        summary[ticker].candleStrength = summary[ticker].candleBodySize * candle.volume;
+
+
         //summary[ticker].candleVolume = volume;
         //summary[ticker].timestampCandle = time;
       });

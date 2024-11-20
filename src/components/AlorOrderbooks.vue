@@ -63,19 +63,19 @@ export default {
         const asks = orderbook.asks.map(ask => ({ ...ask, price: parseFloat(ask.price) }));
 
 
-        // 1. Лучшая цена Bid
+        // Лучшая цена Bid
         const bestBidPrice = Math.max(...bids.map(bid => bid.price));
 
-        // 2. Лучшая цена Ask
+        // Лучшая цена Ask
         const bestAskPrice = Math.min(...asks.map(ask => ask.price));
 
-        // 3. Разница между лучшими ценами (спред)
+        // Разница между лучшими ценами (спред)
         const spread = bestAskPrice - bestBidPrice;
 
-        // 4. Суммарный объем Bid
+        // Суммарный объем Bid
         const totalBidVolume = bids.reduce((sum, bid) => sum + bid.volume, 0);
 
-        // 5. Суммарный объем Ask
+        // Суммарный объем Ask
         const totalAskVolume = asks.reduce((sum, ask) => sum + ask.volume, 0);
 
         // Общий объем в стакане
@@ -84,16 +84,16 @@ export default {
         // Лучший объем в стакане
         const bestDepth = (bids[0]?.volume || 0) + (asks[0]?.volume || 0);
 
-        // 6. Средняя цена Bid
+        // Средняя цена Bid
         const averageBidPrice = bids.reduce((sum, bid) => sum + bid.price * bid.volume, 0) / totalBidVolume;
 
-        // 7. Средняя цена Ask
+        // Средняя цена Ask
         const averageAskPrice = asks.reduce((sum, ask) => sum + ask.price * ask.volume, 0) / totalAskVolume;
 
-        // 8. Общий дисбаланс объемов
+        // Общий дисбаланс объемов
         const volumeImbalance = totalBidVolume - totalAskVolume;
 
-        // 9. Средняя цена всех заявок (Bid и Ask)
+        // Средняя цена всех заявок (Bid и Ask)
         const averageDepthPrice =
             (bids.reduce((sum, bid) => sum + bid.price * bid.volume, 0) +
                 asks.reduce((sum, ask) => sum + ask.price * ask.volume, 0)) /

@@ -269,20 +269,25 @@ export default {
       // Обработка данных сделок
       this.trades.forEach((trade) => {
         const { ticker, price, qty, side } = trade;
+
         summary[ticker] = summary[ticker] || {};
 
-        summary[ticker].tradeLastPriceLevel = Math.round(price / this.tickersSteps[ticker]);
+        summary[ticker].tradeVolumeAbsoluteRub = parseFloat(trade.price) * trade.qty;
+
+        //summary[ticker].tradeLastPriceLevel = Math.round(price / this.tickersSteps[ticker]);
         summary[ticker].tradeLastPrice = price;
         summary[ticker].tradeLastVolume = qty;
         summary[ticker].tradeLastSide = side;
 
-        summary[ticker].tradeBuyVolume = (summary[ticker].buyVolume || 0) + (side === "buy" ? qty : 0);
-        summary[ticker].tradeSellVolume = (summary[ticker].sellVolume || 0) + (side === "sell" ? qty : 0);
+        summary[ticker].tradeLastBuyVolume = (summary[ticker].buyVolume || 0) + (side === "buy" ? qty : 0);
+        summary[ticker].tradeLastSellVolume = (summary[ticker].sellVolume || 0) + (side === "sell" ? qty : 0);
 
         Object.entries(trade).forEach(([key, value]) => {
           const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
           summary[ticker][`trade${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
         });
+
+        //console.log(trade);
 
       });
 
