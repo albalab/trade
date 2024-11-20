@@ -350,8 +350,7 @@ export default {
 
       for (const [ticker, { buy, sell }] of Object.entries(closePrices)) {
         if (!buy.length || !sell.length) {
-          differences[ticker] = { percentage: "0.00", buyPrice: null, sellPrice: null };
-          continue;
+          continue; // Пропускаем тикеры без данных
         }
 
         let maxDifference = 0;
@@ -361,11 +360,17 @@ export default {
         buy.forEach((buyEntry) => {
           const { price: buyPriceCandidate, timestamp: buyTime } = buyEntry;
 
+          if (!buyPriceCandidate || buyPriceCandidate <= 0) return; // Пропускаем некорректные цены
+
           sell.forEach((sellEntry) => {
             const { price: sellPriceCandidate, timestamp: sellTime } = sellEntry;
 
-            // Проверяем временной интервал
-            if (sellTime > buyTime && sellTime - buyTime >= timeInterval) {
+            if (!sellPriceCandidate || sellPriceCandidate <= 0) return; // Пропускаем некорректные цены
+
+            if (
+                sellTime > buyTime && // Проверяем порядок времени
+                sellTime - buyTime >= timeInterval // Учитываем временной интервал
+            ) {
               const diff = ((sellPriceCandidate - buyPriceCandidate) / buyPriceCandidate) * 100;
 
               if (diff > maxDifference) {
@@ -377,13 +382,18 @@ export default {
           });
         });
 
-        differences[ticker] = {
-          percentage: maxDifference.toFixed(2),
-          buyPrice,
-          sellPrice,
-        };
-
-        //console.log(`[${ticker}]`, differences[ticker]); // Для проверки результатов
+        if (
+            maxDifference > 0 && // Процент должен быть больше 0
+            buyPrice !== null &&
+            sellPrice !== null &&
+            buyPrice !== sellPrice // Исключаем одинаковые цены
+        ) {
+          differences[ticker] = {
+            percentage: maxDifference.toFixed(2),
+            buyPrice,
+            sellPrice,
+          };
+        }
       }
 
       return Object.entries(differences)
@@ -402,25 +412,26 @@ export default {
 
       for (const [ticker, { sell, buy }] of Object.entries(closePrices)) {
         if (!sell.length || !buy.length) {
-          differences[ticker] = { percentage: "0.00", sellPrice: null, buyPrice: null };
-          continue;
+          continue; // Пропускаем тикеры без данных
         }
 
         let maxDifference = 0;
         let sellPrice = null;
         let buyPrice = null;
 
-        // Перебираем все продажи
         sell.forEach((sellEntry) => {
           const { price: sellPriceCandidate, timestamp: sellTime } = sellEntry;
 
-          // Находим покупки, которые произошли после продажи с минимальным интервалом времени
+          if (!sellPriceCandidate || sellPriceCandidate <= 0) return; // Пропускаем некорректные цены
+
           buy.forEach((buyEntry) => {
             const { price: buyPriceCandidate, timestamp: buyTime } = buyEntry;
 
+            if (!buyPriceCandidate || buyPriceCandidate <= 0) return; // Пропускаем некорректные цены
+
             if (
-                buyTime > sellTime && // Покупка должна быть позже продажи
-                buyTime - sellTime >= timeInterval // Учитываем минимальный интервал времени
+                buyTime > sellTime && // Покупка позже продажи
+                buyTime - sellTime >= timeInterval // Учитываем временной интервал
             ) {
               const diff = ((sellPriceCandidate - buyPriceCandidate) / sellPriceCandidate) * 100;
 
@@ -433,14 +444,20 @@ export default {
           });
         });
 
-        differences[ticker] = {
-          percentage: maxDifference.toFixed(2),
-          sellPrice,
-          buyPrice,
-        };
+        if (
+            maxDifference > 0 && // Процент должен быть больше 0
+            sellPrice !== null &&
+            buyPrice !== null &&
+            sellPrice !== buyPrice // Исключаем одинаковые цены
+        ) {
+          differences[ticker] = {
+            percentage: maxDifference.toFixed(2),
+            sellPrice,
+            buyPrice,
+          };
+        }
       }
 
-      // Сортируем результаты и берем топ-10
       return Object.entries(differences)
           .sort(([, a], [, b]) => b.percentage - a.percentage)
           .slice(0, 10)
