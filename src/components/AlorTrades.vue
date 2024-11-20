@@ -410,14 +410,18 @@ export default {
         let sellPrice = null;
         let buyPrice = null;
 
+        // Перебираем все продажи
         sell.forEach((sellEntry) => {
           const { price: sellPriceCandidate, timestamp: sellTime } = sellEntry;
 
+          // Находим покупки, которые произошли после продажи с минимальным интервалом времени
           buy.forEach((buyEntry) => {
             const { price: buyPriceCandidate, timestamp: buyTime } = buyEntry;
 
-            // Проверяем временной интервал
-            if (sellTime > buyTime && sellTime - buyTime >= timeInterval) {
+            if (
+                buyTime > sellTime && // Покупка должна быть позже продажи
+                buyTime - sellTime >= timeInterval // Учитываем минимальный интервал времени
+            ) {
               const diff = ((sellPriceCandidate - buyPriceCandidate) / sellPriceCandidate) * 100;
 
               if (diff > maxDifference) {
@@ -436,6 +440,7 @@ export default {
         };
       }
 
+      // Сортируем результаты и берем топ-10
       return Object.entries(differences)
           .sort(([, a], [, b]) => b.percentage - a.percentage)
           .slice(0, 10)
