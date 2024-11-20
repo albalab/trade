@@ -1,14 +1,14 @@
 <template>
   <div style="background: white; overflow: hidden;">
 
-    <h2>Real-time Order Book Data</h2>
+    <h2>Real-time orderbooks</h2>
 
-    {{ globalCounter }}<br>
+    total objects: {{ globalCounter }}<br>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr;">
       <div>
         <h3>Сортировка по накопленному</h3>
-        <ul>
+        <ul style="height: 300px; overflow: hidden;">
           <li v-for="(value, key) in sortedByValue" :key="key">
             {{ key }}: {{ value }}
           </li>
@@ -16,21 +16,13 @@
       </div>
       <div>
         <h3>Сортировка по окну</h3>
-        <ul>
+        <ul style="height: 300px; overflow: hidden;">
           <li v-for="(value, key) in sortedByValueRange" :key="key">
             {{ key }}: {{ value }}
           </li>
         </ul>
       </div>
     </div>
-
-<!--
-    <div v-for="(order, index) in orderBookData.slice(-10).reverse()" :key="index" style="margin-bottom: 20px;">
-      <h3>{{ order.ticker }}</h3>
-      <div>Last Bid: {{ order.bids[0]?.price }} | Volume: {{ order.bids[0]?.volume }}</div>
-      <div>Last Ask: {{ order.asks[0]?.price }} | Volume: {{ order.asks[0]?.volume }}</div>
-    </div>
--->
 
   </div>
 </template>
@@ -48,167 +40,8 @@ export default {
       tickersSteps,
       tickers,
 
-      orderBookData: [], // Массив для хранения данных о стаканах
-      orderBookStats: {
-        'KRKNP': 0,
-        'VSMO': 0,
-        'LNZL': 0,
-        'RKKE': 0,
-        'UNKL': 0,
-        'CHMK': 0,
-        'LNZLP': 0,
-        'AKRN': 0,
-        'MGTSP': 0,
-        'BELU': 0,
-        'HEAD': 0,
-        'KROT': 0,
-        'PHOR': 0,
-        'AQUA': 0,
-        'BANE': 0,
-        'BANEP': 0,
-        'DIAS': 0,
-        'GCHE': 0,
-        'KAZTP': 0,
-        'LENT': 0,
-        'LKOH': 0,
-        'MBNK': 0,
-        'MGNT': 0,
-        'NKHP': 0,
-        'NSVZ': 0,
-        'OZON': 0,
-        'PLZL': 0,
-        'SMLT': 0,
-        'SVAV': 0,
-        'TCSG': 0,
-        'TRNFP': 0,
-        'VRSB': 0,
-        'YDEX': 0,
-        'ABRD': 0,
-        'AGRO': 0,
-        'CHMF': 0,
-        'CIAN': 0,
-        'KAZT': 0,
-        'LSRG': 0,
-        'NVTK': 0,
-        'PMSBP': 0,
-        'POSI': 0,
-        'QIWI': 0,
-        'SFIN': 0,
-        'VKCO': 0,
-        'FIXP': 0,
-        'GEMC': 0,
-        'GTRK': 0,
-        'HNFG': 0,
-        'KMAZ': 0,
-        'KZOS': 0,
-        'LEAS': 0,
-        'MDMG': 0,
-        'MVID': 0,
-        'PIKK': 0,
-        'PMSB': 0,
-        'RNFT': 0,
-        'SPBE': 0,
-        'TATN': 0,
-        'TATNP': 0,
-        'ASTR': 0,
-        'DELI': 0,
-        'ENPG': 0,
-        'EUTR': 0,
-        'GLTR': 0,
-        'IRKT': 0,
-        'IVAT': 0,
-        'LSNGP': 0,
-        'MSTT': 0,
-        'MTLRP': 0,
-        'MTSS': 0,
-        //'NKNC ': 0,
-        'PRMD': 0,
-        'RASP': 0,
-        'ROSN': 0,
-        'RTKMP': 0,
-        'SIBN': 0,
-        'UWGN': 0,
-        'VEON-RX': 0,
-        'VSEH': 0,
-        'YAKG': 0,
-        'ZAYM': 0,
-        'ABIO': 0,
-        'AMEZ': 0,
-        'CNTL': 0,
-        'CNTLP': 0,
-        'DATA': 0,
-        'DSKY': 0,
-        'ETLN': 0,
-        'GMKN': 0,
-        'NKNCP': 0,
-        'NLMK': 0,
-        'RENI': 0,
-        'SOFL': 0,
-        'TRMK': 0,
-        'AFLT': 0,
-        'ALRS': 0,
-        'BLNG': 0,
-        'BSPB': 0,
-        'FESH': 0,
-        'FLOT': 0,
-        'GAZP': 0,
-        'GECO': 0,
-        'KLSB': 0,
-        'KZOSP': 0,
-        'LSNG': 0,
-        'MAGEP': 0,
-        'MOEX': 0,
-        'MTLR': 0,
-        'OKEY': 0,
-        'RTKM': 0,
-        'SBER': 0,
-        'SBERP': 0,
-        'SELG': 0,
-        'VTBR': 0,
-        'WUSH': 0,
-        'LIFE': 0,
-        'MAGN': 0,
-        'NMTP': 0,
-        'RBCM': 0,
-        'RUAL': 0,
-        'SNGS': 0,
-        'SNGSP': 0,
-        'SVCB': 0,
-        'APTK': 0,
-        'KLVZ': 0,
-        'PRFN': 0,
-        'AFKS': 0,
-        'CBOM': 0,
-        'DVEC': 0,
-        'SGZH': 0,
-        'UPRO': 0,
-        'CARM': 0,
-        'IRAO': 0,
-        'MGKL': 0,
-        'MRKS': 0,
-        'MSNG': 0,
-        'MSRS': 0,
-        'TTLK': 0,
-        'UNAC': 0,
-        'ELFV': 0,
-        'MRKC': 0,
-        'MRKU': 0,
-        'ROLO': 0,
-        'HYDR': 0,
-        'MRKP': 0,
-        'OGKB': 0,
-        'UGLD': 0,
-        'MRKV': 0,
-        'MRKY': 0,
-        'MRKZ': 0,
-        'ELMT': 0,
-        'FEES': 0,
-        'TGKBP': 0,
-        'TGKN': 0,
-        'TGKB': 0,
-        'TGKA': 0,
-        'IMOEX2': 0
-      },
+      orderbook: [],
+      orderBookStats: tickers.reduce((obj, ticker) => ({ ...obj, [ticker]: 0 }), {}),
     };
   },
   mounted() {
@@ -222,24 +55,84 @@ export default {
       const summary = {};
 
       // Обработка данных ордербука
-      this.orderBookData.forEach((orderbook) => {
-        const { ticker, bids, asks, timestamp } = orderbook;
+      this.orderbook.forEach((orderbook) => {
+        const { ticker } = orderbook;
+
+        // Преобразуем строки цен в числа для расчетов
+        const bids = orderbook.bids.map(bid => ({ ...bid, price: parseFloat(bid.price) }));
+        const asks = orderbook.asks.map(ask => ({ ...ask, price: parseFloat(ask.price) }));
+
+
+        // 1. Лучшая цена Bid
+        const bestBidPrice = Math.max(...bids.map(bid => bid.price));
+
+        // 2. Лучшая цена Ask
+        const bestAskPrice = Math.min(...asks.map(ask => ask.price));
+
+        // 3. Разница между лучшими ценами (спред)
+        const spread = bestAskPrice - bestBidPrice;
+
+        // 4. Суммарный объем Bid
+        const totalBidVolume = bids.reduce((sum, bid) => sum + bid.volume, 0);
+
+        // 5. Суммарный объем Ask
+        const totalAskVolume = asks.reduce((sum, ask) => sum + ask.volume, 0);
+
+        // Общий объем в стакане
+        const totalDepth = totalBidVolume + totalAskVolume;
+
+        // Лучший объем в стакане
+        const bestDepth = (bids[0]?.volume || 0) + (asks[0]?.volume || 0);
+
+        // 6. Средняя цена Bid
+        const averageBidPrice = bids.reduce((sum, bid) => sum + bid.price * bid.volume, 0) / totalBidVolume;
+
+        // 7. Средняя цена Ask
+        const averageAskPrice = asks.reduce((sum, ask) => sum + ask.price * ask.volume, 0) / totalAskVolume;
+
+        // 8. Общий дисбаланс объемов
+        const volumeImbalance = totalBidVolume - totalAskVolume;
+
+        // 9. Средняя цена всех заявок (Bid и Ask)
+        const averageDepthPrice =
+            (bids.reduce((sum, bid) => sum + bid.price * bid.volume, 0) +
+                asks.reduce((sum, ask) => sum + ask.price * ask.volume, 0)) /
+            (totalBidVolume + totalAskVolume);
+
         summary[ticker] = summary[ticker] || {};
 
-        summary[ticker].orderbookBestBidPriceLevel = Math.round(bids[0]?.price/this.tickersSteps[ticker]) || null;
-        summary[ticker].orderbookBestAskPriceLevel = Math.round(asks[0]?.price/this.tickersSteps[ticker]) || null;
-        summary[ticker].orderbookSpreadLevel = Math.round(summary[ticker].orderbookBestAskPriceLevel - summary[ticker].orderbookBestBidPriceLevel);
-
-        summary[ticker].orderbookBestBidPrice = bids[0]?.price || null;
-        summary[ticker].orderbookBestAskPrice = asks[0]?.price || null;
-        summary[ticker].orderbookSpread = (asks[0]?.price || 0) - (bids[0]?.price || 0);
-        summary[ticker].orderbookSpreadPercent = summary[ticker].orderbookSpread / ((asks[0]?.price + bids[0]?.price) / 2) * 100;
-        summary[ticker].orderbookTimestamp = timestamp;
+        summary[ticker].orderbookBestBidPrice = bestBidPrice;
+        summary[ticker].orderbookBestAskPrice = bestAskPrice;
+        summary[ticker].orderbookSpread = spread;
+        summary[ticker].orderbookTotalBidVolume = totalBidVolume;
+        summary[ticker].orderbookTotalAskVolume = totalAskVolume;
+        summary[ticker].orderbookTotalDepth = totalDepth;
+        summary[ticker].orderbookBestDepth = bestDepth;
+        summary[ticker].orderbookAverageBidPrice = averageBidPrice;
+        summary[ticker].orderbookAverageAskPrice = averageAskPrice;
+        summary[ticker].orderbookVolumeImbalance = volumeImbalance;
+        summary[ticker].orderbookAverageDepthPrice = averageDepthPrice;
 
         Object.entries(orderbook).forEach(([key, value]) => {
           const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
           summary[ticker][`orderbook${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
         });
+
+
+
+
+
+// Вывод результатов
+        /*console.log("Best Bid Price:", bestBidPrice);
+        console.log("Best Ask Price:", bestAskPrice);
+        console.log("Spread:", spread);
+        console.log("Total Bid Volume:", totalBidVolume);
+        console.log("Total Ask Volume:", totalAskVolume);
+        console.log("Average Bid Price:", averageBidPrice.toFixed(2));
+        console.log("Average Ask Price:", averageAskPrice.toFixed(2));
+        console.log("Volume Imbalance:", volumeImbalance);
+        console.log("Average Order Book Price:", averageOrderBookPrice.toFixed(2));*/
+
 
       });
 
@@ -247,7 +140,7 @@ export default {
     },
 
     tickerCount() {
-      return this.orderBookData.reduce((acc, item) => {
+      return this.orderbook.reduce((acc, item) => {
         acc[item.ticker] = (acc[item.ticker] || 0) + 1;
         return acc;
       }, {});
@@ -285,7 +178,7 @@ export default {
 
     updateOrderbooks() {
       setTimeout(() => {
-        //const mergedOrderbooks = {...this.marketSummary, ...this.orderBookData[this.orderBookData.length-1]};
+        //const mergedOrderbooks = {...this.marketSummary, ...this.orderbook[this.orderbook.length-1]};
         this.$emit('update-orderbooks-summary', this.marketSummary);
         this.updateOrderbooks();
       }, 500);
@@ -302,7 +195,7 @@ export default {
         // Проверяем, что пришедшие данные — массив
         if (Array.isArray(orderBooks)) {
           // Локальные переменные для накопления данных
-          const newOrderBookData = [...this.orderBookData];
+          const neworderbook = [...this.orderbook];
           let newGlobalCounter = this.globalCounter;
           const newOrderBookStats = { ...this.orderBookStats };
 
@@ -312,14 +205,14 @@ export default {
 
               //const orderbookExtended = this.extendObject(orderBook, "orderbook");
 
-              newOrderBookData.push(orderBook);
+              neworderbook.push(orderBook);
 
               newGlobalCounter++;
               newOrderBookStats[orderBook.ticker] = (newOrderBookStats[orderBook.ticker] || 0) + 1;
 
               // Ограничиваем массив последних 1000 объектов
-              if (newOrderBookData.length > 1000) {
-                newOrderBookData.shift();
+              if (neworderbook.length > 1000) {
+                neworderbook.shift();
               }
             } else {
               console.warn('Received invalid order book data:', orderBook); // Логирование некорректных данных
@@ -327,7 +220,7 @@ export default {
           });
 
           // Обновляем реактивные свойства один раз после цикла
-          this.orderBookData = newOrderBookData;
+          this.orderbook = neworderbook;
           this.globalCounter = newGlobalCounter;
           this.orderBookStats = newOrderBookStats;
         } else {
@@ -351,10 +244,3 @@ export default {
 
 };
 </script>
-
-<style scoped>
-h3 {
-  margin: 0;
-  padding: 0;
-}
-</style>

@@ -54,6 +54,7 @@ export default {
 
       // Обработка данных котировок
       this.quotes.forEach((quote) => {
+
         const { ticker } = quote;
         summary[ticker] = summary[ticker] || {};
 
@@ -61,6 +62,12 @@ export default {
           const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
           summary[ticker][`quote${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
         });
+
+        summary.quoteSpread = quote.ask - quote.bid; //Показывает "ширину" рынка. Чем меньше spread, тем ликвиднее рынок.
+        summary.quoteMidPrice = (quote.ask + quote.bid) / 2; //Текущая рыночная стоимость инструмента.
+        summary.quotePriceChangeAbsolute = quote.last_price - quote.prev_close_price; //Абсолютное изменение цены относительно цены закрытия предыдущего торгового дня. Используется для анализа роста или падения.
+        summary.quotePriceChangePercent = (summary.quotePriceChangeAbsolute / quote.prev_close_price) * 100; //Абсолютное изменение цены относительно цены закрытия предыдущего торгового дня. Используется для анализа роста или падения.
+
 
         //summary[ticker].lastClosePrice = close;
         //summary[ticker].quoteDescription = description;
