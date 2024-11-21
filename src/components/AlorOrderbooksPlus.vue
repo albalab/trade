@@ -26,7 +26,7 @@ export default {
   },
 
   methods: {
-    updateOrderbooks(){
+    updateOrderbook(){
       //console.log(orderbook);
     },
     updateOrderbooksSummary(orderbooksSummary){

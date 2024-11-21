@@ -26,7 +26,7 @@ export default {
   },
 
   methods: {
-    updateCandles(){
+    updateCandle(){
       //console.log(candle);
     },
     updateCandlesSummary(candlesSummary){

@@ -72,10 +72,6 @@ export default {
       orderbookGlobalStats: tickers.reduce((obj, ticker) => ({ ...obj, [ticker]: 0 }), {}),
     };
   },
-  mounted() {
-    this.connectToWebSocket();
-    this.updateOrderbooks();
-  },
 
   computed: {
 
@@ -245,7 +241,12 @@ export default {
         console.log('WebSocket connection closed');
       };
     }
-  }
+  },
+
+  mounted() {
+    this.connectToWebSocket();
+    this.updateOrderbooks();
+  },
 
 };
 </script>

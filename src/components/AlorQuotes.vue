@@ -149,10 +149,7 @@ export default {
     },
 
   },
-  mounted() {
-    this.connectToWebSocket();
-    this.updateQuotes();
-  },
+
   methods: {
 
     selectTicker(ticker){
@@ -269,5 +266,11 @@ export default {
       };
     },
   },
+
+  mounted() {
+    this.connectToWebSocket();
+    this.updateQuotes();
+  },
+
 };
 </script>
