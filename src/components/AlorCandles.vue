@@ -10,12 +10,12 @@
       Статистика распределения количества свечей по тикерам
       <div style="display: table;">
 
-        <div v-for="(candles, ticker) in groupedCandles"
+        <div v-for="(candles, ticker) in sortedCandlesLastStats"
              :key='candles.id'
              style="display: table-row;">
           <div style="display: table-cell; width: 60px;">{{ticker}}:</div>
 
-          <div style="display: table-cell; width: 80px">{{candles[candles.length-1].close}}</div>
+          <div style="display: table-cell; width: 80px"><!--{{candles[candles.length-1].close}}--> {{candles.length}}</div>
 
           <div style="display: table-cell; width: 100px;">
             <div style="position: relative;">
@@ -101,12 +101,7 @@ export default {
     },
 
     groupedCandles() {
-      if (!this.candles) return;
-
-      const sortByCount = true;
-
-      // Группировка свечей по тикерам
-      let grouped = this.candles.reduce((acc, candle) => {
+      return this.candles.reduce((acc, candle) => {
         const ticker = candle.ticker;
         if (!acc[ticker]) {
           acc[ticker] = [];
@@ -114,27 +109,16 @@ export default {
         acc[ticker].push(candle);
         return acc;
       }, {});
+    },
 
-      // Опциональная сортировка
-      if (sortByCount) {
-        // Сортировка по количеству элементов в массивах
-        grouped = Object.entries(grouped)
-            .sort(([, a], [, b]) => b.length - a.length)
-            .reduce((acc, [key, value]) => {
-              acc[key] = value;
-              return acc;
-            }, {});
-      } else {
-        // Сортировка по алфавиту по тикерам (ключам)
-        grouped = Object.keys(grouped)
-            .sort()
-            .reduce((acc, key) => {
-              acc[key] = grouped[key];
-              return acc;
-            }, {});
-      }
-
-      return grouped;
+    sortedCandlesLastStats() {
+      const grouped = this.groupedCandles; // Вызываем основное вычисляемое свойство
+      return Object.entries(grouped)
+          .sort(([, a], [, b]) => b.length - a.length) // Сортируем
+          .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+          }, {});
     },
 
 
@@ -142,23 +126,10 @@ export default {
 
   mounted() {
     this.connectToWebSocket();
-    this.postMessage();
     this.updateCandles();
   },
 
   methods: {
-
-    extendObject(obj, prefix) {
-      function toCamelCase(str) {
-        return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-      }
-      Object.keys(obj).forEach(key => {
-        const camelCaseKey = toCamelCase(key);
-        const newKey = `${prefix}${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`;
-        obj[newKey] = obj[key];
-      });
-      return obj;
-    },
 
     updateCandles() {
       setTimeout(() => {
@@ -166,38 +137,9 @@ export default {
         //console.log(this.marketSummary);
         this.$emit('update-candles-summary', this.marketSummary);
         this.updateCandles();
-      }, 200);
-    },
-
-    postMessage() {
-      setInterval(() => {
-
-        window.parent.postMessage({
-          robot1message: JSON.parse(JSON.stringify(this.tickerStats))
-        }, "*");
-
       }, 500);
     },
 
-    sortedTickerStats() {
-
-      const result = [];
-
-      // Перебираем ключи объекта
-      for (const ticker in this.tickerStats) {
-        if (this.tickerStats[ticker]) {
-          // Добавляем объект в массив
-          result.push({ticker: ticker, count: this.tickerStats[ticker]});
-        }
-      }
-
-      // Сортируем массив по значению count в порядке убывания
-      result.sort(function (a, b) {
-        return b.count - a.count;
-      });
-
-      return result;
-    },
 
     collectCandleData(candles) {
       // Создаем локальную копию для обновления
@@ -253,7 +195,7 @@ export default {
               newCandles.push(candle);
 
               // Сохраняем только последние 100 свечей для оптимизации
-              if (newCandles.length > 500) {
+              if (newCandles.length > 200) {
                 newCandles.shift();
               }
             } else {

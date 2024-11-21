@@ -52,7 +52,11 @@ html, body{
   font-size: 12px;
   letter-spacing: -0.02em;
 }
-
+ul,li{
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
 .ttrade-app{
   background: white;
 }

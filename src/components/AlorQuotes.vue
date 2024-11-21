@@ -12,7 +12,7 @@
 
     <div style="float: left; height: 500px; overflow: hidden; padding: 10px; border: solid 1px #ccc;">
       Статистика распределения количества котировок по тикерам
-      <div v-for="(quotes, ticker) in groupedQuotes"
+      <div v-for="(quotes, ticker) in sortedQuotesLastStats"
            :key='quotes.id'
            style="display: table-row;">
         <div style="display: table-cell; width: 60px;">{{ticker}}:</div>
@@ -81,10 +81,7 @@ export default {
     groupedQuotes() {
       if (!this.quotes) return {};
 
-      const sortByCount = true; // Если true — сортируем по количеству котировок, иначе по алфавиту
-
-      // Группировка котировок по тикерам
-      let grouped = this.quotes.reduce((acc, quote) => {
+      return this.quotes.reduce((acc, quote) => {
         const ticker = quote.ticker;
         if (!acc[ticker]) {
           acc[ticker] = [];
@@ -92,27 +89,30 @@ export default {
         acc[ticker].push(quote);
         return acc;
       }, {});
+    },
 
-      // Опциональная сортировка
+    sortedQuotesLastStats() {
+      const grouped = this.groupedQuotes; // Используем результаты группировки
+
+      const sortByCount = true; // Если true — сортируем по количеству элементов, иначе по алфавиту
+
       if (sortByCount) {
-        // Сортировка по количеству элементов в массивах
-        grouped = Object.entries(grouped)
+        // Сортировка по количеству элементов
+        return Object.entries(grouped)
             .sort(([, a], [, b]) => b.length - a.length) // Сортируем по длине массивов
             .reduce((acc, [key, value]) => {
               acc[key] = value;
               return acc;
             }, {});
       } else {
-        // Сортировка по алфавиту по тикерам (ключам)
-        grouped = Object.keys(grouped)
+        // Сортировка по алфавиту
+        return Object.keys(grouped)
             .sort() // Сортируем ключи по алфавиту
             .reduce((acc, key) => {
               acc[key] = grouped[key];
               return acc;
             }, {});
       }
-
-      return grouped;
     },
 
   },
@@ -149,18 +149,6 @@ export default {
       }, 500);
     },
 
-    /*extendObject(obj, prefix) {
-      function toCamelCase(str) {
-        return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-      }
-      Object.keys(obj).forEach(key => {
-        const camelCaseKey = toCamelCase(key);
-        const newKey = `${prefix}${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`;
-        obj[newKey] = obj[key];
-      });
-      return obj;
-    },*/
-
     connectToWebSocket() {
       const socket = new WebSocket('wss://refine.video/quotes/');
 
@@ -186,7 +174,7 @@ export default {
               //const quoteExtended = this.extendObject(quote, "quote");
               newQuotes.push(quote);
 
-              if (newQuotes.length > 500) {
+              if (newQuotes.length > 200) {
                 newQuotes.shift();
               }
             } else {

@@ -3,23 +3,40 @@
 
     <h2>Orderbooks</h2>
 
-    globalCounter: {{ globalCounter }}<br>
+    
+    orderbookCounter: {{ orderbookCounter }}<br>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr;">
       <div>
-        <h3>Сортировка по накопленному</h3>
+        <h3>Все стаканы</h3>
         <ul style="height: 300px; overflow: hidden;">
-          <li v-for="(value, key) in sortedByValue" :key="key">
+          <li v-for="(value, key) in sortedOrderbookGlobalStats" :key="key">
             {{ key }}: {{ value }}
           </li>
         </ul>
       </div>
       <div>
-        <h3>Сортировка по окну</h3>
+        <h3>Последние 200</h3>
         <ul style="height: 300px; overflow: hidden;">
-          <li v-for="(value, key) in sortedByValueRange" :key="key">
+
+          <div style="height: 500px; overflow: hidden;">
+            <div v-for="(item, ticker) in sortedOrderbookLastStats"
+                 :key='item.id'
+                 style="display: table-row;">
+              <div style="display: table-cell; padding-bottom: 5px;">
+                <div style="opacity: 0.5; font-size: 10px;">{{ticker}}</div>
+                <div style="position: relative; margin: -1px 0 0;">
+                  <div style="position: absolute; height: 2px; background: black;"
+                       :style="{ width: `${25*item}%` }"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+<!--          <li v-for="(value, key) in sortedOrderbookLastStats" :key="key">
             {{ key }}: {{ value }}
-          </li>
+          </li>-->
         </ul>
       </div>
     </div>
@@ -35,13 +52,13 @@ export default {
   name: 'alor-order-book',
   data() {
     return {
-      globalCounter: 0,
+      orderbookCounter: 0,
 
       tickersSteps,
       tickers,
 
       orderbook: [],
-      orderBookStats: tickers.reduce((obj, ticker) => ({ ...obj, [ticker]: 0 }), {}),
+      orderbookGlobalStats: tickers.reduce((obj, ticker) => ({ ...obj, [ticker]: 0 }), {}),
     };
   },
   mounted() {
@@ -118,67 +135,35 @@ export default {
           summary[ticker][`orderbook${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
         });
 
-
-
-
-
-// Вывод результатов
-        /*console.log("Best Bid Price:", bestBidPrice);
-        console.log("Best Ask Price:", bestAskPrice);
-        console.log("Spread:", spread);
-        console.log("Total Bid Volume:", totalBidVolume);
-        console.log("Total Ask Volume:", totalAskVolume);
-        console.log("Average Bid Price:", averageBidPrice.toFixed(2));
-        console.log("Average Ask Price:", averageAskPrice.toFixed(2));
-        console.log("Volume Imbalance:", volumeImbalance);
-        console.log("Average Order Book Price:", averageOrderBookPrice.toFixed(2));*/
-
-
       });
 
       return summary;
     },
 
-    tickerCount() {
+    orderbookLastStats() {
       return this.orderbook.reduce((acc, item) => {
         acc[item.ticker] = (acc[item.ticker] || 0) + 1;
         return acc;
       }, {});
     },
-    sortedByName() {
+    
+    sortedOrderbookGlobalStats() {
       return Object.fromEntries(
-          Object.entries(this.orderBookStats).sort(([a], [b]) => a.localeCompare(b))
+          Object.entries(this.orderbookGlobalStats).sort(([, a], [, b]) => b - a)
       );
     },
-    sortedByValue() {
+    
+    sortedOrderbookLastStats() {
       return Object.fromEntries(
-          Object.entries(this.orderBookStats).sort(([, a], [, b]) => b - a)
-      );
-    },
-    sortedByValueRange() {
-      return Object.fromEntries(
-          Object.entries(this.tickerCount).sort(([, a], [, b]) => b - a)
+          Object.entries(this.orderbookLastStats).sort(([, a], [, b]) => b - a)
       );
     },
   },
 
   methods: {
 
-    /*extendObject(obj, prefix) {
-      function toCamelCase(str) {
-        return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-      }
-      Object.keys(obj).forEach(key => {
-        const camelCaseKey = toCamelCase(key);
-        const newKey = `${prefix}${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`;
-        obj[newKey] = obj[key];
-      });
-      return obj;
-    },*/
-
     updateOrderbooks() {
       setTimeout(() => {
-        //const mergedOrderbooks = {...this.marketSummary, ...this.orderbook[this.orderbook.length-1]};
         this.$emit('update-orderbooks-summary', this.marketSummary);
         this.updateOrderbooks();
       }, 500);
@@ -196,8 +181,8 @@ export default {
         if (Array.isArray(orderBooks)) {
           // Локальные переменные для накопления данных
           const neworderbook = [...this.orderbook];
-          let newGlobalCounter = this.globalCounter;
-          const newOrderBookStats = { ...this.orderBookStats };
+          let neworderbookCounter = this.orderbookCounter;
+          const neworderbookGlobalStats = { ...this.orderbookGlobalStats };
 
           orderBooks.forEach(orderBook => {
             // Проверяем, содержит ли каждый объект в массиве нужные данные
@@ -207,11 +192,11 @@ export default {
 
               neworderbook.push(orderBook);
 
-              newGlobalCounter++;
-              newOrderBookStats[orderBook.ticker] = (newOrderBookStats[orderBook.ticker] || 0) + 1;
+              neworderbookCounter++;
+              neworderbookGlobalStats[orderBook.ticker] = (neworderbookGlobalStats[orderBook.ticker] || 0) + 1;
 
               // Ограничиваем массив последних 1000 объектов
-              if (neworderbook.length > 1000) {
+              if (neworderbook.length > 200) {
                 neworderbook.shift();
               }
             } else {
@@ -221,8 +206,8 @@ export default {
 
           // Обновляем реактивные свойства один раз после цикла
           this.orderbook = neworderbook;
-          this.globalCounter = newGlobalCounter;
-          this.orderBookStats = newOrderBookStats;
+          this.orderbookCounter = neworderbookCounter;
+          this.orderbookGlobalStats = neworderbookGlobalStats;
         } else {
           console.warn('Received non-array data:', orderBooks); // Логирование данных, если это не массив
         }
