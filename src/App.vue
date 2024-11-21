@@ -60,5 +60,39 @@ ul,li{
 .ttrade-app{
   background: white;
 }
+
+.stats-diagram {
+  padding: 5px;
+}
+
+.stats-diagram .inner {
+}
+
+.stats-diagram .cell {
+  padding-bottom: 5px;
+}
+
+.stats-diagram .ticker-info {
+  font-size: 10px;
+}
+
+.stats-diagram .ticker {
+  white-space: nowrap;
+  display: inline-block;
+  width: 40px;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.stats-diagram .progress-bar-container {
+  position: relative;
+  margin: -1px 0 0;
+}
+
+.stats-diagram .progress-bar {
+  position: absolute;
+  height: 2px;
+  background: rgba(0,0,0,0.4);
+}
 </style>
 

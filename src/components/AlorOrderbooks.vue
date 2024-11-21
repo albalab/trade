@@ -6,39 +6,50 @@
     
     orderbookCounter: {{ orderbookCounter }}<br>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr;">
-      <div>
-        <h3>Все стаканы</h3>
-        <ul style="height: 300px; overflow: hidden;">
-          <li v-for="(value, key) in sortedOrderbookGlobalStats" :key="key">
-            {{ key }}: {{ value }}
-          </li>
-        </ul>
-      </div>
-      <div>
-        <h3>Последние 200</h3>
-        <ul style="height: 300px; overflow: hidden;">
-
-          <div style="height: 500px; overflow: hidden;">
-            <div v-for="(item, ticker) in sortedOrderbookLastStats"
-                 :key='item.id'
-                 style="display: table-row;">
-              <div style="display: table-cell; padding-bottom: 5px;">
-                <div style="opacity: 0.5; font-size: 10px;">{{ticker}}</div>
-                <div style="position: relative; margin: -1px 0 0;">
-                  <div style="position: absolute; height: 2px; background: black;"
-                       :style="{ width: `${25*item}%` }"></div>
+    <div style="overflow: auto; height: 350px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr;">
+          <div>
+            <h3>Все стаканы</h3>
+            <div class="stats-diagram">
+              <div class="inner">
+                <div v-for="(item, ticker) in sortedOrderbookGlobalStats"
+                     :key="item.id"
+                     class="row">
+                  <div class="cell">
+                    <div class="ticker-info">
+                      <span class="ticker">{{ticker}}</span> {{item}}
+                    </div>
+                    <div class="progress-bar-container">
+                      <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(sortedOrderbookGlobalStats)))}%` }"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
-
             </div>
           </div>
+          <div>
+            <h3>Последние 200</h3>
 
-<!--          <li v-for="(value, key) in sortedOrderbookLastStats" :key="key">
-            {{ key }}: {{ value }}
-          </li>-->
-        </ul>
-      </div>
+            <div class="stats-diagram">
+              <div class="inner">
+                <div v-for="(item, ticker) in sortedOrderbookLastStats"
+                     :key="item.id"
+                     class="row">
+                  <div class="cell">
+                    <div class="ticker-info">
+                      <span class="ticker"
+                            @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
+                    </div>
+                    <div class="progress-bar-container">
+                      <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(sortedOrderbookLastStats)))}%` }"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
     </div>
 
   </div>
@@ -162,6 +173,14 @@ export default {
 
   methods: {
 
+    selectTicker(ticker){
+      window.parent.postMessage({
+        'selectTicker': ticker
+      }, "*");
+
+      //console.log('Select ticker', ticker);
+    },
+
     updateOrderbooks() {
       setTimeout(() => {
         this.$emit('update-orderbooks-summary', this.marketSummary);
@@ -229,3 +248,5 @@ export default {
 
 };
 </script>
+
+
