@@ -5,6 +5,45 @@
     <div>tradesCountBuy: {{tradesCountBuy}}</div>
     <div>tradesCountSell: {{tradesCountSell}}</div>
 
+    <div style="overflow: auto; height: 350px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr;">
+        <div>
+          <h3>Накопленная статистика</h3>
+          <div class="stats-diagram">
+            <div v-for="(count, ticker) in sortedAccumulatedTradeStats" :key="ticker" class="row">
+              <div class="cell">
+                <div class="ticker-info">
+                  <span class="ticker" @click="selectTicker(ticker)">{{ ticker }}</span>: {{ count }}
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar" :style="{ width: `${(count / Math.max(...Object.values(accumulatedTradeStats))) * 100}%` }"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3>Stream objects</h3>
+          <div class="stats-diagram">
+            <div v-for="(trades, ticker) in sortedTrades" :key="ticker" class="row">
+              <div class="cell">
+                <div class="ticker-info">
+                  <span class="ticker" @click="selectTicker(ticker)">{{ ticker }}</span> {{ trades.length }}
+                </div>
+                <div class="progress-bar-container">
+                  <div
+                      class="progress-bar"
+                      :style="{ width: `${100 * (trades.length / Math.max(...Object.values(sortedTrades).map((t) => t.length)))}%` }"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Топ 10 выгодных сделок (Покупки)
       <div v-for="(item, ticker) in advantageousBuyDifferences" :key="ticker">
@@ -203,6 +242,8 @@ export default {
 
       tradeCounter: 0,
 
+      accumulatedTradeStats: {},
+
       collectedClosePrice: {},
 
       expirationTime: 5000,
@@ -244,6 +285,31 @@ export default {
 
 
   computed: {
+
+    groupedTrades() {
+      return this.trades.reduce((acc, trade) => {
+        const { ticker } = trade;
+        if (!acc[ticker]) {
+          acc[ticker] = [];
+        }
+        acc[ticker].push(trade);
+        return acc;
+      }, {});
+    },
+    sortedTrades() {
+      return Object.entries(this.groupedTrades)
+          .sort(([, a], [, b]) => b.length - a.length) // Сортировка по длине массивов
+          .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+          }, {});
+    },
+
+    sortedAccumulatedTradeStats() {
+      return Object.fromEntries(
+          Object.entries(this.accumulatedTradeStats).sort(([, a], [, b]) => b - a)
+      );
+    },
 
     percentageDifferencesSorted() {
       return Object.entries(this.buyPercentageDifferences)
@@ -507,17 +573,16 @@ export default {
 
   methods: {
 
-    /*extendObject(obj, prefix) {
-      function toCamelCase(str) {
-        return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-      }
-      Object.keys(obj).forEach(key => {
-        const camelCaseKey = toCamelCase(key);
-        const newKey = `${prefix}${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`;
-        obj[newKey] = obj[key];
+    updateAccumulatedTradeStats(trades) {
+      const stats = { ...this.accumulatedTradeStats };
+
+      trades.forEach((trade) => {
+        const { ticker } = trade;
+        stats[ticker] = (stats[ticker] || 0) + 1;
       });
-      return obj;
-    },*/
+
+      this.accumulatedTradeStats = stats;
+    },
 
     collectTradeData(trades) {
       const updatedClosePrices = { ...this.collectedClosePrice };
@@ -680,6 +745,7 @@ export default {
         if (!Array.isArray(trades)) return;
 
         this.collectTradeData(trades);
+        this.updateAccumulatedTradeStats(trades);
 
         // Локальные переменные для накопления данных
         const localTrades = [];
@@ -727,8 +793,16 @@ export default {
         // Ограничение размера массива trades
         if (localTrades.length > 1000) localTrades.splice(0, localTrades.length - 1000);
 
+        console.log();
+
         // Присваивание локальных значений после завершения цикла
         this.trades.push(...localTrades);
+
+        // Обрезаем массив до последних 1000 элементов
+        if (this.trades.length > 1000) {
+          this.trades.splice(0, this.trades.length - 1000);
+        }
+
         this.totalCountTrades = localTotalCountTrades;
         this.tradesCountBuy = localTradesCountBuy;
         this.tradesCountSell = localTradesCountSell;
