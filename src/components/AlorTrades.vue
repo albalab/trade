@@ -748,7 +748,8 @@ export default {
         this.updateAccumulatedTradeStats(trades);
 
         // Локальные переменные для накопления данных
-        const localTrades = [];
+        let localTrades = [...this.trades];
+
         let localTotalCountTrades = this.totalCountTrades;
         let localTradesCountBuy = this.tradesCountBuy;
         let localTradesCountSell = this.tradesCountSell;
@@ -790,18 +791,9 @@ export default {
 
         });
 
-        // Ограничение размера массива trades
-        if (localTrades.length > 1000) localTrades.splice(0, localTrades.length - 1000);
+        if (localTrades.length > 200) localTrades.splice(0, localTrades.length - 200);
 
-        console.log();
-
-        // Присваивание локальных значений после завершения цикла
-        this.trades.push(...localTrades);
-
-        // Обрезаем массив до последних 1000 элементов
-        if (this.trades.length > 1000) {
-          this.trades.splice(0, this.trades.length - 1000);
-        }
+        this.trades = localTrades;
 
         this.totalCountTrades = localTotalCountTrades;
         this.tradesCountBuy = localTradesCountBuy;
