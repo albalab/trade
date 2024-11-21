@@ -17,7 +17,8 @@
                      class="row">
                   <div class="cell">
                     <div class="ticker-info">
-                      <span class="ticker">{{ticker}}</span> {{item}}
+                      <span class="ticker"
+                            @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
                     </div>
                     <div class="progress-bar-container">
                       <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(sortedOrderbookGlobalStats)))}%` }"></div>
