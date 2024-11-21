@@ -5,7 +5,7 @@
     <div>tradesCountBuy: {{tradesCountBuy}}</div>
     <div>tradesCountSell: {{tradesCountSell}}</div>
 
-    <div style="overflow: auto; height: 350px;">
+    <div style="overflow: hidden; height: 350px;">
       <div style="display: grid; grid-template-columns: 1fr 1fr;">
         <div>
           <h3>Total counts</h3>
