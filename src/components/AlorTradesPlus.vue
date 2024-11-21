@@ -1,11 +1,20 @@
 <template>
   <div>
 
-    {{Object.keys(collectedClosePrice).length}}
-
     <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Топ 10 выгодных сделок (Покупки)
       <div v-for="(item, ticker) in advantageousBuyDifferences" :key="ticker">
+    <span class="select-ticker"
+          @click="selectTicker(ticker)">
+      {{ ticker }}
+    </span>:
+        {{ item.percentage }}% (Buy: {{ item.buyPrice }} → Sell: {{ item.sellPrice }})
+      </div>
+    </div>
+
+    <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
+      Топ 10 выгодных сделок (Продажи)
+      <div v-for="(item, ticker) in advantageousSellDifferences" :key="ticker">
     <span class="select-ticker"
           @click="selectTicker(ticker)">
       {{ ticker }}
@@ -166,6 +175,13 @@ export default {
   },
 
   methods: {
+
+    selectTicker(ticker){
+      window.parent.postMessage({
+        'selectTicker': ticker
+      }, "*");
+    },
+
     updateTrades(trades){
       this.collectTradeData(trades);
     },

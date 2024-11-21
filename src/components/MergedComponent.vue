@@ -1,25 +1,6 @@
 <template>
   <div class="panels-container">
 
-    <div style="padding: 10px;">
-      <input v-model="priceOrder" placeholder="price"><br>
-      <input v-model="tickerOrder" placeholder="ticker"><br>
-      <input v-model="sideOrder" placeholder="side"><br>
-      <button @click="sendLimitOrder(1, priceOrder, tickerOrder, 'MOEX', sideOrder, 'D88141')">
-        Отправить лимитный ордер
-      </button>
-    </div>
-
-    <div style="margin: 0 0 10px;">
-      <button @click="resetCache">Reset Cache</button>
-    </div>
-
-    <input type="text" v-model="selectedTicker"/><br>
-    <div style="padding: 10px;">
-      <div v-for="(item, key) in cachedData[selectedTicker]" :key="item?.id">
-        {{key}}: {{item}}
-      </div>
-    </div>
 
     <div class="panels-grid">
 
@@ -52,6 +33,28 @@
         <AlorQuotesPlus @update-quotes-summary="updateQuotes"/>
       </div>
     </div>
+
+
+    <div style="padding: 10px;">
+      <input v-model="priceOrder" placeholder="price"><br>
+      <input v-model="tickerOrder" placeholder="ticker"><br>
+      <input v-model="sideOrder" placeholder="side"><br>
+      <button @click="sendLimitOrder(1, priceOrder, tickerOrder, 'MOEX', sideOrder, 'D88141')">
+        Отправить лимитный ордер
+      </button>
+    </div>
+
+    <div style="margin: 0 0 10px;">
+      <button @click="resetCache">Reset Cache</button>
+    </div>
+
+    <input type="text" v-model="selectedTicker"/><br>
+    <div style="padding: 10px;">
+      <div v-for="(item, key) in cachedData[selectedTicker]" :key="item?.id">
+        {{key}}: {{item}}
+      </div>
+    </div>
+
   </div>
 </template>
 
