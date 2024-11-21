@@ -1,14 +1,14 @@
 <template>
   <div>
     <h2>Trades</h2>
-    <div>totalCountTrades: {{ totalCountTrades }}</div>
+    <div>tradeCounter: {{ tradeCounter }}</div>
     <div>tradesCountBuy: {{tradesCountBuy}}</div>
     <div>tradesCountSell: {{tradesCountSell}}</div>
 
     <div style="overflow: auto; height: 350px;">
       <div style="display: grid; grid-template-columns: 1fr 1fr;">
         <div>
-          <h3>Накопленная статистика</h3>
+          <h3>Total counts</h3>
           <div class="stats-diagram">
             <div v-for="(count, ticker) in sortedAccumulatedTradeStats" :key="ticker" class="row">
               <div class="cell">
@@ -755,12 +755,15 @@ export default {
         let localTradesCountSell = this.tradesCountSell;
         const localTickerStats = JSON.parse(JSON.stringify(this.tickerStats)); // Глубокая копия для избежания реактивности
 
+        let tradeCounter = this.tradeCounter;
+
         trades.forEach(trade => {
 
           //const tradeExtended = this.extendObject(trade, "trade");
 
           localTrades.push(trade);
           localTotalCountTrades++;
+          tradeCounter++;
 
           if (trade.side === 'buy') {
             localTradesCountBuy++;
@@ -799,7 +802,8 @@ export default {
         this.tradesCountBuy = localTradesCountBuy;
         this.tradesCountSell = localTradesCountSell;
         this.tickerStats = localTickerStats; // Замена тикерной статистики целиком
-
+        this.tradeCounter = tradeCounter;
+        
         // Обновление только для сделок на покупку
         this.collectSellTradeData(trades);
         this.collectBuyTradeData(trades);
