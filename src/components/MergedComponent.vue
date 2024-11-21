@@ -21,7 +21,9 @@
       </div>
 
       <div class="panel">
-        <AlorTradesPlus @update-trades-summary="updateTrades"/>
+        <AlorTradesPlus
+            @update-trades-stats="updateTradesStats"
+            @update-trades-summary="updateTrades"/>
       </div>
       <div class="panel">
         <AlorOrderbooksPlus @update-orderbooks-summary="updateOrderbooks"/>
@@ -46,6 +48,12 @@
 
     <div style="margin: 0 0 10px;">
       <button @click="resetCache">Reset Cache</button>
+    </div>
+
+    <div style="margin: 0 0 10px;">
+      <div v-for="(item, key) in globalData.tradesStats" :key="item.id">
+        {{key}}: {{item}}
+      </div>
     </div>
 
     <input type="text" v-model="selectedTicker"/><br>
@@ -121,14 +129,17 @@ export default {
     updateOrderbooks(orderbooks) {
       this.globalData.orderbooks = orderbooks;
     },
-    updateTrades(trades) {
-      this.globalData.trades = trades;
-    },
     updateCandles(candles) {
       this.globalData.candles = candles;
     },
     updateQuotes(quotes) {
       this.globalData.quotes = quotes;
+    },
+    updateTrades(trades) {
+      this.globalData.trades = trades;
+    },
+    updateTradesStats(tradesStats) {
+      this.globalData.tradesStats = tradesStats;
     },
 
     sendLimitOrder: importedSendLimitOrder,
@@ -143,7 +154,6 @@ export default {
           Object.assign(result[key], data[section][key]);
         }
       }
-
       this.cachedData = result; // Обновляем кэшированные данные
     },
   },
@@ -153,7 +163,20 @@ export default {
       deep: true,
       immediate: true,
       handler() {
-        this.updateCachedData(); // Обновляем кэшированные данные при изменении globalData
+
+        if(this.timerInProgress) {
+          setTimeout(() => {
+            this.updateCachedData();
+          }, 600);
+          return;
+        }
+
+        this.timerInProgress = true;
+        setTimeout(() => {
+          this.updateCachedData();
+          this.timerInProgress = false;
+        }, 500);
+
       }
     }
   }

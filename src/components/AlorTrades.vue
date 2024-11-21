@@ -106,6 +106,14 @@ export default {
       );
     },
 
+    marketStats() {
+      return {
+        tradeCounter: this.tradeCounter,
+        tradeCounterBuy: this.tradeCounterBuy,
+        tradeCounterSell: this.tradeCounterSell,
+      }
+    },
+
     marketSummary() {
       const summary = {};
 
@@ -162,6 +170,7 @@ export default {
         //const mergedTrades = {...this.marketSummary, ...this.trades[this.trades.length-1]};
 
         this.$emit('update-trades-summary', this.marketSummary);
+        this.$emit('update-trades-stats', this.marketStats);
         this.updateTrades();
       }, 200);
     },

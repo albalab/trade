@@ -1,8 +1,8 @@
 <template>
   <div>
     <AlorCandles
-        @update-trade="updateCandle"
-        @update-trades-summary="updateCandlesSummary"/>
+        @update-candle="updateCandle"
+        @update-candles-summary="updateCandlesSummary"/>
   </div>
 </template>
 

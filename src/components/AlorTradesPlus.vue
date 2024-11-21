@@ -27,6 +27,7 @@
 
     <AlorTrades
         @update-trades="updateTrades"
+        @update-trades-stats="updateTradesStats"
         @update-trades-summary="updateTradesSummary"/>
 
 
@@ -471,6 +472,10 @@ export default {
 
       this.updateTradeHistory();
 
+    },
+
+    updateTradesStats(tradesStats){
+      this.$emit('update-trades-stats', tradesStats);
     },
 
     updateTradesSummary(tradesSummary){
