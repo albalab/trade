@@ -1,55 +1,59 @@
 <template>
   <div style="background: white; overflow: hidden;">
-
     <h2>Orderbooks</h2>
 
     orderbookCounter: {{ orderbookCounter }}<br>
 
     <div style="overflow: auto; height: 350px;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr;">
-          <div>
-            <h3>Все стаканы</h3>
-            <div class="stats-diagram">
-              <div v-for="(item, ticker) in sortedOrderbookGlobalStats"
-                   :key="item.id"
-                   class="row">
-                <div class="cell">
-                  <div class="ticker-info">
-                    <span class="ticker"
-                          @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
-                  </div>
-                  <div class="progress-bar-container">
-                    <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(sortedOrderbookGlobalStats)))}%` }"></div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr;">
+
+        <div>
+          <h3>Total counts</h3>
+          <div class="stats-diagram">
+            <div v-for="(item, ticker) in sortedOrderbookGlobalStats"
+                 :key="ticker"
+                 class="row">
+              <div class="cell">
+                <div class="ticker-info">
+                  <span class="ticker"
+                        @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar"
+                       :style="{ width: `${100 * (item / Math.max(...Object.values(sortedOrderbookGlobalStats)))}%` }">
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div>
-            <h3>Последние 200</h3>
-
-            <div class="stats-diagram">
-              <div v-for="(item, ticker) in sortedOrderbookLastStats"
-                   :key="item.id"
-                   class="row">
-                <div class="cell">
-                  <div class="ticker-info">
-                    <span class="ticker"
-                          @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
-                  </div>
-                  <div class="progress-bar-container">
-                    <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(sortedOrderbookLastStats)))}%` }"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
-    </div>
 
+        <div>
+          <h3>Stream objects</h3>
+          <div class="stats-diagram">
+            <div v-for="(orderbooks, ticker) in sortedOrderbookLastStats"
+                 :key="ticker"
+                 class="row">
+              <div class="cell">
+                <div class="ticker-info">
+                  <span class="ticker"
+                        @click="selectTicker(ticker)">{{ticker}}</span> {{orderbooks.length}}
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar"
+                       :style="{ width: `${100 * (orderbooks.length / Math.max(...Object.values(sortedOrderbookLastStats).map(o => o.length)))}%` }">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </template>
+
 
 <script>
 import { tickersSteps } from '../tickersSteps.js';
@@ -74,6 +78,7 @@ export default {
   },
 
   computed: {
+
 
     marketSummary() {
       const summary = {};
@@ -147,24 +152,28 @@ export default {
       return summary;
     },
 
-    orderbookLastStats() {
-      return this.orderbook.reduce((acc, item) => {
-        acc[item.ticker] = (acc[item.ticker] || 0) + 1;
-        return acc;
-      }, {});
-    },
-    
     sortedOrderbookGlobalStats() {
       return Object.fromEntries(
           Object.entries(this.orderbookGlobalStats).sort(([, a], [, b]) => b - a)
       );
     },
-    
+
+    groupedOrderbookLastStats() {
+      return this.orderbook.reduce((acc, order) => {
+        const ticker = order.ticker;
+        if (!acc[ticker]) acc[ticker] = [];
+        acc[ticker].push(order);
+        return acc;
+      }, {});
+    },
+
     sortedOrderbookLastStats() {
+      const grouped = this.groupedOrderbookLastStats;
       return Object.fromEntries(
-          Object.entries(this.orderbookLastStats).sort(([, a], [, b]) => b - a)
+          Object.entries(grouped).sort(([, a], [, b]) => b.length - a.length)
       );
     },
+
   },
 
   methods: {

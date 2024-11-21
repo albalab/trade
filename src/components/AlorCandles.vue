@@ -7,7 +7,7 @@
     <div style="overflow: auto; height: 350px;">
       <div style="display: grid; grid-template-columns: 1fr 1fr;">
         <div>
-          <div>Статистика по всем свечам</div>
+          <h3>Total counts</h3>
           <div class="stats-diagram">
             <div v-for="(item, ticker) in sortedAccumulatedCandleStats"
                  :key="ticker"
@@ -25,7 +25,7 @@
           </div>
         </div>
         <div>
-          <div>Последние 200 свечей</div>
+          <h3>Stream objects</h3>
           <div class="stats-diagram">
             <div v-for="(candles, ticker) in sortedCandles"
                  :key="ticker"

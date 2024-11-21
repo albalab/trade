@@ -7,7 +7,7 @@
     <div style="overflow: auto; height: 350px;">
       <div style="display: grid; grid-template-columns: 1fr 1fr;">
         <div>
-          <h3>Статистика по котировкам</h3>
+          <h3>Total counts</h3>
 
           <div class="stats-diagram">
             <div v-for="(item, ticker) in sortedAccumulatedQuoteStats"
@@ -26,8 +26,7 @@
           </div>
         </div>
         <div>
-          <!-- Вычисляемая статистика -->
-          <h3>Последние 200 котировок</h3>
+          <h3>Stream objects</h3>
           <div class="stats-diagram">
             <div v-for="(quotes, ticker) in sortedQuotesLastStats" :key="ticker" class="row">
               <div class="cell">
