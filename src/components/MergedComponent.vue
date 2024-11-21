@@ -40,16 +40,16 @@
       </div>
 
       <div class="panel">
-        <AlorTrades @update-trades-summary="updateTrades"/>
+        <AlorTradesPlus @update-trades-summary="updateTrades"/>
       </div>
       <div class="panel">
-        <AlorOrderbooks @update-orderbooks-summary="updateOrderbooks"/>
+        <AlorOrderbooksPlus @update-orderbooks-summary="updateOrderbooks"/>
       </div>
       <div class="panel">
-        <AlorCandles @update-candles-summary="updateCandles"/>
+        <AlorCandlesPlus @update-candles-summary="updateCandles"/>
       </div>
       <div class="panel">
-        <AlorQuotes @update-quotes-summary="updateQuotes"/>
+        <AlorQuotesPlus @update-quotes-summary="updateQuotes"/>
       </div>
     </div>
   </div>
@@ -57,10 +57,10 @@
 
 <script>
 import { sendLimitOrder as importedSendLimitOrder } from '../modules/LimitOrderModule.js';
-import AlorTrades from './AlorTrades.vue';
-import AlorOrderbooks from './AlorOrderbooks.vue';
-import AlorCandles from './AlorCandles.vue';
-import AlorQuotes from './AlorQuotes.vue';
+import AlorTradesPlus from './AlorTradesPlus.vue';
+import AlorOrderbooksPlus from './AlorOrderbooksPlus.vue';
+import AlorCandlesPlus from './AlorCandlesPlus.vue';
+import AlorQuotesPlus from './AlorQuotesPlus.vue';
 
 import { useCacheStore } from '@/stores/cacheStore';
 
@@ -81,10 +81,10 @@ export default {
   },
 
   components: {
-    AlorTrades,
-    AlorOrderbooks,
-    AlorCandles,
-    AlorQuotes,
+    AlorTradesPlus,
+    AlorOrderbooksPlus,
+    AlorCandlesPlus,
+    AlorQuotesPlus,
   },
 
   data() {

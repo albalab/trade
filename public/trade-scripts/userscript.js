@@ -29,7 +29,7 @@
 
         //'https://bitbucket.org/albalab/trade-scripts/raw/main/templates/templateWS.js',
 
-        'https://bitbucket.org/albalab/trade-scripts/raw/main/subscribeAlorTrade.js',
+        //'https://bitbucket.org/albalab/trade-scripts/raw/main/subscribeAlorTrade.js',
 
     ];
 

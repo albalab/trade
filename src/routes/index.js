@@ -23,6 +23,10 @@ const routes = [
         component: () => import('../components/AlorTrades.vue')
     },
     {
+        path: '/alortradesplus',
+        component: () => import('../components/AlorTradesPlus.vue')
+    },
+    {
         path: '/tcscandles',
         component: () => import('../components/TcsCandles.vue')
     },
