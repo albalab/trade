@@ -2,8 +2,8 @@
   <div>
     <h2>Trades</h2>
     <div>tradeCounter: {{ tradeCounter }}</div>
-    <div>tradesCountBuy: {{tradesCountBuy}}</div>
-    <div>tradesCountSell: {{tradesCountSell}}</div>
+    <div>tradeCounterBuy: {{tradeCounterBuy}}</div>
+    <div>tradeCounterSell: {{tradeCounterSell}}</div>
 
     <div style="overflow: hidden; height: 350px;">
       <div style="display: grid; grid-template-columns: 1fr 1fr;">
@@ -52,50 +52,16 @@
 
 import { tickersSteps } from '../tickersSteps.js';
 
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useCacheStore } from '@/stores/cacheStore';
-//import { throttle } from '@/stores/helper.js';
-
 export default {
   name: 'alor-trades',
-
-  setup() {
-    const cacheStore = useCacheStore();
-
-    // Локальные переменные, которые будем сохранять
-    const tradesCountBuy = ref(cacheStore.tradesCountBuy || 0);
-    const tradesCountSell = ref(cacheStore.tradesCountSell || 0);
-
-    // Функция для периодического сохранения состояния
-    const saveState = () => {
-      cacheStore.tradesCountBuy = tradesCountBuy.value;
-      cacheStore.tradesCountSell = tradesCountSell.value;
-
-    };
-
-    // Запускаем таймер для сохранения состояния каждые 5 секунд
-
-    onMounted(() => {
-      setInterval(saveState, 15000); // Сохраняем каждые 15 секунд
-    });
-
-    // Очищаем таймер при размонтировании компонента
-    onUnmounted(() => {
-      //clearInterval(saveInterval);
-      //clearInterval(this.clearDataInterval);
-    });
-
-    return {
-      tradesCountBuy,
-      tradesCountSell,
-    };
-  },
-
+  
   data() {
     return {
 
       tradeCounter: 0,
-
+      tradeCounterBuy: 0,
+      tradeCounterSell: 0,
+      
       accumulatedTradeStats: {},
 
       expirationTime: 5000,
@@ -108,8 +74,7 @@ export default {
 
 
       trades: [],
-      totalCountTrades: 0,
-
+      
     };
   },
 
@@ -208,19 +173,14 @@ export default {
         if (!Array.isArray(trades)) return;
 
         this.updateAccumulatedTradeStats(trades);
-
-        let localTotalCountTrades = this.totalCountTrades;
-
+        
         this.$emit('update-trades', trades);
-
-
 
 
         let localTrades = [...this.trades];
 
-        let localTradesCountBuy = this.tradesCountBuy;
-        let localTradesCountSell = this.tradesCountSell;
-
+        let localTradeCounterBuy = this.tradeCounterBuy;
+        let localTradeCounterSell = this.tradeCounterSell;
         let tradeCounter = this.tradeCounter;
 
         trades.forEach(trade => {
@@ -228,23 +188,22 @@ export default {
           //this.$emit('update-trade', trade);
 
           localTrades.push(trade);
-          localTotalCountTrades++;
           tradeCounter++;
 
           if (trade.side === 'buy') {
-            localTradesCountBuy++;
+            localTradeCounterBuy++;
           } else if (trade.side === 'sell') {
-            localTradesCountSell++;
+            localTradeCounterSell++;
           }
         });
+
 
         if (localTrades.length > 200) localTrades.splice(0, localTrades.length - 200);
 
         this.trades = localTrades;
-
-        this.totalCountTrades = localTotalCountTrades;
-        this.tradesCountBuy = localTradesCountBuy;
-        this.tradesCountSell = localTradesCountSell;
+        
+        this.tradeCounterBuy = localTradeCounterBuy;
+        this.tradeCounterSell = localTradeCounterSell;
         this.tradeCounter = tradeCounter;
 
 
