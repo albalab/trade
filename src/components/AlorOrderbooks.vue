@@ -3,7 +3,6 @@
 
     <h2>Orderbooks</h2>
 
-    
     orderbookCounter: {{ orderbookCounter }}<br>
 
     <div style="overflow: auto; height: 350px;">
@@ -11,18 +10,16 @@
           <div>
             <h3>Все стаканы</h3>
             <div class="stats-diagram">
-              <div class="inner">
-                <div v-for="(item, ticker) in sortedOrderbookGlobalStats"
-                     :key="item.id"
-                     class="row">
-                  <div class="cell">
-                    <div class="ticker-info">
-                      <span class="ticker"
-                            @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
-                    </div>
-                    <div class="progress-bar-container">
-                      <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(sortedOrderbookGlobalStats)))}%` }"></div>
-                    </div>
+              <div v-for="(item, ticker) in sortedOrderbookGlobalStats"
+                   :key="item.id"
+                   class="row">
+                <div class="cell">
+                  <div class="ticker-info">
+                    <span class="ticker"
+                          @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
+                  </div>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(sortedOrderbookGlobalStats)))}%` }"></div>
                   </div>
                 </div>
               </div>
@@ -32,18 +29,16 @@
             <h3>Последние 200</h3>
 
             <div class="stats-diagram">
-              <div class="inner">
-                <div v-for="(item, ticker) in sortedOrderbookLastStats"
-                     :key="item.id"
-                     class="row">
-                  <div class="cell">
-                    <div class="ticker-info">
-                      <span class="ticker"
-                            @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
-                    </div>
-                    <div class="progress-bar-container">
-                      <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(sortedOrderbookLastStats)))}%` }"></div>
-                    </div>
+              <div v-for="(item, ticker) in sortedOrderbookLastStats"
+                   :key="item.id"
+                   class="row">
+                <div class="cell">
+                  <div class="ticker-info">
+                    <span class="ticker"
+                          @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
+                  </div>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(sortedOrderbookLastStats)))}%` }"></div>
                   </div>
                 </div>
               </div>
@@ -178,8 +173,6 @@ export default {
       window.parent.postMessage({
         'selectTicker': ticker
       }, "*");
-
-      //console.log('Select ticker', ticker);
     },
 
     updateOrderbooks() {
@@ -197,27 +190,25 @@ export default {
       socket.onmessage = (event) => {
         const orderBooks = JSON.parse(event.data);
 
-        // Проверяем, что пришедшие данные — массив
+
         if (Array.isArray(orderBooks)) {
-          // Локальные переменные для накопления данных
-          const neworderbook = [...this.orderbook];
-          let neworderbookCounter = this.orderbookCounter;
-          const neworderbookGlobalStats = { ...this.orderbookGlobalStats };
+
+          const orderbook = [...this.orderbook];
+          let orderbookCounter = this.orderbookCounter;
+          const orderbookGlobalStats = { ...this.orderbookGlobalStats };
 
           orderBooks.forEach(orderBook => {
-            // Проверяем, содержит ли каждый объект в массиве нужные данные
+
             if (orderBook.ticker && orderBook.bids && orderBook.asks) {
 
-              //const orderbookExtended = this.extendObject(orderBook, "orderbook");
+              orderbook.push(orderBook);
 
-              neworderbook.push(orderBook);
-
-              neworderbookCounter++;
-              neworderbookGlobalStats[orderBook.ticker] = (neworderbookGlobalStats[orderBook.ticker] || 0) + 1;
+              orderbookCounter++;
+              orderbookGlobalStats[orderBook.ticker] = (orderbookGlobalStats[orderBook.ticker] || 0) + 1;
 
               // Ограничиваем массив последних 1000 объектов
-              if (neworderbook.length > 200) {
-                neworderbook.shift();
+              if (orderbook.length > 200) {
+                orderbook.shift();
               }
             } else {
               console.warn('Received invalid order book data:', orderBook); // Логирование некорректных данных
@@ -225,9 +216,9 @@ export default {
           });
 
           // Обновляем реактивные свойства один раз после цикла
-          this.orderbook = neworderbook;
-          this.orderbookCounter = neworderbookCounter;
-          this.orderbookGlobalStats = neworderbookGlobalStats;
+          this.orderbook = orderbook;
+          this.orderbookCounter = orderbookCounter;
+          this.orderbookGlobalStats = orderbookGlobalStats;
         } else {
           console.warn('Received non-array data:', orderBooks); // Логирование данных, если это не массив
         }

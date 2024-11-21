@@ -2,27 +2,46 @@
   <div style="background: white; overflow: hidden;">
     <h2>Quotes</h2>
 
-    <div>quotesTicker: {{quotes[0]?.ticker}}</div>
-    <div>quotes{{quotes[0]?.description}}</div>
-    <div>{{quotes[0]?.prev_close_price}}</div>
+    quoteCounter: {{quoteCounter}}<br>
 
-    <div v-for="item in cacheQuotes" :key="item.id">
-      {{ item }}
-    </div>
+    <div style="overflow: auto; height: 350px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr;">
+        <div>
+          <h3>Статистика по котировкам</h3>
 
-    <div style="float: left; height: 500px; overflow: hidden; padding: 10px; border: solid 1px #ccc;">
-      Статистика распределения количества котировок по тикерам
-      <div v-for="(quotes, ticker) in sortedQuotesLastStats"
-           :key='quotes.id'
-           style="display: table-row;">
-        <div style="display: table-cell; width: 60px;">{{ticker}}:</div>
-
-        <div style="display: table-cell; width: 80px">{{quotes[quotes.length-1].last_price}}</div>
-
-        <div style="display: table-cell; width: 100px;">
-          <div style="position: relative;">
-            <div style="position: absolute; height: 2px; background: black;"
-                 :style="{ width: `${10*quotes.length}%` }"></div>
+          <div class="stats-diagram">
+            <div v-for="(item, ticker) in sortedAccumulatedQuoteStats"
+                 :key="ticker"
+                 class="row">
+              <div class="cell">
+                <div class="ticker-info">
+                    <span class="ticker"
+                          @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(accumulatedQuoteStats)))}%` }"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <!-- Вычисляемая статистика -->
+          <h3>Последние 200 котировок</h3>
+          <div class="stats-diagram">
+            <div v-for="(quotes, ticker) in sortedQuotesLastStats" :key="ticker" class="row">
+              <div class="cell">
+                <div class="ticker-info">
+                  <span class="ticker" @click="selectTicker(ticker)">{{ticker}}</span>
+                  {{quotes.length}}
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar"
+                       :style="{ width: `${100 * (quotes.length / Math.max(...Object.values(sortedQuotesLastStats).map(q => q.length)))}%` }">
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -32,15 +51,24 @@
 </template>
 
 <script>
+import {tickers} from "@/tickers";
+import {tickersSteps} from "@/tickersSteps";
+
 export default {
   name: "alor-quotes",
   data() {
     return {
+      quoteCounter: 0,
+      accumulatedQuoteStats: {}, // Накопительная статистика
       tickerStats: {},
 
       cacheQuotes: [],
 
+      tickersSteps,
+      tickers,
+
       quotes: [], // Массив для хранения данных о котировках
+      orderbookGlobalStats: tickers.reduce((obj, ticker) => ({ ...obj, [ticker]: 0 }), {}),
 
       collectedLastPrices: {}, // Хранилище для коллекции последних цен
       maxLength: 100, // Максимальная длина массива для каждого тикера
@@ -48,6 +76,12 @@ export default {
     };
   },
   computed: {
+
+    sortedAccumulatedQuoteStats() {
+      return Object.fromEntries(
+          Object.entries(this.accumulatedQuoteStats).sort(([, a], [, b]) => b - a)
+      );
+    },
 
     marketSummary() {
       const summary = {};
@@ -121,6 +155,28 @@ export default {
     this.updateQuotes();
   },
   methods: {
+
+    processNewQuotes(newQuotes) {
+      const accumulatedStats = { ...this.accumulatedQuoteStats };
+
+      newQuotes.forEach((quote) => {
+        const ticker = quote.ticker;
+
+        // Обновляем накопительную статистику
+        accumulatedStats[ticker] = (accumulatedStats[ticker] || 0) + 1;
+
+        // Добавляем котировку в массив
+        this.quotes.push(quote);
+
+        // Ограничиваем размер массива
+        if (this.quotes.length > this.maxLength) {
+          this.quotes.shift();
+        }
+      });
+
+      this.accumulatedQuoteStats = accumulatedStats;
+    },
+
     collectQuoteData(quotes) {
       const updatedLastPrices = { ...this.collectedLastPrices };
 
@@ -153,40 +209,45 @@ export default {
       const socket = new WebSocket('wss://refine.video/quotes/');
 
       socket.onmessage = (event) => {
-        const quotes = JSON.parse(event.data);
+        const newQuotes = JSON.parse(event.data);
 
-        if (Array.isArray(quotes)) {
-          const newQuotes = [...this.quotes];
-          const newTickerStats = { ...this.tickerStats };
+        if (Array.isArray(newQuotes)) {
 
-          quotes.forEach((quote) => {
+          const quotes = [...this.quotes];
+          const tickerStats = { ...this.tickerStats };
+          let quoteCounter = this.quoteCounter;
 
-            //const quote = this.extendQuote(_quote);
+          this.processNewQuotes(newQuotes);
+
+          newQuotes.forEach((quote) => {
 
             if (quote.ticker && quote.last_price !== undefined) {
 
-              if (newTickerStats[quote.ticker]) {
-                newTickerStats[quote.ticker]++;
+              if (tickerStats[quote.ticker]) {
+                tickerStats[quote.ticker]++;
               } else {
-                newTickerStats[quote.ticker] = 1;
+                tickerStats[quote.ticker] = 1;
               }
 
               //const quoteExtended = this.extendObject(quote, "quote");
-              newQuotes.push(quote);
+              quotes.push(quote);
 
-              if (newQuotes.length > 200) {
-                newQuotes.shift();
+              quoteCounter++;
+
+              if (quotes.length > 200) {
+                quotes.shift();
               }
             } else {
               console.warn("Invalid quote data:", quote);
             }
           });
 
-          this.cacheQuotes = this.collectQuoteData(newQuotes);
-          this.quotes = newQuotes;
-          this.tickerStats = newTickerStats;
+          this.cacheQuotes = this.collectQuoteData(quotes);
+          this.quotes = quotes;
+          this.quoteCounter = quoteCounter;
+          this.tickerStats = tickerStats;
         } else {
-          console.warn("Received non-array data:", quotes);
+          console.warn("Received non-array data:", newQuotes);
         }
       };
 
@@ -205,13 +266,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-ul {
-  list-style-type: none;
-  padding-left: 0;
-}
-li {
-  margin-bottom: 10px;
-}
-</style>

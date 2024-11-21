@@ -2,29 +2,47 @@
   <div style="background: white; overflow: hidden;">
     <h2>Candles</h2>
 
-    <div v-for="item in cacheCandles" :key="item.id">
-      {{item}}
-    </div>
+    candleCounter: {{candleCounter}}<br>
 
-    <div style="float: left; height: 500px; overflow: hidden; padding: 10px; border: solid 1px #ccc;">
-      Статистика распределения количества свечей по тикерам
-      <div style="display: table;">
-
-        <div v-for="(candles, ticker) in sortedCandlesLastStats"
-             :key='candles.id'
-             style="display: table-row;">
-          <div style="display: table-cell; width: 60px;">{{ticker}}:</div>
-
-          <div style="display: table-cell; width: 80px"><!--{{candles[candles.length-1].close}}--> {{candles.length}}</div>
-
-          <div style="display: table-cell; width: 100px;">
-            <div style="position: relative;">
-              <div style="position: absolute; height: 2px; background: black;"
-                   :style="{ width: `${10*candles.length}%` }"></div>
+    <div style="overflow: auto; height: 350px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr;">
+        <div>
+          <div>Статистика по всем свечам</div>
+          <div class="stats-diagram">
+            <div v-for="(item, ticker) in sortedAccumulatedCandleStats"
+                 :key="ticker"
+                 class="row">
+              <div class="cell">
+                <div class="ticker-info">
+                    <span class="ticker"
+                          @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(accumulatedCandleStats)))}%` }"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        <div>
+          <div>Последние 200 свечей</div>
+          <div class="stats-diagram">
+            <div v-for="(candles, ticker) in sortedCandles"
+                 :key="ticker"
+                 class="row">
+              <div class="cell">
+                <div class="ticker-info">
+                    <span class="ticker"
+                          @click="selectTicker(ticker)">{{ticker}}</span> {{candles.length}}
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar" :style="{ width: `${100 * (candles.length / Math.max(...Object.values(sortedCandles).map(c => c.length)))}%` }"></div>
+                </div>
+              </div>
+            </div>
+          </div>
 
+        </div>
       </div>
     </div>
 
@@ -38,6 +56,10 @@ export default {
   name: 'alor-candles',
   data() {
     return {
+
+      candleCounter: 0,
+
+      accumulatedCandleStats: {},
 
       tickerInput: "",
 
@@ -55,6 +77,12 @@ export default {
     };
   },
   computed: {
+
+    sortedAccumulatedCandleStats() {
+      return Object.fromEntries(
+          Object.entries(this.accumulatedCandleStats).sort(([, valueA], [, valueB]) => valueB - valueA)
+      );
+    },
 
     marketSummary() {
       const summary = {};
@@ -111,7 +139,7 @@ export default {
       }, {});
     },
 
-    sortedCandlesLastStats() {
+    sortedCandles() {
       const grouped = this.groupedCandles; // Вызываем основное вычисляемое свойство
       return Object.entries(grouped)
           .sort(([, a], [, b]) => b.length - a.length) // Сортируем
@@ -131,6 +159,7 @@ export default {
 
   methods: {
 
+
     updateCandles() {
       setTimeout(() => {
         //const mergedCandles = {...this.marketSummary, ...this.candles[this.candles.length-1]};
@@ -140,6 +169,21 @@ export default {
       }, 500);
     },
 
+
+    processNewCandles(newCandles) {
+      const accumulatedStats = { ...this.accumulatedCandleStats };
+
+      newCandles.forEach((candle) => {
+        const ticker = candle.ticker;
+        accumulatedStats[ticker] = (accumulatedStats[ticker] || 0) + 1;
+        this.candles.push(candle);
+
+        // Ограничиваем размер массива
+        if (this.candles.length > 200) this.candles.shift();
+      });
+
+      this.accumulatedCandleStats = accumulatedStats;
+    },
 
     collectCandleData(candles) {
       // Создаем локальную копию для обновления
@@ -167,36 +211,38 @@ export default {
     },
 
     connectToWebSocket() {
-      // Устанавливаем соединение с WebSocket сервером на порту 3333
+
       const socket = new WebSocket('wss://refine.video/candles/');
 
-      // Обрабатываем получение сообщений от WebSocket сервера
       socket.onmessage = (event) => {
-        const candles = JSON.parse(event.data);
+        const newCandles = JSON.parse(event.data);
 
-        // Проверяем, что пришедшие данные — массив
-        if (Array.isArray(candles)) {
-          // Локальные переменные для накопления данных
-          const newCandles = [...this.candles];
-          const newTickerStats = {...this.tickerStats};
+        if (Array.isArray(newCandles)) {
 
-          candles.forEach(candle => {
-            // Проверка на наличие всех необходимых полей
+          const candles = [...this.candles];
+          const tickerStats = {...this.tickerStats};
+          let candleCounter = this.candleCounter;
+
+          this.processNewCandles(newCandles);
+
+          newCandles.forEach(candle => {
+
             if (candle.ticker && candle.time && candle.open !== undefined &&
                 candle.close !== undefined && candle.high !== undefined &&
                 candle.low !== undefined && candle.volume !== undefined) {
 
-              if (newTickerStats[candle.ticker]) {
-                newTickerStats[candle.ticker]++;
+              if (tickerStats[candle.ticker]) {
+                tickerStats[candle.ticker]++;
               } else {
-                newTickerStats[candle.ticker] = 1;
+                tickerStats[candle.ticker] = 1;
               }
 
-              newCandles.push(candle);
+              candles.push(candle);
 
-              // Сохраняем только последние 100 свечей для оптимизации
-              if (newCandles.length > 200) {
-                newCandles.shift();
+              candleCounter++;
+
+              if (candles.length > 200) {
+                candles.shift();
               }
             } else {
               console.warn('Received invalid candle data:', candle); // Логирование некорректных данных
@@ -207,10 +253,11 @@ export default {
           //console.log(newCandles.length);
 
           // Обновляем реактивные свойства один раз после цикла
-          this.candles = newCandles;
-          this.tickerStats = newTickerStats;
+          this.candles = candles;
+          this.tickerStats = tickerStats;
+          this.candleCounter = candleCounter;
         } else {
-          console.warn('Received non-array data:', candles); // Логирование данных, если это не массив
+          console.warn('Received non-array data:', newCandles); // Логирование данных, если это не массив
         }
       };
 

@@ -201,6 +201,8 @@ export default {
   data() {
     return {
 
+      tradeCounter: 0,
+
       collectedClosePrice: {},
 
       expirationTime: 5000,
