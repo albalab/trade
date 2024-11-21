@@ -384,7 +384,7 @@ export default {
         });
 
         if (
-            maxDifference > 0.01 && // Процент должен быть больше 0
+            maxDifference > 0.2 && // Процент должен быть больше 0
             buyPrice !== null &&
             sellPrice !== null &&
             buyPrice !== sellPrice // Исключаем одинаковые цены
@@ -446,7 +446,7 @@ export default {
         });
 
         if (
-            maxDifference > 0.01 && // Процент должен быть больше 0
+            maxDifference > 0.2 && // Процент должен быть больше 0
             sellPrice !== null &&
             buyPrice !== null &&
             sellPrice !== buyPrice // Исключаем одинаковые цены
