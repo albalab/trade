@@ -1,6 +1,6 @@
 <template>
   <div style="background: white; overflow: hidden;">
-    <h2>Real-time Candlestick Data</h2>
+    <h2>Candles</h2>
 
     <div v-for="item in cacheCandles" :key="item.id">
       {{item}}
@@ -61,10 +61,10 @@ export default {
 
       // Обработка данных свечей
       this.candles.forEach((candle) => {
-        const { ticker, close } = candle;
+        const { ticker } = candle;
         summary[ticker] = summary[ticker] || {};
 
-        summary[ticker].candleLastClosePriceLevel = Math.round(close/this.tickersSteps[ticker]);
+        //summary[ticker].candleLastClosePriceLevel = Math.round(close/this.tickersSteps[ticker]);
 
         Object.entries(candle).forEach(([key, value]) => {
           const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());

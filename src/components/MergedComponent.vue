@@ -21,18 +21,18 @@
       </div>
     </div>
 
-
     <div class="panels-grid">
 
       <div class="panel">
+        <h2>Summary</h2>
+
         <div class="items">
           <div class="items-wrap"
                v-for="(item,key) in sortedBuyVolume"
                :key="item.id">
             <div class="item" style="width: 60px;">{{key}}:</div>
-            <div class="item">{{item?.candleLastClosePrice}}</div>
-            <div class="item">{{item?.candleLastClosePriceLevel}}</div>
-            <div class="item" :style="{color: item?.tradeLastSide === 'buy' ? 'green' : 'red' }">{{item?.tradeLastSide}}</div>
+            <div class="item">{{item?.candleClose}}</div>
+            <div class="item" :style="{color: item?.tradeSide === 'buy' ? 'green' : 'red' }">{{item?.tradeSide}}</div>
             <div class="item" :style="{color: 'green'}">{{item?.tradeBuyVolume}}</div>
             <div class="item" :style="{color: 'red'}">{{item?.tradeSellVolume}}</div>
           </div>

@@ -1,6 +1,6 @@
 <template>
   <div style="background: white; overflow: hidden;">
-    <h2>Real-time Quotes Data</h2>
+    <h2>Quotes</h2>
 
     <div>quotesTicker: {{quotes[0]?.ticker}}</div>
     <div>quotes{{quotes[0]?.description}}</div>
@@ -63,10 +63,10 @@ export default {
           summary[ticker][`quote${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
         });
 
-        summary.quoteSpread = quote.ask - quote.bid; //Показывает "ширину" рынка. Чем меньше spread, тем ликвиднее рынок.
-        summary.quoteMidPrice = (quote.ask + quote.bid) / 2; //Текущая рыночная стоимость инструмента.
-        summary.quotePriceChangeAbsolute = quote.last_price - quote.prev_close_price; //Абсолютное изменение цены относительно цены закрытия предыдущего торгового дня. Используется для анализа роста или падения.
-        summary.quotePriceChangePercent = (summary.quotePriceChangeAbsolute / quote.prev_close_price) * 100; //Абсолютное изменение цены относительно цены закрытия предыдущего торгового дня. Используется для анализа роста или падения.
+        summary[ticker].quoteSpread = quote.ask - quote.bid; //Показывает "ширину" рынка. Чем меньше spread, тем ликвиднее рынок.
+        summary[ticker].quoteMidPrice = (quote.ask + quote.bid) / 2; //Текущая рыночная стоимость инструмента.
+        summary[ticker].quotePriceChangeAbsolute = quote.last_price - quote.prev_close_price; //Абсолютное изменение цены относительно цены закрытия предыдущего торгового дня. Используется для анализа роста или падения.
+        summary[ticker].quotePriceChangePercent = (summary.quotePriceChangeAbsolute / quote.prev_close_price) * 100; //Абсолютное изменение цены относительно цены закрытия предыдущего торгового дня. Используется для анализа роста или падения.
 
 
         //summary[ticker].lastClosePrice = close;

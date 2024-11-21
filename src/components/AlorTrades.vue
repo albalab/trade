@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>Real-time Trade Data</h2>
+    <h2>Trades</h2>
     <div>totalCountTrades: {{ totalCountTrades }}</div>
     <div>tradesCountBuy: {{tradesCountBuy}}</div>
     <div>tradesCountSell: {{tradesCountSell}}</div>
@@ -26,7 +26,7 @@
         {{ item.percentage }}% (Sell: {{ item.sellPrice }} → Buy: {{ item.buyPrice }})
       </div>
     </div>
-
+<!--
     <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Топ 10 тикеров с наибольшим изменением последней цены
       <div v-for="item in percentageDifferencesSorted.slice(0,10)" :key="item.ticker">
@@ -47,6 +47,7 @@
         {{ item.difference.percentage }}% {{ item.difference.min }} {{ item.difference.max }}
       </div>
     </div>
+-->
 
     <!-- All Trades Statistics with Buy/Sell Comparison -->
     <h3>Trade History Statistics (All):</h3>
@@ -345,7 +346,7 @@ export default {
 
     advantageousBuyDifferences() {
       const differences = {};
-      const timeInterval = 5000; // Интервал в миллисекундах (5 секунд)
+      const timeInterval = 100; // Интервал в миллисекундах (5 секунд)
       const closePrices = this.collectedClosePrice || {};
 
       for (const [ticker, { buy, sell }] of Object.entries(closePrices)) {
@@ -383,7 +384,7 @@ export default {
         });
 
         if (
-            maxDifference > 0 && // Процент должен быть больше 0
+            maxDifference > 0.01 && // Процент должен быть больше 0
             buyPrice !== null &&
             sellPrice !== null &&
             buyPrice !== sellPrice // Исключаем одинаковые цены
@@ -407,7 +408,7 @@ export default {
 
     advantageousSellDifferences() {
       const differences = {};
-      const timeInterval = 5000; // Интервал в миллисекундах (5 секунд)
+      const timeInterval = 100; // Интервал в миллисекундах (5 секунд)
       const closePrices = this.collectedClosePrice || {};
 
       for (const [ticker, { sell, buy }] of Object.entries(closePrices)) {
@@ -445,7 +446,7 @@ export default {
         });
 
         if (
-            maxDifference > 0 && // Процент должен быть больше 0
+            maxDifference > 0.01 && // Процент должен быть больше 0
             sellPrice !== null &&
             buyPrice !== null &&
             sellPrice !== buyPrice // Исключаем одинаковые цены

@@ -1,9 +1,9 @@
 <template>
   <div style="background: white; overflow: hidden;">
 
-    <h2>Real-time orderbooks</h2>
+    <h2>Orderbooks</h2>
 
-    total objects: {{ globalCounter }}<br>
+    globalCounter: {{ globalCounter }}<br>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr;">
       <div>

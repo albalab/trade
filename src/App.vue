@@ -48,8 +48,9 @@ export default {
 html, body{
   padding: 0;
   margin: 0;
-  font-family: 'Tahoma';
+  font-family: 'Verdana';
   font-size: 12px;
+  letter-spacing: -0.02em;
 }
 
 .ttrade-app{
