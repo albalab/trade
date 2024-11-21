@@ -159,6 +159,11 @@ export default {
 
   methods: {
 
+    selectTicker(ticker){
+      window.parent.postMessage({
+        'selectTicker': ticker
+      }, "*");
+    },
 
     updateCandles() {
       setTimeout(() => {

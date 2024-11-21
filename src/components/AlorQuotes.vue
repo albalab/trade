@@ -155,6 +155,12 @@ export default {
   },
   methods: {
 
+    selectTicker(ticker){
+      window.parent.postMessage({
+        'selectTicker': ticker
+      }, "*");
+    },
+
     processNewQuotes(newQuotes) {
       const accumulatedStats = { ...this.accumulatedQuoteStats };
 

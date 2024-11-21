@@ -625,8 +625,6 @@ export default {
       window.parent.postMessage({
         'selectTicker': ticker
       }, "*");
-
-      //console.log('Select ticker', ticker);
     },
 
     collectSellTradeData(trades) {
