@@ -1,9 +1,6 @@
 <template>
   <div class="trade-history">
     <h3>{{ title }}</h3>
-    <div v-if="showTickerInput">
-      <input v-model="selectedTicker" placeholder="Enter ticker" />
-    </div>
     <div class="container" style="max-width: 200px;">
       <div
           class="row"
@@ -13,7 +10,7 @@
       >
         <div class="trade-cell">{{ trade }}</div>
         <div :style="{ width: `${(trade / Math.max(...tradeData)) * 100}%` }">
-          <div class="block">
+          <div class="block" :style="{ background: this.type === 'buy' ? 'green' : this.type === 'sell' ? 'red' : null }">
             <div
                 v-if="buyData"
                 class="buy-bar"
@@ -35,6 +32,9 @@
 export default {
   name: "TradeHistory",
   props: {
+    type: {
+      type: String
+    },
     title: {
       type: String,
       required: true,
@@ -51,14 +51,10 @@ export default {
       type: Array,
       default: null,
     },
-    showTickerInput: {
-      type: Boolean,
-      default: false,
-    },
   },
   data() {
     return {
-      selectedTicker: "",
+
     };
   },
 };

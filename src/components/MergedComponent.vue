@@ -47,6 +47,9 @@
             :sellData="globalData?.tradesStatistics?.tradeHistorySell"
         />
 
+
+        <input type="text" v-model="selectedTicker"/>
+
         <!-- Статистика выбранного тикера -->
         <AlorTradeHistory
             title="Trade History Statistics (By Ticker)"
@@ -59,12 +62,14 @@
         <!-- Статистика покупок -->
         <AlorTradeHistory
             title="Trade History Statistics (Buy)"
+            type="buy"
             :tradeData="globalData?.tradesStatistics?.tradeHistoryBuy"
         />
 
         <!-- Статистика продаж -->
         <AlorTradeHistory
             title="Trade History Statistics (Sell)"
+            type="sell"
             :tradeData="globalData?.tradesStatistics?.tradeHistorySell"
         />
 
@@ -138,7 +143,7 @@
       <button @click="resetCache">Reset Cache</button>
     </div>
 
-    <div style="margin: 0 0 10px;">
+<!--    <div style="margin: 0 0 10px;">
       <div v-for="(item, key) in {
         ...globalData.tradesCounters,
         ...globalData.candlesCounters,
@@ -146,14 +151,15 @@
         ...globalData.quotesCounters}" :key="key">
         {{key}}: {{item}}
       </div>
-    </div>
+    </div>-->
 
-    <input type="text" v-model="selectedTicker"/><br>
+
+<!--    <input type="text" v-model="selectedTicker"/><br>
     <div style="padding: 10px;">
       <div v-for="(item, key) in cachedData[selectedTicker]" :key="item?.id">
         {{key}}: {{item}}
       </div>
-    </div>
+    </div>-->
 
   </div>
 </template>
