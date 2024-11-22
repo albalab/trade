@@ -271,6 +271,7 @@ export default {
     sendLimitOrder: importedSendLimitOrder,
 
     selectTicker(ticker){
+      this.selectedTicker = ticker;
       window.parent.postMessage({
         'selectTicker': ticker
       }, "*");

@@ -170,6 +170,7 @@ export default {
             percentage: maxDifference.toFixed(2),
             buyPrice,
             sellPrice,
+            side: 'up',
           };
         }
       }
@@ -232,6 +233,7 @@ export default {
             percentage: maxDifference.toFixed(2),
             sellPrice,
             buyPrice,
+            side: 'down',
           };
         }
       }
