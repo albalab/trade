@@ -16,6 +16,8 @@ export default {
     return {
 
       tradeCounter: 0,
+      tradeCounterBuy: 0,
+      tradeCounterSell: 0,
 
       accumulatedTradeStats: {},
       tickerStats: {},
@@ -45,6 +47,8 @@ export default {
       return {
         tradesStats: this.sortedTradesStats,
         tradeCounter: this.tradeCounter,
+        tradeCounterBuy: this.tradeCounterBuy,
+        tradeCounterSell: this.tradeCounterSell,
         tradesCounters: this.sortedAccumulatedTradeStats, //this.tickerStats,
       }
     },
@@ -160,6 +164,10 @@ export default {
 
         const tickerStats = { ...this.tickerStats };
         let localTrades = [...this.trades];
+
+
+        let localTradeCounterBuy = this.tradeCounterBuy;
+        let localTradeCounterSell = this.tradeCounterSell;
         let tradeCounter = this.tradeCounter;
 
         trades.forEach(trade => {
@@ -171,6 +179,11 @@ export default {
           }
 
           tradeCounter++;
+          if (trade.side === 'buy') {
+            localTradeCounterBuy++;
+          } else if (trade.side === 'sell') {
+            localTradeCounterSell++;
+          }
 
           localTrades.push(trade);
         });
@@ -178,7 +191,10 @@ export default {
         if (localTrades.length > 200) localTrades.splice(0, localTrades.length - 200);
         this.trades = localTrades;
 
+        this.tradeCounterBuy = localTradeCounterBuy;
+        this.tradeCounterSell = localTradeCounterSell;
         this.tradeCounter = tradeCounter;
+
         this.tickerStats = tickerStats;
 
       };

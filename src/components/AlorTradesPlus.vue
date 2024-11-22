@@ -1,12 +1,6 @@
 <template>
   <div>
 
-    <div style="margin: 0 0 10px">
-        <div>tradeCounter: {{ tradeCounter }}</div>
-        <div>tradeCounterBuy: {{tradeCounterBuy}}</div>
-        <div>tradeCounterSell: {{tradeCounterSell}}</div>
-    </div>
-
     <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Топ 10 выгодных сделок (Покупки)
       <div v-for="(item, ticker) in advantageousBuyDifferences" :key="ticker">
@@ -210,13 +204,13 @@ export default {
 
   computed: {
 
-    marketStats() {
+    /*marketStats() {
       return {
         tradeCounter: this.tradeCounter,
         tradeCounterBuy: this.tradeCounterBuy,
         tradeCounterSell: this.tradeCounterSell,
       }
-    },
+    },*/
 
     advantageousBuyDifferences() {
       const differences = {};
@@ -352,12 +346,12 @@ export default {
       }, "*");
     },
 
-    emitTrades() {
+    /*emitTrades() {
       setTimeout(() => {
-        this.$emit('update-trades-counters', this.marketStats);
+        this.$emit('update-trades-stats', this.marketStats);
         this.emitTrades();
       }, 200);
-    },
+    },*/
 
     updateTrades(trades){
       this.collectTradeData(trades);
@@ -654,7 +648,7 @@ export default {
   },
 
   mounted() {
-    this.emitTrades();
+    //this.emitTrades();
     setInterval(this.clearOldData, this.expirationTime);
   },
 
