@@ -9,13 +9,13 @@
 
         <div class="items">
           <div class="items-wrap"
-               v-for="(item,key) in sortedBuyVolume"
+               v-for="(item,ticker) in sortedBuyVolume"
                :key="item.id">
-            <div class="item" style="width: 60px;">{{key}}:</div>
+            <div class="item" style="width: 60px; cursor: pointer;">{{ticker}}:</div>
             <div class="item">{{item?.candleClose}}</div>
             <div class="item" :style="{color: item?.tradeSide === 'buy' ? 'green' : 'red' }">{{item?.tradeSide}}</div>
-            <div class="item" :style="{color: 'green'}">{{item?.tradeBuyVolume}}</div>
-            <div class="item" :style="{color: 'red'}">{{item?.tradeSellVolume}}</div>
+            <div class="item" :style="{color: 'green'}">{{item?.tradeLastBuyVolume}}</div>
+            <div class="item" :style="{color: 'red'}">{{item?.tradeLastSellVolume}}</div>
           </div>
         </div>
       </div>
@@ -118,7 +118,7 @@ export default {
       }
 
       const sortedEntries = Object.entries(this.cachedData).sort((a, b) => {
-        return (b[1].buyVolume || 0) - (a[1].buyVolume || 0);
+        return (b[1].tradeVolume || 0) - (a[1].tradeVolume || 0);
       });
 
       return Object.fromEntries(sortedEntries);
