@@ -37,19 +37,13 @@ export default {
 
   computed: {
 
-    /*tradesStats() {
-      return {
-        tradesStats: this.tickerStats,
-      }
-    },*/
-
     tradesCounters() {
       return {
         tradesStats: this.sortedTradesStats,
         tradeCounter: this.tradeCounter,
         tradeCounterBuy: this.tradeCounterBuy,
         tradeCounterSell: this.tradeCounterSell,
-        tradesCounters: this.sortedAccumulatedTradeStats, //this.tickerStats,
+        tradesCounters: this.sortedAccumulatedTradeStats,
       }
     },
 

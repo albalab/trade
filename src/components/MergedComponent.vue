@@ -23,6 +23,107 @@
       <div class="panel">
         <h2>Trades</h2>
 
+        <!-- Топ 10 выгодных сделок (Покупки) -->
+        <AlorAdvantageousDeals
+            title="Выгодные сделки (Покупки)"
+            :deals="globalData?.tradesStatistics?.advantageousBuyDifferences"
+            operation="Buy"
+            @select-ticker="selectTicker"
+        />
+
+        <!-- Топ 10 выгодных сделок (Продажи) -->
+        <AlorAdvantageousDeals
+            title="Выгодные сделки (Продажи)"
+            :deals="globalData?.tradesStatistics?.advantageousSellDifferences"
+            operation="Sell"
+            @select-ticker="selectTicker"
+        />
+
+
+        <!-- All Trades Statistics with Buy/Sell Comparison -->
+        <h3>Trade History Statistics (All):</h3>
+        <div class="container" style="max-width: 200px;">
+          <div
+              class="row"
+              v-for="(trade, index) in globalData?.tradesStatistics?.tradeHistory"
+              :key="'all-' + index"
+              style="display: grid; grid-template-columns: 1fr 5fr;"
+          >
+            <div class="trade-cell">{{ trade }}</div>
+            <div :style="{ width: `${(trade / Math.max(...globalData?.tradesStatistics?.tradeHistory)) * 100}%` }">
+              <div class="block">
+                <div
+                    class="buy-bar"
+                    :style="{ width: `${(globalData?.tradesStatistics?.tradeHistoryBuy[index] / trade) * 100}%` }"
+                ></div>
+                <div
+                    class="sell-bar"
+                    :style="{ width: `${(globalData?.tradesStatistics?.tradeHistorySell[index] / trade) * 100}%` }"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Trade History Statistics: <input v-model="selectedTicker"></h3>
+        <div class="container" style="max-width: 200px;">
+          <div
+              class="row"
+              v-for="(trade, index) in globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistory"
+              :key="'all-' + index"
+              style="display: grid; grid-template-columns: 1fr 5fr;"
+          >
+            <div class="trade-cell">{{ trade }}</div>
+            <div :style="{ width: `${(trade / Math.max(...globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistory)) * 100}%` }">
+              <div class="block">
+                <div
+                    class="buy-bar"
+                    :style="{ width: `${(globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistoryBuy[index] / trade) * 100}%` }"
+                ></div>
+                <div
+                    class="sell-bar"
+                    :style="{ width: `${(globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistorySell[index] / trade) * 100}%` }"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buy Trades Statistics -->
+        <h3>Trade History Statistics (Buy):</h3>
+        <div class="container" style="max-width: 200px;">
+          <div
+              class="row"
+              v-for="(trade, index) in globalData?.tradesStatistics?.tradeHistoryBuy"
+              :key="'buy-' + index"
+              style="display: grid; grid-template-columns: 1fr 5fr;"
+          >
+            <div class="trade-cell">{{ trade }}</div>
+            <div :style="{ width: `${(trade / Math.max(...globalData?.tradesStatistics?.tradeHistoryBuy)) * 100}%` }">
+              <div class="block" style="background-color: green;"></div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Sell Trades Statistics -->
+        <h3>Trade History Statistics (Sell):</h3>
+        <div class="container" style="max-width: 200px;">
+          <div
+              class="row"
+              v-for="(trade, index) in globalData?.tradesStatistics?.tradeHistorySell"
+              :key="'sell-' + index"
+              style="display: grid; grid-template-columns: 1fr 5fr;"
+          >
+            <div class="trade-cell">{{ trade }}</div>
+            <div :style="{ width: `${(trade / Math.max(...globalData?.tradesStatistics?.tradeHistorySell)) * 100}%` }">
+              <div class="block" style="background-color: red;"></div>
+            </div>
+          </div>
+        </div>
+
+
         <AlorStatsDiagram
             :totalCounts="globalData?.tradesCounters?.tradesCounters"
             :streamObjects="globalData?.tradesCounters?.tradesStats"
@@ -30,6 +131,7 @@
         />
 
         <AlorTradesPlus
+            @update-trades-statistics="updateTradesStatistics"
             @update-trades-counters="updateTradesCounters"
             @update-trades-summary="updateTrades"/>
       </div>
@@ -118,6 +220,7 @@ import AlorOrderbooksPlus from './AlorOrderbooksPlus.vue';
 import AlorCandlesPlus from './AlorCandlesPlus.vue';
 import AlorQuotesPlus from './AlorQuotesPlus.vue';
 import AlorStatsDiagram from './AlorStatsDiagram.vue';
+import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
 
 import { useCacheStore } from '@/stores/cacheStore';
 
@@ -143,6 +246,7 @@ export default {
     AlorCandlesPlus,
     AlorQuotesPlus,
     AlorStatsDiagram,
+    AlorAdvantageousDeals,
   },
 
   data() {
@@ -185,6 +289,10 @@ export default {
     },
     updateTrades(trades) {
       this.globalData.trades = trades;
+    },
+
+    updateTradesStatistics(tradesStatistics) {
+      this.globalData.tradesStatistics = tradesStatistics;
     },
 
     updateTradesCounters(tradesCounters) {
@@ -275,5 +383,40 @@ export default {
 .items .item{
   display: table-cell;
   padding: 1px 10px;
+}
+
+
+.container {
+  position: relative;
+}
+
+.row {
+  margin: 0 0 2px;
+  display: grid;
+}
+
+.block {
+  height: 10px;
+  background: #ccc;
+}
+
+.buy-bar {
+  height: 50%;
+  background-color: green;
+}
+
+.sell-bar {
+  height: 50%;
+  background-color: red;
+}
+
+.trade-cell{
+  width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+}
+.select-ticker{
+  cursor: pointer;
 }
 </style>

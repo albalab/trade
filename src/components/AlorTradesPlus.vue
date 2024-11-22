@@ -1,115 +1,10 @@
 <template>
   <div>
 
-    <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
-      Топ 10 выгодных сделок (Покупки)
-      <div v-for="(item, ticker) in advantageousBuyDifferences" :key="ticker">
-    <span class="select-ticker"
-          @click="selectTicker(ticker)">
-      {{ ticker }}
-    </span>:
-        {{ item.percentage }}% (Buy: {{ item.buyPrice }} → Sell: {{ item.sellPrice }})
-      </div>
-    </div>
-
-    <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
-      Топ 10 выгодных сделок (Продажи)
-      <div v-for="(item, ticker) in advantageousSellDifferences" :key="ticker">
-    <span class="select-ticker"
-          @click="selectTicker(ticker)">
-      {{ ticker }}
-    </span>:
-        {{ item.percentage }}% (Sell: {{ item.sellPrice }} → Buy: {{ item.buyPrice }})
-      </div>
-    </div>
-
     <AlorTrades
         @update-trades="updateTrades"
         @update-trades-counters="updateTradesCounters"
         @update-trades-summary="updateTradesSummary"/>
-
-    <!-- All Trades Statistics with Buy/Sell Comparison -->
-    <h3>Trade History Statistics (All):</h3>
-    <div class="container" style="max-width: 200px;">
-      <div
-          class="row"
-          v-for="(trade, index) in tradeHistory"
-          :key="'all-' + index"
-          style="display: grid; grid-template-columns: 1fr 5fr;"
-      >
-        <div class="trade-cell">{{ trade }}</div>
-        <div :style="{ width: `${(trade / Math.max(...tradeHistory)) * 100}%` }">
-          <div class="block">
-            <div
-                class="buy-bar"
-                :style="{ width: `${(tradeHistoryBuy[index] / trade) * 100}%` }"
-            ></div>
-            <div
-                class="sell-bar"
-                :style="{ width: `${(tradeHistorySell[index] / trade) * 100}%` }"
-            ></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <h3>Trade History Statistics: <input v-model="selectedTicker"></h3>
-    <div class="container" style="max-width: 200px;">
-      <div
-          class="row"
-          v-for="(trade, index) in tickerStats[selectedTicker]?.tradeHistory"
-          :key="'all-' + index"
-          style="display: grid; grid-template-columns: 1fr 5fr;"
-      >
-        <div class="trade-cell">{{ trade }}</div>
-        <div :style="{ width: `${(trade / Math.max(...tickerStats[selectedTicker]?.tradeHistory)) * 100}%` }">
-          <div class="block">
-            <div
-                class="buy-bar"
-                :style="{ width: `${(tickerStats[selectedTicker]?.tradeHistoryBuy[index] / trade) * 100}%` }"
-            ></div>
-            <div
-                class="sell-bar"
-                :style="{ width: `${(tickerStats[selectedTicker]?.tradeHistorySell[index] / trade) * 100}%` }"
-            ></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Buy Trades Statistics -->
-    <h3>Trade History Statistics (Buy):</h3>
-    <div class="container" style="max-width: 200px;">
-      <div
-          class="row"
-          v-for="(trade, index) in tradeHistoryBuy"
-          :key="'buy-' + index"
-          style="display: grid; grid-template-columns: 1fr 5fr;"
-      >
-        <div class="trade-cell">{{ trade }}</div>
-        <div :style="{ width: `${(trade / Math.max(...tradeHistoryBuy)) * 100}%` }">
-          <div class="block" style="background-color: green;"></div>
-        </div>
-      </div>
-    </div>
-
-
-
-    <!-- Sell Trades Statistics -->
-    <h3>Trade History Statistics (Sell):</h3>
-    <div class="container" style="max-width: 200px;">
-      <div
-          class="row"
-          v-for="(trade, index) in tradeHistorySell"
-          :key="'sell-' + index"
-          style="display: grid; grid-template-columns: 1fr 5fr;"
-      >
-        <div class="trade-cell">{{ trade }}</div>
-        <div :style="{ width: `${(trade / Math.max(...tradeHistorySell)) * 100}%` }">
-          <div class="block" style="background-color: red;"></div>
-        </div>
-      </div>
-    </div>
 
   </div>
 </template>
@@ -175,7 +70,6 @@ export default {
       tradeHistorySell: [],
       tradeHistoryBuy: [],
 
-      selectedTicker: 'FLOT',
 
       intervals: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216],
 
@@ -211,6 +105,17 @@ export default {
         tradeCounterSell: this.tradeCounterSell,
       }
     },*/
+
+    tradesStatistics() {
+      return {
+        tradeHistory: this.tradeHistory,
+        tradeHistoryBuy: this.tradeHistoryBuy,
+        tradeHistorySell: this.tradeHistorySell,
+        tickerStats: this.tickerStats,
+        advantageousBuyDifferences: this.advantageousBuyDifferences,
+        advantageousSellDifferences: this.advantageousSellDifferences,
+      }
+    },
 
     advantageousBuyDifferences() {
       const differences = {};
@@ -346,12 +251,12 @@ export default {
       }, "*");
     },
 
-    /*emitTrades() {
+    emitTradesStatistics() {
       setTimeout(() => {
-        this.$emit('update-trades-stats', this.marketStats);
-        this.emitTrades();
+        this.$emit('update-trades-statistics', this.tradesStatistics);
+        this.emitTradesStatistics();
       }, 200);
-    },*/
+    },
 
     updateTrades(trades){
       this.collectTradeData(trades);
@@ -648,7 +553,7 @@ export default {
   },
 
   mounted() {
-    //this.emitTrades();
+    this.emitTradesStatistics();
     setInterval(this.clearOldData, this.expirationTime);
   },
 
@@ -657,48 +562,3 @@ export default {
 
 
 
-
-<style scoped>
-ul {
-  list-style-type: none;
-  padding-left: 0;
-}
-
-li {
-  margin-bottom: 10px;
-}
-
-.container {
-  position: relative;
-}
-
-.row {
-  margin: 0 0 2px;
-  display: grid;
-}
-
-.block {
-  height: 10px;
-  background: #ccc;
-}
-
-.buy-bar {
-  height: 50%;
-  background-color: green;
-}
-
-.sell-bar {
-  height: 50%;
-  background-color: red;
-}
-
-.trade-cell{
-  width: 60px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 11px;
-}
-.select-ticker{
-  cursor: pointer;
-}
-</style>
