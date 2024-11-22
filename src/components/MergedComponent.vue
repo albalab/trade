@@ -23,6 +23,10 @@
       <div class="panel">
         <h2>Trades</h2>
 
+        <div style="margin: 0 0 5px;">
+          <input type="text" v-model="profitPercent"/>
+        </div>
+
         <!-- Топ 10 выгодных сделок (Покупки) -->
         <AlorAdvantageousDeals
             title="Выгодные сделки (Покупки)"
@@ -81,6 +85,7 @@
         />
 
         <AlorTradesPlus
+            :profitPercent="profitPercent"
             @update-trades-statistics="updateTradesStatistics"
             @update-trades-counters="updateTradesCounters"
             @update-trades-summary="updateTrades"/>
@@ -204,6 +209,8 @@ export default {
 
   data() {
     return {
+
+      profitPercent: 0.2,
 
       sideOrder: 'buy',
       priceOrder: null,

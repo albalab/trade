@@ -6,7 +6,7 @@
         {{ ticker }}
       </span>:
       <span>
-        {{ item.percentage }}% ({{ operation }}: {{ item.buyPrice || item.sellPrice }} → {{ item.sellPrice || item.buyPrice }})
+        {{ item.percentage }}% ({{ operation }}: {{ item.buyPrice || item.buyPrice }} → {{ item.sellPrice || item.sellPrice }})
       </span>
     </div>
   </div>
