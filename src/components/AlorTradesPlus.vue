@@ -30,7 +30,6 @@
         @update-trades-stats="updateTradesStats"
         @update-trades-summary="updateTradesSummary"/>
 
-
     <!-- All Trades Statistics with Buy/Sell Comparison -->
     <h3>Trade History Statistics (All):</h3>
     <div class="container" style="max-width: 200px;">
@@ -127,17 +126,17 @@ export default {
   setup() {
     const cacheStore = useCacheStore();
 
-    const tradeHistory = ref(cacheStore.tradeHistory || []);
-    const tradeHistoryBuy = ref(cacheStore.tradeHistoryBuy || []);
-    const tradeHistorySell = ref(cacheStore.tradeHistorySell || []);
+    //const tradeHistory = ref(cacheStore.tradeHistory || []);
+    //const tradeHistoryBuy = ref(cacheStore.tradeHistoryBuy || []);
+    //const tradeHistorySell = ref(cacheStore.tradeHistorySell || []);
 
     const tickerStats = ref(cacheStore.tickerStats || []);
 
     // Функция для периодического сохранения состояния
     const saveState = () => {
-      cacheStore.tradeHistory = tradeHistory.value;
-      cacheStore.tradeHistoryBuy = tradeHistoryBuy.value;
-      cacheStore.tradeHistorySell = tradeHistorySell.value;
+      //cacheStore.tradeHistory = tradeHistory.value;
+      //cacheStore.tradeHistoryBuy = tradeHistoryBuy.value;
+      //cacheStore.tradeHistorySell = tradeHistorySell.value;
 
       cacheStore.tickerStats = tickerStats.value;
 
@@ -156,9 +155,9 @@ export default {
     });
 
     return {
-      tradeHistory,
-      tradeHistoryBuy,
-      tradeHistorySell,
+      //tradeHistory,
+      //tradeHistoryBuy,
+      //tradeHistorySell,
       tickerStats,
     };
   },
@@ -169,6 +168,14 @@ export default {
 
   data() {
     return {
+
+      tradeCounter: 0,
+      tradeCounterBuy: 0,
+      tradeCounterSell: 0,
+
+      tradeHistory: [],
+      tradeHistorySell: [],
+      tradeHistoryBuy: [],
 
       selectedTicker: 'FLOT',
 
@@ -187,15 +194,25 @@ export default {
       collectedClosePrice: {},
       collectedLastPrices: {},
       collectedLastPricesSell: {},
-      maxLength: 100,
+      maxLength: 500,
 
       startCountingTime: Date.now(),
+
+      expirationTime: 20000,
 
     };
   },
 
 
   computed: {
+
+    marketStats() {
+      return {
+        tradeCounter: this.tradeCounter,
+        tradeCounterBuy: this.tradeCounterBuy,
+        tradeCounterSell: this.tradeCounterSell,
+      }
+    },
 
     advantageousBuyDifferences() {
       const differences = {};
@@ -334,6 +351,7 @@ export default {
 
     updateTrades(trades){
       this.collectTradeData(trades);
+      this.collectMainStats(trades);
       this.collectDeepStats(trades);
     },
 
@@ -438,11 +456,31 @@ export default {
     },
 
 
+    collectMainStats(trades){
+      let localTradeCounterBuy = this.tradeCounterBuy;
+      let localTradeCounterSell = this.tradeCounterSell;
+      let tradeCounter = this.tradeCounter;
+
+      trades.forEach((trade) => {
+        tradeCounter++;
+        if (trade.side === 'buy') {
+          localTradeCounterBuy++;
+        } else if (trade.side === 'sell') {
+          localTradeCounterSell++;
+        }
+      });
+
+      this.tradeCounterBuy = localTradeCounterBuy;
+      this.tradeCounterSell = localTradeCounterSell;
+      this.tradeCounter = tradeCounter;
+
+    },
+
     collectDeepStats(trades){
 
       const localTickerStats = JSON.parse(JSON.stringify(this.tickerStats));
 
-      trades.forEach(trade => {
+      trades.forEach((trade) => {
 
         if (!localTickerStats[trade.ticker] && trade.ticker) {
           localTickerStats[trade.ticker] = {
@@ -529,9 +567,9 @@ export default {
       const localTradeHistorySell = [...this.tradeHistorySell];
 
       // Выполняем вычисления с локальными копиями
-      this.calculateIntervalStats(localTradeHistory, this.intervalCounters, this.totalCountTrades, latestTradeTime);
-      this.calculateIntervalStats(localTradeHistoryBuy, this.intervalCountersBuy, this.tradesCountBuy, latestTradeTime);
-      this.calculateIntervalStats(localTradeHistorySell, this.intervalCountersSell, this.tradesCountSell, latestTradeTime);
+      this.calculateIntervalStats(localTradeHistory, this.intervalCounters, this.tradeCounter, latestTradeTime);
+      this.calculateIntervalStats(localTradeHistoryBuy, this.intervalCountersBuy, this.tradeCounterBuy, latestTradeTime);
+      this.calculateIntervalStats(localTradeHistorySell, this.intervalCountersSell, this.tradeCounterSell, latestTradeTime);
 
       // Присваиваем обновленные данные обратно в реактивные свойства
       this.tradeHistory = localTradeHistory;

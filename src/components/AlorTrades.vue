@@ -58,13 +58,7 @@ export default {
   data() {
     return {
 
-      tradeCounter: 0,
-      tradeCounterBuy: 0,
-      tradeCounterSell: 0,
-      
       accumulatedTradeStats: {},
-
-      expirationTime: 5000,
 
       tickersSteps,
 
@@ -104,14 +98,6 @@ export default {
       return Object.fromEntries(
           Object.entries(this.accumulatedTradeStats).sort(([, a], [, b]) => b - a)
       );
-    },
-
-    marketStats() {
-      return {
-        tradeCounter: this.tradeCounter,
-        tradeCounterBuy: this.tradeCounterBuy,
-        tradeCounterSell: this.tradeCounterSell,
-      }
     },
 
     marketSummary() {
@@ -167,8 +153,6 @@ export default {
 
     updateTrades() {
       setTimeout(() => {
-        //const mergedTrades = {...this.marketSummary, ...this.trades[this.trades.length-1]};
-
         this.$emit('update-trades-summary', this.marketSummary);
         this.$emit('update-trades-stats', this.marketStats);
         this.updateTrades();
@@ -185,36 +169,12 @@ export default {
         
         this.$emit('update-trades', trades);
 
-
         let localTrades = [...this.trades];
-
-        let localTradeCounterBuy = this.tradeCounterBuy;
-        let localTradeCounterSell = this.tradeCounterSell;
-        let tradeCounter = this.tradeCounter;
-
         trades.forEach(trade => {
-
-          //this.$emit('update-trade', trade);
-
           localTrades.push(trade);
-          tradeCounter++;
-
-          if (trade.side === 'buy') {
-            localTradeCounterBuy++;
-          } else if (trade.side === 'sell') {
-            localTradeCounterSell++;
-          }
         });
-
-
         if (localTrades.length > 200) localTrades.splice(0, localTrades.length - 200);
-
         this.trades = localTrades;
-        
-        this.tradeCounterBuy = localTradeCounterBuy;
-        this.tradeCounterSell = localTradeCounterSell;
-        this.tradeCounter = tradeCounter;
-
 
       };
     },
