@@ -21,18 +21,59 @@
       </div>
 
       <div class="panel">
+        <h2>Trades</h2>
+
+        <AlorStatsDiagram
+            :totalCounts="globalData?.tradesCounters?.tradesCounters"
+            :streamObjects="globalData?.tradesCounters?.tradesStats"
+            @select-ticker="selectTicker"
+        />
+
         <AlorTradesPlus
-            @update-trades-stats="updateTradesStats"
+            @update-trades-counters="updateTradesCounters"
             @update-trades-summary="updateTrades"/>
       </div>
       <div class="panel">
-        <AlorOrderbooksPlus @update-orderbooks-summary="updateOrderbooks"/>
+
+        <h2>Orderbooks</h2>
+
+        <AlorStatsDiagram
+            :totalCounts="globalData?.orderbooksCounters?.orderbooksCounters"
+            :streamObjects="globalData?.orderbooksCounters?.orderbooksStats"
+            @select-ticker="selectTicker"
+        />
+
+        <AlorOrderbooksPlus
+            @update-orderbooks-counters="updateOrderbooksCounters"
+            @update-orderbooks-summary="updateOrderbooks"/>
       </div>
       <div class="panel">
-        <AlorCandlesPlus @update-candles-summary="updateCandles"/>
+
+        <h2>Candles</h2>
+
+        <AlorStatsDiagram
+            :totalCounts="globalData?.candlesCounters?.candlesCounters"
+            :streamObjects="globalData?.candlesCounters?.candlesStats"
+            @select-ticker="selectTicker"
+        />
+
+        <AlorCandlesPlus
+            @update-candles-counters="updateCandlesCounters"
+            @update-candles-summary="updateCandles"/>
       </div>
       <div class="panel">
-        <AlorQuotesPlus @update-quotes-summary="updateQuotes"/>
+
+        <h2>Quotes</h2>
+
+        <AlorStatsDiagram
+            :totalCounts="globalData?.quotesCounters?.quotesCounters"
+            :streamObjects="globalData?.quotesCounters?.quotesStats"
+            @select-ticker="selectTicker"
+        />
+
+        <AlorQuotesPlus
+            @update-quotes-counters="updateQuotesCounters"
+            @update-quotes-summary="updateQuotes"/>
       </div>
     </div>
 
@@ -51,7 +92,11 @@
     </div>
 
     <div style="margin: 0 0 10px;">
-      <div v-for="(item, key) in globalData.tradesStats" :key="item.id">
+      <div v-for="(item, key) in {
+        ...globalData.tradesCounters,
+        ...globalData.candlesCounters,
+        ...globalData.orderbooksCounters,
+        ...globalData.quotesCounters}" :key="key">
         {{key}}: {{item}}
       </div>
     </div>
@@ -72,6 +117,7 @@ import AlorTradesPlus from './AlorTradesPlus.vue';
 import AlorOrderbooksPlus from './AlorOrderbooksPlus.vue';
 import AlorCandlesPlus from './AlorCandlesPlus.vue';
 import AlorQuotesPlus from './AlorQuotesPlus.vue';
+import AlorStatsDiagram from './AlorStatsDiagram.vue';
 
 import { useCacheStore } from '@/stores/cacheStore';
 
@@ -96,6 +142,7 @@ export default {
     AlorOrderbooksPlus,
     AlorCandlesPlus,
     AlorQuotesPlus,
+    AlorStatsDiagram,
   },
 
   data() {
@@ -126,6 +173,7 @@ export default {
   },
 
   methods: {
+
     updateOrderbooks(orderbooks) {
       this.globalData.orderbooks = orderbooks;
     },
@@ -138,11 +186,27 @@ export default {
     updateTrades(trades) {
       this.globalData.trades = trades;
     },
-    updateTradesStats(tradesStats) {
-      this.globalData.tradesStats = tradesStats;
+
+    updateTradesCounters(tradesCounters) {
+      this.globalData.tradesCounters = tradesCounters;
+    },
+    updateCandlesCounters(candlesCounters) {
+      this.globalData.candlesCounters = candlesCounters;
+    },
+    updateOrderbooksCounters(orderbooksCounters) {
+      this.globalData.orderbooksCounters = orderbooksCounters;
+    },
+    updateQuotesCounters(quotesCounters) {
+      this.globalData.quotesCounters = quotesCounters;
     },
 
     sendLimitOrder: importedSendLimitOrder,
+
+    selectTicker(ticker){
+      window.parent.postMessage({
+        'selectTicker': ticker
+      }, "*");
+    },
 
     updateCachedData() {
       const data = this.globalData;

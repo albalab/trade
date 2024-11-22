@@ -1,45 +1,5 @@
 <template>
   <div>
-    <h2>Trades</h2>
-
-    <div style="overflow: hidden; height: 350px;">
-      <div style="display: grid; grid-template-columns: 1fr 1fr;">
-        <div>
-          <h3>Total counts</h3>
-          <div class="stats-diagram">
-            <div v-for="(count, ticker) in sortedAccumulatedTradeStats" :key="ticker" class="row">
-              <div class="cell">
-                <div class="ticker-info">
-                  <span class="ticker" @click="selectTicker(ticker)">{{ ticker }}</span> {{ count }}
-                </div>
-                <div class="progress-bar-container">
-                  <div class="progress-bar" :style="{ width: `${(count / Math.max(...Object.values(accumulatedTradeStats))) * 100}%` }"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h3>Stream objects</h3>
-          <div class="stats-diagram">
-            <div v-for="(trades, ticker) in sortedTrades" :key="ticker" class="row">
-              <div class="cell">
-                <div class="ticker-info">
-                  <span class="ticker" @click="selectTicker(ticker)">{{ ticker }}</span> {{ trades.length }}
-                </div>
-                <div class="progress-bar-container">
-                  <div
-                      class="progress-bar"
-                      :style="{ width: `${100 * (trades.length / Math.max(...Object.values(sortedTrades).map((t) => t.length)))}%` }"
-                  ></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
   </div>
 </template>
@@ -55,7 +15,10 @@ export default {
   data() {
     return {
 
+      tradeCounter: 0,
+
       accumulatedTradeStats: {},
+      tickerStats: {},
 
       tickersSteps,
 
@@ -71,6 +34,20 @@ export default {
 
 
   computed: {
+
+    /*tradesStats() {
+      return {
+        tradesStats: this.tickerStats,
+      }
+    },*/
+
+    tradesCounters() {
+      return {
+        tradesStats: this.sortedTradesStats,
+        tradeCounter: this.tradeCounter,
+        tradesCounters: this.sortedAccumulatedTradeStats, //this.tickerStats,
+      }
+    },
 
     groupedTrades() {
       return this.trades.reduce((acc, trade) => {
@@ -89,6 +66,15 @@ export default {
             acc[key] = value;
             return acc;
           }, {});
+    },
+
+    sortedTradesStats() {
+      return Object.entries(this.groupedTrades)
+        .sort(([, a], [, b]) => b.length - a.length)
+        .reduce((acc, [key, value]) => {
+          acc[key] = value.length;
+          return acc;
+        }, {});
     },
 
     sortedAccumulatedTradeStats() {
@@ -131,6 +117,13 @@ export default {
 
   methods: {
 
+    emitTradesCounters() {
+      setTimeout(() => {
+        this.$emit('update-trades-counters', this.tradesCounters);
+        this.emitTradesCounters();
+      }, 200);
+    },
+
     updateAccumulatedTradeStats(trades) {
       const stats = { ...this.accumulatedTradeStats };
 
@@ -165,12 +158,28 @@ export default {
         
         this.$emit('update-trades', trades);
 
+        const tickerStats = { ...this.tickerStats };
         let localTrades = [...this.trades];
+        let tradeCounter = this.tradeCounter;
+
         trades.forEach(trade => {
+
+          if (tickerStats[trade.ticker]) {
+            tickerStats[trade.ticker]++;
+          } else {
+            tickerStats[trade.ticker] = 1;
+          }
+
+          tradeCounter++;
+
           localTrades.push(trade);
         });
+
         if (localTrades.length > 200) localTrades.splice(0, localTrades.length - 200);
         this.trades = localTrades;
+
+        this.tradeCounter = tradeCounter;
+        this.tickerStats = tickerStats;
 
       };
     },
@@ -180,6 +189,7 @@ export default {
   mounted() {
     this.connectToWebSocket();
     this.emitTrades();
+    this.emitTradesCounters();
   },
 
 };

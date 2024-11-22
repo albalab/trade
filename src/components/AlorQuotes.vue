@@ -1,50 +1,5 @@
 <template>
-  <div style="background: white; overflow: hidden;">
-    <h2>Quotes</h2>
-
-    quoteCounter: {{quoteCounter}}<br>
-
-    <div style="overflow: hidden; height: 350px;">
-      <div style="display: grid; grid-template-columns: 1fr 1fr;">
-        <div>
-          <h3>Total counts</h3>
-
-          <div class="stats-diagram">
-            <div v-for="(item, ticker) in sortedAccumulatedQuoteStats"
-                 :key="ticker"
-                 class="row">
-              <div class="cell">
-                <div class="ticker-info">
-                    <span class="ticker"
-                          @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
-                </div>
-                <div class="progress-bar-container">
-                  <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(accumulatedQuoteStats)))}%` }"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <h3>Stream objects</h3>
-          <div class="stats-diagram">
-            <div v-for="(quotes, ticker) in sortedQuotesLastStats" :key="ticker" class="row">
-              <div class="cell">
-                <div class="ticker-info">
-                  <span class="ticker" @click="selectTicker(ticker)">{{ticker}}</span>
-                  {{quotes.length}}
-                </div>
-                <div class="progress-bar-container">
-                  <div class="progress-bar"
-                       :style="{ width: `${100 * (quotes.length / Math.max(...Object.values(sortedQuotesLastStats).map(q => q.length)))}%` }">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div>
 
   </div>
 </template>
@@ -75,6 +30,14 @@ export default {
     };
   },
   computed: {
+
+    quotesCounters() {
+      return {
+        quoteCounter: this.quoteCounter,
+        quotesCounters: this.sortedAccumulatedQuoteStats, //this.tickerStats,
+        quotesStats: this.sortedQuotesStats,
+      }
+    },
 
     sortedAccumulatedQuoteStats() {
       return Object.fromEntries(
@@ -122,7 +85,16 @@ export default {
       }, {});
     },
 
-    sortedQuotesLastStats() {
+    sortedQuotesStats() {
+      return Object.entries(this.groupedQuotes)
+          .sort(([, a], [, b]) => b.length - a.length)
+          .reduce((acc, [key, value]) => {
+            acc[key] = value.length;
+            return acc;
+          }, {});
+    },
+    
+    sortedQuotes() {
       const grouped = this.groupedQuotes; // Используем результаты группировки
 
       const sortByCount = true; // Если true — сортируем по количеству элементов, иначе по алфавиту
@@ -149,6 +121,13 @@ export default {
   },
 
   methods: {
+
+    emitQuotesCounters() {
+      setTimeout(() => {
+        this.$emit('update-quotes-counters', this.quotesCounters);
+        this.emitQuotesCounters();
+      }, 200);
+    },
 
     selectTicker(ticker){
       window.parent.postMessage({
@@ -268,6 +247,7 @@ export default {
   mounted() {
     this.connectToWebSocket();
     this.updateQuotes();
+    this.emitQuotesCounters();
   },
 
 };

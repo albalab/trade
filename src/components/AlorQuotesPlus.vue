@@ -2,6 +2,7 @@
 <div>
     <AlorQuotes
         @update-quote="updateQuote"
+        @update-quotes-counters="updateQuotesCounters"
         @update-quotes-summary="updateQuotesSummary"/>
   </div>
 </template>
@@ -28,6 +29,9 @@ export default {
   methods: {
     updateQuote(){
       //console.log(quote);
+    },
+    updateQuotesCounters(quotesCounters){
+      this.$emit('update-quotes-counters', quotesCounters);
     },
     updateQuotesSummary(quotesSummary){
       this.$emit('update-quotes-summary', quotesSummary);

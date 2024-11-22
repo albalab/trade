@@ -29,11 +29,9 @@
       </div>
     </div>
 
-
-
     <AlorTrades
         @update-trades="updateTrades"
-        @update-trades-stats="updateTradesStats"
+        @update-trades-counters="updateTradesCounters"
         @update-trades-summary="updateTradesSummary"/>
 
     <!-- All Trades Statistics with Buy/Sell Comparison -->
@@ -524,8 +522,8 @@ export default {
 
     },
 
-    updateTradesStats(tradesStats){
-      this.$emit('update-trades-stats', tradesStats);
+    updateTradesCounters(tradesCounters){
+      this.$emit('update-trades-counters', tradesCounters);
     },
 
     updateTradesSummary(tradesSummary){

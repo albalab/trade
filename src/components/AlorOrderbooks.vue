@@ -1,56 +1,6 @@
 <template>
-  <div style="background: white; overflow: hidden;">
-    <h2>Orderbooks</h2>
+  <div>
 
-    orderbookCounter: {{ orderbookCounter }}<br>
-
-    <div style="overflow: hidden; height: 350px;">
-      <div style="display: grid; grid-template-columns: 1fr 1fr;">
-
-        <div>
-          <h3>Total counts</h3>
-          <div class="stats-diagram">
-            <div v-for="(item, ticker) in sortedOrderbookGlobalStats"
-                 :key="ticker"
-                 class="row">
-              <div class="cell">
-                <div class="ticker-info">
-                  <span class="ticker"
-                        @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
-                </div>
-                <div class="progress-bar-container">
-                  <div class="progress-bar"
-                       :style="{ width: `${100 * (item / Math.max(...Object.values(sortedOrderbookGlobalStats)))}%` }">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h3>Stream objects</h3>
-          <div class="stats-diagram">
-            <div v-for="(orderbooks, ticker) in sortedOrderbookLastStats"
-                 :key="ticker"
-                 class="row">
-              <div class="cell">
-                <div class="ticker-info">
-                  <span class="ticker"
-                        @click="selectTicker(ticker)">{{ticker}}</span> {{orderbooks.length}}
-                </div>
-                <div class="progress-bar-container">
-                  <div class="progress-bar"
-                       :style="{ width: `${100 * (orderbooks.length / Math.max(...Object.values(sortedOrderbookLastStats).map(o => o.length)))}%` }">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
   </div>
 </template>
 
@@ -75,6 +25,13 @@ export default {
 
   computed: {
 
+    orderbooksCounters() {
+      return {
+        orderbooksStats: this.sortedOrderbooksStats,
+        orderbookCounter: this.orderbookCounter,
+        orderbooksCounters: this.sortedOrderbookGlobalStats,
+      }
+    },
 
     marketSummary() {
       const summary = {};
@@ -170,9 +127,25 @@ export default {
       );
     },
 
+    sortedOrderbooksStats() {
+      return Object.entries(this.groupedOrderbookLastStats)
+          .sort(([, a], [, b]) => b.length - a.length)
+          .reduce((acc, [key, value]) => {
+            acc[key] = value.length;
+            return acc;
+          }, {});
+    },
+    
   },
 
   methods: {
+
+    emitOrderbooksCounters() {
+      setTimeout(() => {
+        this.$emit('update-orderbooks-counters', this.orderbooksCounters);
+        this.emitOrderbooksCounters();
+      }, 200);
+    },
 
     selectTicker(ticker){
       window.parent.postMessage({
@@ -246,6 +219,7 @@ export default {
   mounted() {
     this.connectToWebSocket();
     this.updateOrderbooks();
+    this.emitOrderbooksCounters();
   },
 
 };

@@ -2,6 +2,7 @@
   <div>
     <AlorCandles
         @update-candle="updateCandle"
+        @update-candles-counters="updateCandlesCounters"
         @update-candles-summary="updateCandlesSummary"/>
   </div>
 </template>
@@ -28,6 +29,9 @@ export default {
   methods: {
     updateCandle(){
       //console.log(candle);
+    },
+    updateCandlesCounters(candlesCounters){
+      this.$emit('update-candles-counters', candlesCounters);
     },
     updateCandlesSummary(candlesSummary){
       this.$emit('update-candles-summary', candlesSummary);

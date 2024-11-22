@@ -1,50 +1,5 @@
 <template>
-  <div style="background: white; overflow: hidden;">
-    <h2>Candles</h2>
-
-    candleCounter: {{candleCounter}}<br>
-
-    <div style="overflow: hidden; height: 350px;">
-      <div style="display: grid; grid-template-columns: 1fr 1fr;">
-        <div>
-          <h3>Total counts</h3>
-          <div class="stats-diagram">
-            <div v-for="(item, ticker) in sortedAccumulatedCandleStats"
-                 :key="ticker"
-                 class="row">
-              <div class="cell">
-                <div class="ticker-info">
-                    <span class="ticker"
-                          @click="selectTicker(ticker)">{{ticker}}</span> {{item}}
-                </div>
-                <div class="progress-bar-container">
-                  <div class="progress-bar" :style="{ width: `${100 * (item/Math.max(...Object.values(accumulatedCandleStats)))}%` }"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <h3>Stream objects</h3>
-          <div class="stats-diagram">
-            <div v-for="(candles, ticker) in sortedCandles"
-                 :key="ticker"
-                 class="row">
-              <div class="cell">
-                <div class="ticker-info">
-                    <span class="ticker"
-                          @click="selectTicker(ticker)">{{ticker}}</span> {{candles.length}}
-                </div>
-                <div class="progress-bar-container">
-                  <div class="progress-bar" :style="{ width: `${100 * (candles.length / Math.max(...Object.values(sortedCandles).map(c => c.length)))}%` }"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
+  <div>
 
   </div>
 </template>
@@ -78,13 +33,21 @@ export default {
   },
   computed: {
 
+    candlesCounters() {
+      return {
+        candlesStats: this.sortedCandlesStats,
+        candleCounter: this.candleCounter,
+        candlesCounters: this.sortedAccumulatedCandleStats, //this.tickerStats,
+      }
+    },
+
     sortedAccumulatedCandleStats() {
       return Object.fromEntries(
           Object.entries(this.accumulatedCandleStats).sort(([, valueA], [, valueB]) => valueB - valueA)
       );
     },
 
-    marketSummary() {
+    candlesSummary() {
       const summary = {};
 
       // Обработка данных свечей
@@ -149,16 +112,32 @@ export default {
           }, {});
     },
 
+    sortedCandlesStats() {
+      return Object.entries(this.groupedCandles)
+          .sort(([, a], [, b]) => b.length - a.length)
+          .reduce((acc, [key, value]) => {
+            acc[key] = value.length;
+            return acc;
+          }, {});
+    },
 
   },
 
   mounted() {
     this.connectToWebSocket();
     this.updateCandles();
+    this.emitCandlesCounters();
   },
 
   methods: {
 
+    emitCandlesCounters() {
+      setTimeout(() => {
+        this.$emit('update-candles-counters', this.candlesCounters);
+        this.emitCandlesCounters();
+      }, 200);
+    },
+    
     selectTicker(ticker){
       window.parent.postMessage({
         'selectTicker': ticker
@@ -167,9 +146,9 @@ export default {
 
     updateCandles() {
       setTimeout(() => {
-        //const mergedCandles = {...this.marketSummary, ...this.candles[this.candles.length-1]};
-        //console.log(this.marketSummary);
-        this.$emit('update-candles-summary', this.marketSummary);
+        //const mergedCandles = {...this.candlesSummary, ...this.candles[this.candles.length-1]};
+        //console.log(this.candlesSummary);
+        this.$emit('update-candles-summary', this.candlesSummary);
         this.updateCandles();
       }, 500);
     },

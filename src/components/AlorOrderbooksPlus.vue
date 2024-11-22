@@ -2,6 +2,7 @@
   <div>
     <AlorOrderbooks
         @update-orderbook="updateOrderbook"
+        @update-orderbooks-counters="updateOrderbooksCounters"
         @update-orderbooks-summary="updateOrderbooksSummary"/>
   </div>
 </template>
@@ -28,6 +29,9 @@ export default {
   methods: {
     updateOrderbook(){
       //console.log(orderbook);
+    },
+    updateOrderbooksCounters(orderbooksCounters){
+      this.$emit('update-orderbooks-counters', orderbooksCounters);
     },
     updateOrderbooksSummary(orderbooksSummary){
       this.$emit('update-orderbooks-summary', orderbooksSummary);
