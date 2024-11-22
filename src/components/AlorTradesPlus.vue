@@ -1,6 +1,12 @@
 <template>
   <div>
 
+    <div style="margin: 0 0 10px">
+        <div>tradeCounter: {{ tradeCounter }}</div>
+        <div>tradeCounterBuy: {{tradeCounterBuy}}</div>
+        <div>tradeCounterSell: {{tradeCounterSell}}</div>
+    </div>
+
     <div style="border: solid 1px #ccc; padding: 10px; margin: 0 0 10px;">
       Топ 10 выгодных сделок (Покупки)
       <div v-for="(item, ticker) in advantageousBuyDifferences" :key="ticker">

@@ -1,9 +1,6 @@
 <template>
   <div>
     <h2>Trades</h2>
-    <div>tradeCounter: {{ tradeCounter }}</div>
-    <div>tradeCounterBuy: {{tradeCounterBuy}}</div>
-    <div>tradeCounterSell: {{tradeCounterSell}}</div>
 
     <div style="overflow: hidden; height: 350px;">
       <div style="display: grid; grid-template-columns: 1fr 1fr;">
