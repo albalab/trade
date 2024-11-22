@@ -11,7 +11,7 @@
           <div class="items-wrap"
                v-for="(item,ticker) in sortedBuyVolume"
                :key="item.id">
-            <div class="item" style="width: 60px; cursor: pointer;">{{ticker}}:</div>
+            <div class="item" style="width: 50px; cursor: pointer;">{{ticker}}</div>
             <div class="item">{{item?.candleClose}}</div>
             <div class="item" :style="{color: item?.tradeSide === 'buy' ? 'green' : 'red' }">{{item?.tradeSide}}</div>
             <div class="item" :style="{color: 'green'}">{{item?.tradeLastBuyVolume}}</div>

@@ -10,7 +10,7 @@
             <div v-for="(count, ticker) in sortedAccumulatedTradeStats" :key="ticker" class="row">
               <div class="cell">
                 <div class="ticker-info">
-                  <span class="ticker" @click="selectTicker(ticker)">{{ ticker }}</span>: {{ count }}
+                  <span class="ticker" @click="selectTicker(ticker)">{{ ticker }}</span> {{ count }}
                 </div>
                 <div class="progress-bar-container">
                   <div class="progress-bar" :style="{ width: `${(count / Math.max(...Object.values(accumulatedTradeStats))) * 100}%` }"></div>
@@ -148,11 +148,10 @@ export default {
       }, "*");
     },
 
-    updateTrades() {
+    emitTrades() {
       setTimeout(() => {
         this.$emit('update-trades-summary', this.marketSummary);
-        this.$emit('update-trades-stats', this.marketStats);
-        this.updateTrades();
+        this.emitTrades();
       }, 200);
     },
 
@@ -180,7 +179,7 @@ export default {
 
   mounted() {
     this.connectToWebSocket();
-    this.updateTrades();
+    this.emitTrades();
   },
 
 };

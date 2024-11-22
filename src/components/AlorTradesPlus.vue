@@ -25,7 +25,7 @@
           @click="selectTicker(ticker)">
       {{ ticker }}
     </span>:
-        {{ item.percentage }}% (Buy: {{ item.buyPrice }} → Sell: {{ item.sellPrice }})
+        {{ item.percentage }}% (Sell: {{ item.sellPrice }} → Buy: {{ item.buyPrice }})
       </div>
     </div>
 
@@ -354,6 +354,12 @@ export default {
       }, "*");
     },
 
+    emitTrades() {
+      setTimeout(() => {
+        this.$emit('update-trades-stats', this.marketStats);
+        this.emitTrades();
+      }, 200);
+    },
 
     updateTrades(trades){
       this.collectTradeData(trades);
@@ -650,6 +656,7 @@ export default {
   },
 
   mounted() {
+    this.emitTrades();
     setInterval(this.clearOldData, this.expirationTime);
   },
 
