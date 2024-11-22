@@ -354,7 +354,7 @@ export default {
 
     emitTrades() {
       setTimeout(() => {
-        this.$emit('update-trades-stats', this.marketStats);
+        this.$emit('update-trades-counters', this.marketStats);
         this.emitTrades();
       }, 200);
     },
