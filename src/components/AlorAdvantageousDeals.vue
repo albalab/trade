@@ -34,6 +34,7 @@ export default {
     deals: {
       type: Object,
       required: true,
+      default: () => ({})
     },
     operation: {
       type: String,

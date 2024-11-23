@@ -42,6 +42,7 @@ export default {
     tradeData: {
       type: Array,
       required: true,
+      default: () => ([])
     },
     buyData: {
       type: Array,

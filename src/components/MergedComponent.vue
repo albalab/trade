@@ -44,7 +44,7 @@
         />
 
         <!-- Статистика всех сделок -->
-        <AlorTradeHistory
+        <AlorTradeHistoryDiagram
             title="Trade History Statistics (All)"
             :tradeData="globalData?.tradesStatistics?.tradeHistory"
             :buyData="globalData?.tradesStatistics?.tradeHistoryBuy"
@@ -55,7 +55,7 @@
         <input type="text" v-model="selectedTicker"/>
 
         <!-- Статистика выбранного тикера -->
-        <AlorTradeHistory
+        <AlorTradeHistoryDiagram
             title="Trade History Statistics (By Ticker)"
             :tradeData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistory || []"
             :buyData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistoryBuy || []"
@@ -64,14 +64,14 @@
         />
 
         <!-- Статистика покупок -->
-        <AlorTradeHistory
+        <AlorTradeHistoryDiagram
             title="Trade History Statistics (Buy)"
             type="buy"
             :tradeData="globalData?.tradesStatistics?.tradeHistoryBuy"
         />
 
         <!-- Статистика продаж -->
-        <AlorTradeHistory
+        <AlorTradeHistoryDiagram
             title="Trade History Statistics (Sell)"
             type="sell"
             :tradeData="globalData?.tradesStatistics?.tradeHistorySell"
@@ -161,7 +161,7 @@
 
 <!--    <input type="text" v-model="selectedTicker"/><br>
     <div style="padding: 10px;">
-      <div v-for="(item, key) in cachedData[selectedTicker]" :key="item?.id">
+      <div v-for="(item, key) in summaryData[selectedTicker]" :key="item?.id">
         {{key}}: {{item}}
       </div>
     </div>-->
@@ -177,7 +177,7 @@ import AlorCandlesPlus from './AlorCandlesPlus.vue';
 import AlorQuotesPlus from './AlorQuotesPlus.vue';
 import AlorStatsDiagram from './AlorStatsDiagram.vue';
 import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
-import AlorTradeHistory from './AlorTradeHistory.vue';
+import AlorTradeHistoryDiagram from './AlorTradeHistoryDiagram.vue';
 
 import { useCacheStore } from '@/stores/cacheStore';
 
@@ -204,7 +204,7 @@ export default {
     AlorQuotesPlus,
     AlorStatsDiagram,
     AlorAdvantageousDeals,
-    AlorTradeHistory,
+    AlorTradeHistoryDiagram,
   },
 
   data() {
@@ -218,17 +218,17 @@ export default {
 
       globalData: {},
       selectedTicker: 'SBER',
-      cachedData: {},
+      summaryData: {},
     }
   },
 
   computed: {
     sortedBuyVolume() {
-      if (!this.cachedData || Object.keys(this.cachedData).length === 0) {
+      if (!this.summaryData || Object.keys(this.summaryData).length === 0) {
         return {}; // Возвращаем пустой объект, если данных еще нет
       }
 
-      const sortedEntries = Object.entries(this.cachedData).sort((a, b) => {
+      const sortedEntries = Object.entries(this.summaryData).sort((a, b) => {
         return (b[1].tradeVolume || 0) - (a[1].tradeVolume || 0);
       });
 
@@ -277,18 +277,26 @@ export default {
       }, "*");
     },
 
-    updateCachedData() {
-      const data = this.globalData;
-      const result = { ...this.cachedData }; // Копируем текущие данные
+    updateSummaryData() {
+      const data = { ...this.globalData };
+      const result = { ...this.summaryData };
+
+      // Оставляем только аггрегированные данные с тикерами
+      const tickerSections = ['trades', 'candles', 'orderbooks', 'quotes']; // Укажите секции, содержащие тикеры
 
       for (const section in data) {
-        for (const key in data[section]) {
-          if (!result[key]) result[key] = {};
-          Object.assign(result[key], data[section][key]);
+        if (!tickerSections.includes(section)) continue; // Пропускаем ненужные секции
+
+        for (const ticker in data[section]) {
+          if (!result[ticker]) result[ticker] = {}; // Инициализация объекта для тикера
+          Object.assign(result[ticker], data[section][ticker]); // Объединяем данные тикера
         }
       }
-      this.cachedData = result; // Обновляем кэшированные данные
+
+      this.summaryData = result;
+
     },
+
   },
 
   watch: {
@@ -299,14 +307,14 @@ export default {
 
         if(this.timerInProgress) {
           setTimeout(() => {
-            this.updateCachedData();
+            this.updateSummaryData();
           }, 600);
           return;
         }
 
         this.timerInProgress = true;
         setTimeout(() => {
-          this.updateCachedData();
+          this.updateSummaryData();
           this.timerInProgress = false;
         }, 500);
 

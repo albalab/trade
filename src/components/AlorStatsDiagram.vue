@@ -43,15 +43,17 @@
 
 <script>
 export default {
-  name: 'StatsDiagram',
+  name: 'AlorStatsDiagram',
   props: {
     totalCounts: {
       type: Object,
-      required: true
+      required: true,
+      default: () => ({})
     },
     streamObjects: {
       type: Object,
-      required: true
+      required: true,
+      default: () => ({})
     }
   }
 };
