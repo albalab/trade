@@ -148,7 +148,7 @@
       <button @click="resetCache">Reset Cache</button>
     </div>
 
-<!--    <div style="margin: 0 0 10px;">
+    <div style="margin: 0 0 10px;">
       <div v-for="(item, key) in {
         ...globalData.tradesCounters,
         ...globalData.candlesCounters,
@@ -156,7 +156,7 @@
         ...globalData.quotesCounters}" :key="key">
         {{key}}: {{item}}
       </div>
-    </div>-->
+    </div>
 
 
 <!--    <input type="text" v-model="selectedTicker"/><br>

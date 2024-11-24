@@ -102,16 +102,6 @@ export default {
       }, {});
     },
 
-    sortedCandles() {
-      const grouped = this.groupedCandles; // Вызываем основное вычисляемое свойство
-      return Object.entries(grouped)
-          .sort(([, a], [, b]) => b.length - a.length) // Сортируем
-          .reduce((acc, [key, value]) => {
-            acc[key] = value;
-            return acc;
-          }, {});
-    },
-
     sortedCandlesStats() {
       return Object.entries(this.groupedCandles)
           .sort(([, a], [, b]) => b.length - a.length)
@@ -123,36 +113,7 @@ export default {
 
   },
 
-  mounted() {
-    this.connectToWebSocket();
-    this.updateCandles();
-    this.emitCandlesCounters();
-  },
-
   methods: {
-
-    emitCandlesCounters() {
-      setTimeout(() => {
-        this.$emit('update-candles-counters', this.candlesCounters);
-        this.emitCandlesCounters();
-      }, 200);
-    },
-    
-    selectTicker(ticker){
-      window.parent.postMessage({
-        'selectTicker': ticker
-      }, "*");
-    },
-
-    updateCandles() {
-      setTimeout(() => {
-        //const mergedCandles = {...this.candlesSummary, ...this.candles[this.candles.length-1]};
-        //console.log(this.candlesSummary);
-        this.$emit('update-candles-summary', this.candlesSummary);
-        this.updateCandles();
-      }, 500);
-    },
-
 
     processNewCandles(newCandles) {
       const accumulatedStats = { ...this.accumulatedCandleStats };
@@ -240,6 +201,10 @@ export default {
           this.candles = candles;
           this.tickerStats = tickerStats;
           this.candleCounter = candleCounter;
+
+          this.$emit('update-candles-counters', this.candlesCounters);
+          this.$emit('update-candles-summary', this.candlesSummary);
+
         } else {
           console.warn('Received non-array data:', newCandles); // Логирование данных, если это не массив
         }
@@ -257,6 +222,10 @@ export default {
         console.log('WebSocket connection closed');
       };
     }
+  },
+
+  mounted() {
+    this.connectToWebSocket();
   },
 
 };

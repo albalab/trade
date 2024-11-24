@@ -1,6 +1,8 @@
 <template>
   <div>
 
+    <StatisticAggregator v-if="currentTrades" :items="currentTrades" />
+
     <AlorTrades
         @update-trades="updateTrades"
         @update-trades-counters="updateTradesCounters"
@@ -11,35 +13,36 @@
 
 <script>
 import AlorTrades from './AlorTrades.vue';
-import {useCacheStore} from "@/stores/cacheStore";
-import {onMounted, onUnmounted, ref} from "vue";
+import StatisticAggregator from './StatisticAggregator.vue';
+//import {useCacheStore} from "@/stores/cacheStore";
+import {onUnmounted} from "vue";
 export default {
   name: 'alor-trades-plus',
 
   setup() {
-    const cacheStore = useCacheStore();
+    //const cacheStore = useCacheStore();
 
     //const tradeHistory = ref(cacheStore.tradeHistory || []);
     //const tradeHistoryBuy = ref(cacheStore.tradeHistoryBuy || []);
     //const tradeHistorySell = ref(cacheStore.tradeHistorySell || []);
 
-    const tickerStats = ref(cacheStore.tickerStats || []);
+    //const tickerStats = ref(cacheStore.tickerStats || []);
 
     // Функция для периодического сохранения состояния
-    const saveState = () => {
+    /*const saveState = () => {
       //cacheStore.tradeHistory = tradeHistory.value;
       //cacheStore.tradeHistoryBuy = tradeHistoryBuy.value;
       //cacheStore.tradeHistorySell = tradeHistorySell.value;
 
-      cacheStore.tickerStats = tickerStats.value;
+      //cacheStore.tickerStats = tickerStats.value;
 
-    };
+    };*/
 
     // Запускаем таймер для сохранения состояния каждые 5 секунд
 
-    onMounted(() => {
+    /*onMounted(() => {
       setInterval(saveState, 15000); // Сохраняем каждые 15 секунд
-    });
+    });*/
 
     // Очищаем таймер при размонтировании компонента
     onUnmounted(() => {
@@ -51,7 +54,7 @@ export default {
       //tradeHistory,
       //tradeHistoryBuy,
       //tradeHistorySell,
-      tickerStats,
+      //tickerStats,
     };
   },
 
@@ -61,10 +64,14 @@ export default {
 
   components: {
     AlorTrades,
+    StatisticAggregator,
+
   },
 
   data() {
     return {
+
+      currentTrades: null,
 
       tradeCounter: 0,
       tradeCounterBuy: 0,
@@ -74,6 +81,7 @@ export default {
       tradeHistorySell: [],
       tradeHistoryBuy: [],
 
+      tickerStats: [],
 
       intervals: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216],
 
@@ -265,6 +273,7 @@ export default {
     },
 
     updateTrades(trades){
+      this.currentTrades = trades;
       this.collectTradeData(trades);
       this.collectMainStats(trades);
       this.collectDeepStats(trades);

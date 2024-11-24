@@ -115,13 +115,6 @@ export default {
 
   methods: {
 
-    emitTradesCounters() {
-      setTimeout(() => {
-        this.$emit('update-trades-counters', this.tradesCounters);
-        this.emitTradesCounters();
-      }, 200);
-    },
-
     updateAccumulatedTradeStats(trades) {
       const stats = { ...this.accumulatedTradeStats };
 
@@ -139,13 +132,6 @@ export default {
       }, "*");
     },
 
-    emitTrades() {
-      setTimeout(() => {
-        this.$emit('update-trades-summary', this.marketSummary);
-        this.emitTrades();
-      }, 200);
-    },
-
     connectToWebSocket() {
       const socket = new WebSocket('wss://refine.video/trades/');
       socket.onmessage = (event) => {
@@ -153,8 +139,6 @@ export default {
         if (!Array.isArray(trades)) return;
 
         this.updateAccumulatedTradeStats(trades);
-        
-        this.$emit('update-trades', trades);
 
         const tickerStats = { ...this.tickerStats };
         let localTrades = [...this.trades];
@@ -191,6 +175,10 @@ export default {
 
         this.tickerStats = tickerStats;
 
+        this.$emit('update-trades', trades);
+        this.$emit('update-trades-summary', this.marketSummary);
+        this.$emit('update-trades-counters', this.tradesCounters);
+
       };
     },
 
@@ -198,8 +186,6 @@ export default {
 
   mounted() {
     this.connectToWebSocket();
-    this.emitTrades();
-    this.emitTradesCounters();
   },
 
 };

@@ -93,47 +93,10 @@ export default {
             return acc;
           }, {});
     },
-    
-    sortedQuotes() {
-      const grouped = this.groupedQuotes; // Используем результаты группировки
-
-      const sortByCount = true; // Если true — сортируем по количеству элементов, иначе по алфавиту
-
-      if (sortByCount) {
-        // Сортировка по количеству элементов
-        return Object.entries(grouped)
-            .sort(([, a], [, b]) => b.length - a.length) // Сортируем по длине массивов
-            .reduce((acc, [key, value]) => {
-              acc[key] = value;
-              return acc;
-            }, {});
-      } else {
-        // Сортировка по алфавиту
-        return Object.keys(grouped)
-            .sort() // Сортируем ключи по алфавиту
-            .reduce((acc, key) => {
-              acc[key] = grouped[key];
-              return acc;
-            }, {});
-      }
-    },
 
   },
 
   methods: {
-
-    emitQuotesCounters() {
-      setTimeout(() => {
-        this.$emit('update-quotes-counters', this.quotesCounters);
-        this.emitQuotesCounters();
-      }, 200);
-    },
-
-    selectTicker(ticker){
-      window.parent.postMessage({
-        'selectTicker': ticker
-      }, "*");
-    },
 
     processNewQuotes(newQuotes) {
       const accumulatedStats = { ...this.accumulatedQuoteStats };
@@ -176,13 +139,6 @@ export default {
       this.collectedLastPrices = updatedLastPrices;
     },
 
-    updateQuotes() {
-      setTimeout(() => {
-        //const mergedOrderbooks = {...this.marketSummary, ...this.orderBookData[this.orderBookData.length-1]};
-        this.$emit('update-quotes-summary', this.marketSummary);
-        this.updateQuotes();
-      }, 500);
-    },
 
     connectToWebSocket() {
       const socket = new WebSocket('wss://refine.video/quotes/');
@@ -225,6 +181,10 @@ export default {
           this.quotes = quotes;
           this.quoteCounter = quoteCounter;
           this.tickerStats = tickerStats;
+
+          this.$emit('update-quotes-counters', this.quotesCounters);
+          this.$emit('update-quotes-summary', this.marketSummary);
+
         } else {
           console.warn("Received non-array data:", newQuotes);
         }
@@ -246,8 +206,6 @@ export default {
 
   mounted() {
     this.connectToWebSocket();
-    this.updateQuotes();
-    this.emitQuotesCounters();
   },
 
 };

@@ -140,26 +140,6 @@ export default {
 
   methods: {
 
-    emitOrderbooksCounters() {
-      setTimeout(() => {
-        this.$emit('update-orderbooks-counters', this.orderbooksCounters);
-        this.emitOrderbooksCounters();
-      }, 200);
-    },
-
-    selectTicker(ticker){
-      window.parent.postMessage({
-        'selectTicker': ticker
-      }, "*");
-    },
-
-    updateOrderbooks() {
-      setTimeout(() => {
-        this.$emit('update-orderbooks-summary', this.marketSummary);
-        this.updateOrderbooks();
-      }, 500);
-    },
-
     connectToWebSocket() {
       // Устанавливаем соединение с WebSocket сервером
       const socket = new WebSocket('wss://refine.video/orderbooks/');
@@ -197,6 +177,10 @@ export default {
           this.orderbook = orderbook;
           this.orderbookCounter = orderbookCounter;
           this.orderbookGlobalStats = orderbookGlobalStats;
+
+          this.$emit('update-orderbooks-counters', this.orderbooksCounters);
+          this.$emit('update-orderbooks-summary', this.marketSummary);
+
         } else {
           console.warn('Received non-array data:', orderBooks); // Логирование данных, если это не массив
         }
@@ -218,8 +202,6 @@ export default {
 
   mounted() {
     this.connectToWebSocket();
-    this.updateOrderbooks();
-    this.emitOrderbooksCounters();
   },
 
 };
