@@ -1,7 +1,8 @@
 <template>
 <div>
+  <StatisticAggregator v-if="currentQuotes" :items="currentQuotes"  type="quotes"/>
     <AlorQuotes
-        @update-quote="updateQuote"
+        @update-quotes="updateQuotes"
         @update-quotes-counters="updateQuotesCounters"
         @update-quotes-summary="updateQuotesSummary"/>
   </div>
@@ -9,15 +10,17 @@
 
 <script>
 import AlorQuotes from './AlorQuotes.vue';
+import StatisticAggregator from "@/components/StatisticAggregator.vue";
 export default {
   name: 'alor-quotes-plus',
   components: {
+    StatisticAggregator,
     AlorQuotes,
   },
 
   data() {
     return {
-
+      currentQuotes: null,
     };
   },
 
@@ -27,8 +30,8 @@ export default {
   },
 
   methods: {
-    updateQuote(){
-      //console.log(quote);
+    updateQuotes(quotes){
+      this.currentQuotes = quotes;
     },
     updateQuotesCounters(quotesCounters){
       this.$emit('update-quotes-counters', quotesCounters);

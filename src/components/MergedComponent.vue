@@ -44,38 +44,38 @@
         />
 
         <!-- Статистика всех сделок -->
-        <AlorTradeHistoryDiagram
+<!--        <AlorTradeHistoryDiagram
             title="Trade History Statistics (All)"
             :tradeData="globalData?.tradesStatistics?.tradeHistory"
             :buyData="globalData?.tradesStatistics?.tradeHistoryBuy"
             :sellData="globalData?.tradesStatistics?.tradeHistorySell"
-        />
+        />-->
 
 
-        <input type="text" v-model="selectedTicker"/>
+<!--        <input type="text" v-model="selectedTicker"/>-->
 
         <!-- Статистика выбранного тикера -->
-        <AlorTradeHistoryDiagram
+<!--        <AlorTradeHistoryDiagram
             title="Trade History Statistics (By Ticker)"
             :tradeData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistory || []"
             :buyData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistoryBuy || []"
             :sellData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistorySell || []"
             :showTickerInput="true"
-        />
+        />-->
 
         <!-- Статистика покупок -->
-        <AlorTradeHistoryDiagram
+<!--        <AlorTradeHistoryDiagram
             title="Trade History Statistics (Buy)"
             type="buy"
             :tradeData="globalData?.tradesStatistics?.tradeHistoryBuy"
-        />
+        />-->
 
         <!-- Статистика продаж -->
-        <AlorTradeHistoryDiagram
+<!--        <AlorTradeHistoryDiagram
             title="Trade History Statistics (Sell)"
             type="sell"
             :tradeData="globalData?.tradesStatistics?.tradeHistorySell"
-        />
+        />-->
 
 
         <AlorStatsDiagram
@@ -177,7 +177,7 @@ import AlorCandlesPlus from './AlorCandlesPlus.vue';
 import AlorQuotesPlus from './AlorQuotesPlus.vue';
 import AlorStatsDiagram from './AlorStatsDiagram.vue';
 import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
-import AlorTradeHistoryDiagram from './AlorTradeHistoryDiagram.vue';
+//import AlorTradeHistoryDiagram from './AlorTradeHistoryDiagram.vue';
 
 import { useCacheStore } from '@/stores/cacheStore';
 
@@ -204,7 +204,7 @@ export default {
     AlorQuotesPlus,
     AlorStatsDiagram,
     AlorAdvantageousDeals,
-    AlorTradeHistoryDiagram,
+    //AlorTradeHistoryDiagram,
   },
 
   data() {

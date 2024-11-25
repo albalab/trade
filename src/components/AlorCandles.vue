@@ -172,6 +172,12 @@ export default {
 
           newCandles.forEach(candle => {
 
+            candle.time = candle.time * 1000;
+
+            console.log(candle);
+
+            console.log(new Date(candle.time));
+
             if (candle.ticker && candle.time && candle.open !== undefined &&
                 candle.close !== undefined && candle.high !== undefined &&
                 candle.low !== undefined && candle.volume !== undefined) {
@@ -202,6 +208,8 @@ export default {
           this.tickerStats = tickerStats;
           this.candleCounter = candleCounter;
 
+          //console.log(newCandles[0])
+          this.$emit('update-candles', newCandles);
           this.$emit('update-candles-counters', this.candlesCounters);
           this.$emit('update-candles-summary', this.candlesSummary);
 

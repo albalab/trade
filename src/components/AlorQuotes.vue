@@ -148,7 +148,7 @@ export default {
 
         if (Array.isArray(newQuotes)) {
 
-          const quotes = [...this.quotes];
+          const localQuotes = [...this.quotes];
           const tickerStats = { ...this.tickerStats };
           let quoteCounter = this.quoteCounter;
 
@@ -158,30 +158,34 @@ export default {
 
             if (quote.ticker && quote.last_price !== undefined) {
 
+              quote.time = quote.last_price_timestamp * 1000;
+
               if (tickerStats[quote.ticker]) {
                 tickerStats[quote.ticker]++;
               } else {
                 tickerStats[quote.ticker] = 1;
               }
 
+
               //const quoteExtended = this.extendObject(quote, "quote");
-              quotes.push(quote);
+              localQuotes.push(quote);
 
               quoteCounter++;
 
-              if (quotes.length > 200) {
-                quotes.shift();
+              if (localQuotes.length > 200) {
+                localQuotes.shift();
               }
             } else {
               console.warn("Invalid quote data:", quote);
             }
           });
 
-          this.cacheQuotes = this.collectQuoteData(quotes);
-          this.quotes = quotes;
+          this.cacheQuotes = this.collectQuoteData(localQuotes);
+          this.quotes = localQuotes;
           this.quoteCounter = quoteCounter;
           this.tickerStats = tickerStats;
 
+          this.$emit('update-quotes', newQuotes);
           this.$emit('update-quotes-counters', this.quotesCounters);
           this.$emit('update-quotes-summary', this.marketSummary);
 

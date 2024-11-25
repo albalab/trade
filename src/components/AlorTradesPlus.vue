@@ -1,7 +1,7 @@
 <template>
   <div>
 
-    <StatisticAggregator v-if="currentTrades" :items="currentTrades" />
+    <StatisticAggregator v-if="currentTrades" :items="currentTrades"  type="trades"/>
 
     <AlorTrades
         @update-trades="updateTrades"

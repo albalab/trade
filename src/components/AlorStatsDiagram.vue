@@ -20,7 +20,7 @@
         </div>
       </div>
       <div>
-        <h3>Stream objects</h3>
+        <h3>Stream objects {{streamObjects['GAZP'] + streamObjects['SBER'] + streamObjects['LKOH']}}</h3>
         <div class="stats-diagram">
           <div v-for="(count, ticker) in streamObjects" :key="ticker" class="row">
             <div class="cell">

@@ -18,7 +18,8 @@ export default {
       tickersSteps,
       tickers,
 
-      orderbook: [],
+
+      orderbooks: [],
       orderbookGlobalStats: tickers.reduce((obj, ticker) => ({ ...obj, [ticker]: 0 }), {}),
     };
   },
@@ -37,7 +38,7 @@ export default {
       const summary = {};
 
       // Обработка данных ордербука
-      this.orderbook.forEach((orderbook) => {
+      this.orderbooks.forEach((orderbook) => {
         const { ticker } = orderbook;
 
         // Преобразуем строки цен в числа для расчетов
@@ -112,7 +113,7 @@ export default {
     },
 
     groupedOrderbookLastStats() {
-      return this.orderbook.reduce((acc, order) => {
+      return this.orderbooks.reduce((acc, order) => {
         const ticker = order.ticker;
         if (!acc[ticker]) acc[ticker] = [];
         acc[ticker].push(order);
@@ -146,43 +147,49 @@ export default {
 
       // Обрабатываем получение сообщений от WebSocket сервера
       socket.onmessage = (event) => {
-        const orderBooks = JSON.parse(event.data);
+        const newOrderbooks = JSON.parse(event.data);
 
+        if (Array.isArray(newOrderbooks)) {
 
-        if (Array.isArray(orderBooks)) {
-
-          const orderbook = [...this.orderbook];
+          const localOrderbooks = [...this.orderbooks];
           let orderbookCounter = this.orderbookCounter;
           const orderbookGlobalStats = { ...this.orderbookGlobalStats };
 
-          orderBooks.forEach(orderBook => {
+          newOrderbooks.forEach(orderbook => {
 
-            if (orderBook.ticker && orderBook.bids && orderBook.asks) {
+            if (orderbook.ticker && orderbook.bids && orderbook.asks) {
 
-              orderbook.push(orderBook);
+              orderbook.time = orderbook.ms_timestamp;
+
+              localOrderbooks.push(orderbook);
 
               orderbookCounter++;
-              orderbookGlobalStats[orderBook.ticker] = (orderbookGlobalStats[orderBook.ticker] || 0) + 1;
+              orderbookGlobalStats[orderbook.ticker] = (orderbookGlobalStats[orderbook.ticker] || 0) + 1;
+
 
               // Ограничиваем массив последних 1000 объектов
-              if (orderbook.length > 200) {
-                orderbook.shift();
+              if (localOrderbooks.length > 1000) {
+                localOrderbooks.shift();
               }
+
             } else {
-              console.warn('Received invalid order book data:', orderBook); // Логирование некорректных данных
+              console.warn('Received invalid order book data:', orderbook); // Логирование некорректных данных
             }
           });
 
           // Обновляем реактивные свойства один раз после цикла
-          this.orderbook = orderbook;
+          this.orderbooks = localOrderbooks;
           this.orderbookCounter = orderbookCounter;
           this.orderbookGlobalStats = orderbookGlobalStats;
 
+          //console.log(this.orderbooks[0])
+
+          this.$emit('update-orderbooks', newOrderbooks);
           this.$emit('update-orderbooks-counters', this.orderbooksCounters);
           this.$emit('update-orderbooks-summary', this.marketSummary);
 
         } else {
-          console.warn('Received non-array data:', orderBooks); // Логирование данных, если это не массив
+          console.warn('Received non-array data:', newOrderbooks); // Логирование данных, если это не массив
         }
       };
 

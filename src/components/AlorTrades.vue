@@ -1,6 +1,8 @@
 <template>
   <div>
-
+<!--    {{historyTickers}}<br>
+    {{tradeCounter}}<br>
+    F: {{trades[0]?.tickerFrequency}}-->
   </div>
 </template>
 
@@ -30,7 +32,12 @@ export default {
 
 
       trades: [],
-      
+
+      historyTickers: {
+        'GAZP': [],
+        'LKOH': [],
+        'SBER': [],
+      }
     };
   },
 
@@ -57,14 +64,6 @@ export default {
         return acc;
       }, {});
     },
-    sortedTrades() {
-      return Object.entries(this.groupedTrades)
-          .sort(([, a], [, b]) => b.length - a.length) // Сортировка по длине массивов
-          .reduce((acc, [key, value]) => {
-            acc[key] = value;
-            return acc;
-          }, {});
-    },
 
     sortedTradesStats() {
       return Object.entries(this.groupedTrades)
@@ -84,18 +83,12 @@ export default {
     marketSummary() {
       const summary = {};
 
-      // Обработка данных сделок
       this.trades.forEach((trade) => {
         const { ticker, qty, side } = trade;
 
         summary[ticker] = summary[ticker] || {};
-
         summary[ticker].tradeVolumeAbsoluteRub = parseFloat(trade.price) * trade.qty;
-
-        //summary[ticker].tradeLastPriceLevel = Math.round(price / this.tickersSteps[ticker]);
-
         summary[ticker].tradeVolume = qty;
-
         summary[ticker].tradeLastBuyVolume = (summary[ticker].buyVolume || 0) + (side === "buy" ? qty : 0);
         summary[ticker].tradeLastSellVolume = (summary[ticker].sellVolume || 0) + (side === "sell" ? qty : 0);
 
@@ -104,16 +97,63 @@ export default {
           summary[ticker][`trade${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
         });
 
-        //console.log(trade);
-
       });
-
       return summary;
     },
 
   },
 
   methods: {
+
+    calculateSellTotalByTicker(trades) {
+      return trades.reduce((acc, trade) => {
+        if (trade.side === 'sell') {
+          const { ticker, price, qty } = trade;
+
+          // Инициализируем сумму для тикера, если он ещё не добавлен
+          if (!acc[ticker]) {
+            acc[ticker] = 0;
+          }
+
+          // Добавляем сумму сделки
+          acc[ticker] += price * qty;
+        }
+
+        return acc;
+      }, {});
+    },
+
+    calculateBuyTotalByTicker(trades) {
+      return trades.reduce((acc, trade) => {
+        if (trade.side === 'buy') {
+          const { ticker, price, qty } = trade;
+
+          // Инициализируем сумму для тикера, если он ещё не добавлен
+          if (!acc[ticker]) {
+            acc[ticker] = 0;
+          }
+
+          // Добавляем сумму сделки
+          acc[ticker] += price * qty;
+        }
+
+        return acc;
+      }, {});
+    },
+
+    tickerFrequency(trades) {
+
+      if (!Array.isArray(trades)) {
+        console.error("trades должен быть массивом, но получил:", trades);
+        return;
+      }
+
+      return trades.reduce((acc, trade) => {
+        const ticker = trade.ticker;
+        acc[ticker] = (acc[ticker] || 0) + 1;
+        return acc;
+      }, {});
+    },
 
     updateAccumulatedTradeStats(trades) {
       const stats = { ...this.accumulatedTradeStats };
@@ -126,19 +166,13 @@ export default {
       this.accumulatedTradeStats = stats;
     },
 
-    selectTicker(ticker){
-      window.parent.postMessage({
-        'selectTicker': ticker
-      }, "*");
-    },
-
     connectToWebSocket() {
       const socket = new WebSocket('wss://refine.video/trades/');
       socket.onmessage = (event) => {
-        const trades = JSON.parse(event.data);
-        if (!Array.isArray(trades)) return;
+        const newTrades = JSON.parse(event.data);
+        if (!Array.isArray(newTrades)) return;
 
-        this.updateAccumulatedTradeStats(trades);
+        this.updateAccumulatedTradeStats(newTrades);
 
         const tickerStats = { ...this.tickerStats };
         let localTrades = [...this.trades];
@@ -146,9 +180,9 @@ export default {
 
         let localTradeCounterBuy = this.tradeCounterBuy;
         let localTradeCounterSell = this.tradeCounterSell;
-        let tradeCounter = this.tradeCounter;
+        let localTradeCounter = this.tradeCounter;
 
-        trades.forEach(trade => {
+        newTrades.forEach(trade => {
 
           if (tickerStats[trade.ticker]) {
             tickerStats[trade.ticker]++;
@@ -156,7 +190,7 @@ export default {
             tickerStats[trade.ticker] = 1;
           }
 
-          tradeCounter++;
+          localTradeCounter++;
           if (trade.side === 'buy') {
             localTradeCounterBuy++;
           } else if (trade.side === 'sell') {
@@ -164,18 +198,88 @@ export default {
           }
 
           localTrades.push(trade);
+
+          if (localTrades.length > 500) {
+            localTrades.shift();
+
+            /*const tickerFrequency = this.tickerFrequency(localTrades);
+            const tickerFrequencyBuy = this.tickerFrequency(localTrades.filter(i=>i.side==='buy'));
+            const tickerFrequencySell = this.tickerFrequency(localTrades.filter(i=>i.side==='sell'));
+
+            localTrades.forEach(item => {
+
+
+              item.tickerFrequency = tickerFrequency[item.ticker]/500;
+              item.tickerFrequencyBuy = tickerFrequencyBuy[item.ticker]/500;
+              item.tickerFrequencySell = tickerFrequencySell[item.ticker]/500;
+
+
+              //Первая ячейка в самом начале сбора статистики, еще не была заполнена ни разу
+              if(this.tradeCounter<1000 && this.historyTickers['GAZP'].length === 0){
+
+                if(this.historyTickers['GAZP'].length === 0) this.historyTickers['GAZP'].push({sum: 0, counter: 0});
+                if(this.historyTickers['LKOH'].length === 0) this.historyTickers['LKOH'].push({sum: 0, counter: 0});
+                if(this.historyTickers['SBER'].length === 0) this.historyTickers['SBER'].push({sum: 0, counter: 0});
+
+                this.historyTickers['GAZP'][0].counter++;
+                this.historyTickers['LKOH'][0].counter++;
+                this.historyTickers['SBER'][0].counter++;
+
+                this.historyTickers['GAZP'][0].sum = this.historyTickers['GAZP'][0].sum + tickerFrequency['GAZP']/500;
+                this.historyTickers['LKOH'][0].sum = this.historyTickers['LKOH'][0].sum + tickerFrequency['LKOH']/500;
+                this.historyTickers['SBER'][0].sum = this.historyTickers['SBER'][0].sum + tickerFrequency['SBER']/500;
+
+                this.historyTickers['GAZP'][0].avg = (this.historyTickers['GAZP'][0].sum + item.tickerFrequency)/this.historyTickers['GAZP'][0].counter;
+                this.historyTickers['LKOH'][0].avg = (this.historyTickers['LKOH'][0].sum + item.tickerFrequency)/this.historyTickers['LKOH'][0].counter;
+                this.historyTickers['SBER'][0].avg = (this.historyTickers['SBER'][0].sum + item.tickerFrequency)/this.historyTickers['SBER'][0].counter;
+              }
+
+              //Первая ячейка переполнилась первый раз, создаем из нее вторую
+              if(this.tradeCounter>1000 && this.historyTickers['GAZP'].length===1) this.historyTickers['GAZP'].unshift(this.historyTickers['GAZP'][0]);
+              if(this.tradeCounter>1000 && this.historyTickers['LKOH'].length===1) this.historyTickers['LKOH'].unshift(this.historyTickers['LKOH'][0]);
+              if(this.tradeCounter>1000 && this.historyTickers['SBER'].length===1) this.historyTickers['SBER'].unshift(this.historyTickers['SBER'][0]);
+
+              //Наполнение второй ячейки первый раз
+              if(this.tradeCounter>1000 && this.historyTickers['GAZP'].length === 1){
+
+                this.historyTickers['GAZP'][1].counter++;
+                this.historyTickers['LKOH'][1].counter++;
+                this.historyTickers['SBER'][1].counter++;
+
+                this.historyTickers['GAZP'][1].sum = this.historyTickers['GAZP'][1].sum + tickerFrequency['GAZP']/500;
+                this.historyTickers['LKOH'][1].sum = this.historyTickers['LKOH'][1].sum + tickerFrequency['LKOH']/500;
+                this.historyTickers['SBER'][1].sum = this.historyTickers['SBER'][1].sum + tickerFrequency['SBER']/500;
+
+                this.historyTickers['GAZP'][1].avg = (this.historyTickers['GAZP'][1].sum + item.tickerFrequency)/this.historyTickers['GAZP'][1].counter;
+                this.historyTickers['LKOH'][1].avg = (this.historyTickers['LKOH'][1].sum + item.tickerFrequency)/this.historyTickers['LKOH'][1].counter;
+                this.historyTickers['SBER'][1].avg = (this.historyTickers['SBER'][1].sum + item.tickerFrequency)/this.historyTickers['SBER'][1].counter;
+              }
+
+              //Вторая ячейка переполнилась
+              if(this.tradeCounter>2000 && this.historyTickers['GAZP'].length===2) this.historyTickers['GAZP'].unshift(this.historyTickers['GAZP'][0]);
+              if(this.tradeCounter>2000 && this.historyTickers['LKOH'].length===2) this.historyTickers['LKOH'].unshift(this.historyTickers['LKOH'][0]);
+              if(this.tradeCounter>2000 && this.historyTickers['SBER'].length===2) this.historyTickers['SBER'].unshift(this.historyTickers['SBER'][0]);
+
+              //console.log('counter', this.tradeCounter);
+            });*/
+
+            //console.log(localTrades[0]);
+          }
+
         });
 
-        if (localTrades.length > 200) localTrades.splice(0, localTrades.length - 200);
+        //console.log('Buy', this.calculateBuyTotalByTicker(localTrades));
+        //console.log('Sell', this.calculateSellTotalByTicker(localTrades));
+
         this.trades = localTrades;
 
         this.tradeCounterBuy = localTradeCounterBuy;
         this.tradeCounterSell = localTradeCounterSell;
-        this.tradeCounter = tradeCounter;
+        this.tradeCounter = localTradeCounter;
 
         this.tickerStats = tickerStats;
 
-        this.$emit('update-trades', trades);
+        this.$emit('update-trades', newTrades);
         this.$emit('update-trades-summary', this.marketSummary);
         this.$emit('update-trades-counters', this.tradesCounters);
 
