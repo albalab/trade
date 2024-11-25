@@ -174,9 +174,6 @@ export default {
 
             candle.time = candle.time * 1000;
 
-            console.log(candle);
-
-            console.log(new Date(candle.time));
 
             if (candle.ticker && candle.time && candle.open !== undefined &&
                 candle.close !== undefined && candle.high !== undefined &&

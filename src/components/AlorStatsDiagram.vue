@@ -20,10 +20,10 @@
         </div>
       </div>
       <div>
-        <h3>Stream objects {{streamObjects['GAZP'] + streamObjects['SBER'] + streamObjects['LKOH']}}</h3>
+        <h3>Stream objects {{ Object.keys(streamObjects).length }}</h3>
         <div class="stats-diagram">
           <div v-for="(count, ticker) in streamObjects" :key="ticker" class="row">
-            <div class="cell">
+            <div class="cell" :class="{ 'highlighted': isHighlighted(ticker) }">
               <div class="ticker-info">
                 <span class="ticker" @click="$emit('select-ticker', ticker)">{{ ticker }}</span> {{ count }}
               </div>
@@ -55,25 +55,52 @@ export default {
       required: true,
       default: () => ({})
     }
+  },
+  computed: {
+    sortedTotalCounts() {
+      return Object.entries(this.totalCounts).sort(([, a], [, b]) => b - a).map(([ticker]) => ticker);
+    },
+    sortedStreamObjects() {
+      return Object.entries(this.streamObjects).sort(([, a], [, b]) => b - a).map(([ticker]) => ticker);
+    },
+    top10StreamObjects() {
+      return this.sortedStreamObjects.slice(0, 10);
+    }
+  },
+  methods: {
+    isHighlighted(ticker) {
+      const streamRank = this.top10StreamObjects.indexOf(ticker);
+      const totalRank = this.sortedTotalCounts.indexOf(ticker);
+
+      // Подсветить, если тикер из топ-10 `streamObjects` поднялся выше
+      return streamRank !== -1 && (totalRank === -1 || streamRank < totalRank);
+    }
   }
 };
 </script>
 
 <style scoped>
+
 .progress-bar-container {
   background: #f0f0f0;
   height: 4px;
   border-radius: 5px;
   overflow: hidden;
 }
+
 .progress-bar {
   background: #007bff;
   height: 100%;
 }
+
 .ticker-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 5px;
+}
+
+.highlighted {
+  color: #ff0bf7;
 }
 </style>
