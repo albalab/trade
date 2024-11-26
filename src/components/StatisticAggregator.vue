@@ -1,6 +1,8 @@
 <template>
   <div>
     <h3>Statistic Aggregator</h3>
+    Last render time: {{lastRenderTime}}<br>
+
     counter: {{ counter }}<br>
     Chunk items length: {{ items.length }}<br>
     Avg per second: {{ avgPerSecond.toFixed(2) }}<br>
@@ -46,6 +48,8 @@ export default {
 
   data() {
     return {
+      lastRenderTime: null,
+
       leftRange: 1000,
       rightRange: 1000,
 
@@ -90,6 +94,11 @@ export default {
   },
 
   methods: {
+
+    updateRenderTime() {
+      // Обновляем время последнего рендера
+      this.lastRenderTime = new Date().toLocaleString();
+    },
 
     aggregateStatistics() {
       //console.log(items[0]);
@@ -151,6 +160,9 @@ export default {
   },
 
   mounted() {
+
+    this.updateRenderTime();
+
     if(this.type === 'quotes'){
       this.leftRange = 60000;
       this.rightRange = 10000;
@@ -161,7 +173,10 @@ export default {
       this.pointSpacing = 3;
     }
   },
-
+  updated() {
+    // Фиксируем время, когда компонент обновился
+    this.updateRenderTime();
+  },
   watch: {
     items(newItems) {
       if (Array.isArray(newItems) && newItems.length > 0) {
