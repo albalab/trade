@@ -327,7 +327,7 @@ export default {
         this.imbalanceStrategy(tickerData);
         this.breakoutStrategy(tickerData);
         this.spreadScalpingStrategy(tickerData);
-        this.frequencyStrategy(tickerData);
+        //this.frequencyStrategy(tickerData);
         this.candlePatternStrategy(tickerData);
 
         this.volumeImbalanceStrategy(tickerData);
@@ -335,7 +335,7 @@ export default {
         this.candleVolumeStrategy(tickerData, avgVolume);
         this.smallBodyBreakoutStrategy(tickerData);
         this.shadowStrategy(tickerData);
-        this.tradeFrequencySpikeStrategy(tickerData, avgFrequency);
+        //this.tradeFrequencySpikeStrategy(tickerData, avgFrequency);
         this.candleRangeStrategy(tickerData, avgRange);
         this.averagePriceImbalanceStrategy(tickerData);
         this.candleStrengthStrategy(tickerData);
