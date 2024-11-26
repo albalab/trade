@@ -315,7 +315,7 @@ export default {
 
     executeStrategies(data) {
       const avgVolume = 5000; // Условное среднее значение
-      const avgFrequency = 30; // Средняя частота сделок
+      //const avgFrequency = 30; // Средняя частота сделок
       const avgRange = 0.1; // Средний диапазон свечи
 
       Object.keys(data).forEach((ticker) => {
@@ -447,7 +447,7 @@ export default {
     },
 
 // 6. Стратегия на частоте сделок
-    tradeFrequencySpikeStrategy(tickerData, avgFrequency) {
+    /*tradeFrequencySpikeStrategy(tickerData, avgFrequency) {
       if (tickerData.tradeTickerFrequency > avgFrequency * 1.5) {
         const action = tickerData.tradeSide === "buy" ? "buy" : "sell";
         this.addSignal({
@@ -457,7 +457,7 @@ export default {
           reason: "Trade frequency spike, action: " + action,
         });
       }
-    },
+    },*/
 
 // 7. Стратегия на основе диапазона свечи
     candleRangeStrategy(tickerData, avgRange) {
@@ -566,7 +566,7 @@ export default {
     },
 
 // Стратегия на основании частоты сделок
-    frequencyStrategy(tickerData) {
+    /*frequencyStrategy(tickerData) {
       const avgFrequency = 30; // Условное среднее значение частоты
       if (tickerData.tradeTickerFrequency > avgFrequency * 1.5) {
         const action = tickerData.tradeSide === "buy" ? "buy" : "sell";
@@ -577,7 +577,7 @@ export default {
           reason: "High trade frequency, action: " + action,
         });
       }
-    },
+    },*/
 
 // Торговля по свечным паттернам
     candlePatternStrategy(tickerData) {
