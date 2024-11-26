@@ -644,7 +644,7 @@ export default {
     async sendBestDeal(dealData) {
 
       if (!this.isSaveEnabled) {
-        console.log("Сохранение выключено. Данные не отправлены.");
+        //console.log("Сохранение выключено. Данные не отправлены.");
         return;
       }
 
@@ -680,14 +680,14 @@ export default {
       }
     },
 
-    updateOrderbooks(orderbooks) {
-      this.globalData.orderbooks = orderbooks;
+    updateOrderbooks() {
+      //this.globalData.orderbooks = orderbooks;
     },
-    updateCandles(candles) {
-      this.globalData.candles = candles;
+    updateCandles() {
+      //this.globalData.candles = candles;
     },
-    updateQuotes(quotes) {
-      this.globalData.quotes = quotes;
+    updateQuotes() {
+      //this.globalData.quotes = quotes;
     },
     updateTrades(trades) {
       this.globalData.trades = trades;
@@ -771,15 +771,19 @@ export default {
           timestamp: new Date().toISOString() // Добавляем метку времени
         };
 
-        //Вычисляем стратегии
         this.executeStrategies(newData);
 
         // Добавляем срез в историю
-        this.summaryDataHistory.push(snapshot);
+        if(this.isSaveEnabled){
+          this.summaryDataHistory.push(snapshot);
 
-        // Ограничиваем длину истории
-        if (this.summaryDataHistory.length > this.historyLimit) {
-          this.summaryDataHistory.shift(); // Удаляем самый старый элемент
+          // Ограничиваем длину истории
+          if (this.summaryDataHistory.length > this.historyLimit) {
+            this.summaryDataHistory.shift(); // Удаляем самый старый элемент
+          }
+
+        } else {
+          this.summaryDataHistory = [];
         }
 
         //console.log('Updated summaryDataHistory:', this.summaryDataHistory);
@@ -808,12 +812,18 @@ export default {
         };
 
         // Добавляем срез в историю
-        this.globalDataHistory.push(snapshot);
+        if(this.isSaveEnabled){
+          this.globalDataHistory.push(snapshot);
 
-        // Ограничиваем длину истории
-        if (this.globalDataHistory.length > this.historyLimit) {
-          this.globalDataHistory.shift(); // Удаляем самый старый элемент
+          // Ограничиваем длину истории
+          if (this.globalDataHistory.length > this.historyLimit) {
+            this.globalDataHistory.shift(); // Удаляем самый старый элемент
+          }
+
+        } else {
+          this.globalDataHistory = [];
         }
+
 
         //console.log('Updated globalDataHistory:', this.globalDataHistory);
       }
