@@ -73,19 +73,19 @@ export default {
 
       accumulatedTickerStats: {
         'GAZP': {
-          '0-100': {filled: false, level: 100, sum: 0, levelCount: 0,},
-          '100-200': {filled: false, level: 200, sum: 0, levelCount: 0,},
-          '100-400': {filled: false, level: 400, sum: 0, levelCount: 0,},
+          '0-100': { filled: false, level: 100, sum: 0, levelCount: 0, },
+          '100-200': { filled: false, level: 200, sum: 0, levelCount: 0, },
+          '100-400': { filled: false, level: 400, sum: 0, levelCount: 0, },
         },
         'LKOH': {
-          '0-100': {filled: false, level: 100, sum: 0, levelCount: 0,},
-          '100-200': {filled: false, level: 200, sum: 0, levelCount: 0,},
-          '100-400': {filled: false, level: 400, sum: 0, levelCount: 0,},
+          '0-100': { filled: false, level: 100, sum: 0, levelCount: 0, },
+          '100-200': { filled: false, level: 200, sum: 0, levelCount: 0, },
+          '100-400': { filled: false, level: 400, sum: 0, levelCount: 0, },
         },
         'SBER': {
-          '0-100': {filled: false, level: 100, sum: 0, levelCount: 0,},
-          '100-200': {filled: false, level: 200, sum: 0, levelCount: 0,},
-          '100-400': {filled: false, level: 400, sum: 0, levelCount: 0,},
+          '0-100': { filled: false, level: 100, sum: 0, levelCount: 0, },
+          '100-200': { filled: false, level: 200, sum: 0, levelCount: 0, },
+          '100-400': { filled: false, level: 400, sum: 0, levelCount: 0, },
         },
       },
 
@@ -132,9 +132,9 @@ export default {
       /*const currentTimestamp = Math.floor(Date.now() / 1000); // Текущее время в секундах
       const futureTimestamp = currentTimestamp + 1; // На секунду вперед
 */
-      const lastTime = new Date(items[items.length - 1].time).getTime();
+      const lastTime =  new Date(items[items.length - 1].time).getTime();
 
-      if (!lastTime) return;
+      if(!lastTime) return;
 
       // Устанавливаем начало и конец таймлайна с отступом в 5 секунд
       this.timelineStart = new Date(lastTime - this.leftRange).toISOString();
@@ -165,11 +165,11 @@ export default {
     this._renderCount = 0;
     this.updateRenderTime();
 
-    if (this.type === 'quotes') {
+    if(this.type === 'quotes'){
       this.leftRange = 60000;
       this.rightRange = 10000;
     }
-    if (this.type === 'candles') {
+    if(this.type === 'candles'){
       this.leftRange = 70000;
       this.rightRange = 70000;
       this.pointSpacing = 3;
@@ -226,20 +226,17 @@ export default {
 </script>
 
 <style>
-.table {
+.table{
   display: table;
   width: 100%;
 }
-
-.table-row {
+.table-row{
   display: table-row;
 }
-
-.table-cell {
+.table-cell{
   display: table-cell;
   padding: 0 2px;
 }
-
 .timeline {
   position: relative;
   width: 100%;
@@ -257,12 +254,10 @@ export default {
   background-color: #007bff;
   opacity: 0.6;
 }
-
-.timeline-point-candle {
+.timeline-point-candle{
   width: 2px;
   height: 2px;
 }
-
 .timeline-current-time {
   position: absolute;
   height: 100%;

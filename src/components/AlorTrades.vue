@@ -84,13 +84,11 @@ export default {
       const summary = {};
 
       this.trades.forEach((trade) => {
-        const { ticker, qty, side } = trade;
+        const { ticker, qty } = trade;
 
         summary[ticker] = summary[ticker] || {};
         summary[ticker].tradeVolumeAbsoluteRub = parseFloat(trade.price) * trade.qty;
         summary[ticker].tradeVolume = qty;
-        summary[ticker].tradeLastBuyVolume = (summary[ticker].buyVolume || 0) + (side === "buy" ? qty : 0);
-        summary[ticker].tradeLastSellVolume = (summary[ticker].sellVolume || 0) + (side === "sell" ? qty : 0);
 
         Object.entries(trade).forEach(([key, value]) => {
           const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
@@ -104,42 +102,6 @@ export default {
   },
 
   methods: {
-
-    calculateSellTotalByTicker(trades) {
-      return trades.reduce((acc, trade) => {
-        if (trade.side === 'sell') {
-          const { ticker, price, qty } = trade;
-
-          // Инициализируем сумму для тикера, если он ещё не добавлен
-          if (!acc[ticker]) {
-            acc[ticker] = 0;
-          }
-
-          // Добавляем сумму сделки
-          acc[ticker] += price * qty;
-        }
-
-        return acc;
-      }, {});
-    },
-
-    calculateBuyTotalByTicker(trades) {
-      return trades.reduce((acc, trade) => {
-        if (trade.side === 'buy') {
-          const { ticker, price, qty } = trade;
-
-          // Инициализируем сумму для тикера, если он ещё не добавлен
-          if (!acc[ticker]) {
-            acc[ticker] = 0;
-          }
-
-          // Добавляем сумму сделки
-          acc[ticker] += price * qty;
-        }
-
-        return acc;
-      }, {});
-    },
 
     tickerFrequency(trades) {
 

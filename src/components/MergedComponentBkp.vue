@@ -51,7 +51,7 @@
             @select-ticker="selectTicker"
         />
 
-<!--        <div class="items">
+        <div class="items">
           <div class="items-wrap"
                v-for="(item,ticker) in sortedBuyVolume"
                :key="item.id">
@@ -61,7 +61,7 @@
             <div class="item">{{item?.tradeLastBuyVolume}}</div>
             <div class="item">{{item?.tradeLastSellVolume}}</div>
           </div>
-        </div>-->
+        </div>
       </div>
 
       <div class="panel">
@@ -70,38 +70,38 @@
 
 
         <!-- Статистика всех сделок -->
-        <!--        <AlorTradeHistoryDiagram
-                    title="Trade History Statistics (All)"
-                    :tradeData="globalData?.tradesStatistics?.tradeHistory"
-                    :buyData="globalData?.tradesStatistics?.tradeHistoryBuy"
-                    :sellData="globalData?.tradesStatistics?.tradeHistorySell"
-                />-->
+<!--        <AlorTradeHistoryDiagram
+            title="Trade History Statistics (All)"
+            :tradeData="globalData?.tradesStatistics?.tradeHistory"
+            :buyData="globalData?.tradesStatistics?.tradeHistoryBuy"
+            :sellData="globalData?.tradesStatistics?.tradeHistorySell"
+        />-->
 
 
-        <!--        <input type="text" v-model="selectedTicker"/>-->
+<!--        <input type="text" v-model="selectedTicker"/>-->
 
         <!-- Статистика выбранного тикера -->
-        <!--        <AlorTradeHistoryDiagram
-                    title="Trade History Statistics (By Ticker)"
-                    :tradeData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistory || []"
-                    :buyData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistoryBuy || []"
-                    :sellData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistorySell || []"
-                    :showTickerInput="true"
-                />-->
+<!--        <AlorTradeHistoryDiagram
+            title="Trade History Statistics (By Ticker)"
+            :tradeData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistory || []"
+            :buyData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistoryBuy || []"
+            :sellData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistorySell || []"
+            :showTickerInput="true"
+        />-->
 
         <!-- Статистика покупок -->
-        <!--        <AlorTradeHistoryDiagram
-                    title="Trade History Statistics (Buy)"
-                    type="buy"
-                    :tradeData="globalData?.tradesStatistics?.tradeHistoryBuy"
-                />-->
+<!--        <AlorTradeHistoryDiagram
+            title="Trade History Statistics (Buy)"
+            type="buy"
+            :tradeData="globalData?.tradesStatistics?.tradeHistoryBuy"
+        />-->
 
         <!-- Статистика продаж -->
-        <!--        <AlorTradeHistoryDiagram
-                    title="Trade History Statistics (Sell)"
-                    type="sell"
-                    :tradeData="globalData?.tradesStatistics?.tradeHistorySell"
-                />-->
+<!--        <AlorTradeHistoryDiagram
+            title="Trade History Statistics (Sell)"
+            type="sell"
+            :tradeData="globalData?.tradesStatistics?.tradeHistorySell"
+        />-->
 
 
         <AlorStatsDiagram
@@ -174,7 +174,7 @@
       <button @click="resetCache">Reset Cache</button>
     </div>
 
-<!--    <div style="margin: 0 0 10px;">
+    <div style="margin: 0 0 10px;">
       <div v-for="(item, key) in {
         ...globalData.tradesCounters,
         ...globalData.candlesCounters,
@@ -190,7 +190,7 @@
       <div v-for="(item, key) in summaryData[selectedTicker]" :key="item?.id">
         {{key}}: {{item}}
       </div>
-    </div>-->
+    </div>
 
   </div>
 </template>
@@ -312,7 +312,7 @@ export default {
         this.signals.shift(); // Удалить первый (старый) элемент
       }
     },
-
+    
     executeStrategies(data) {
       const avgVolume = 5000; // Условное среднее значение
       const avgFrequency = 30; // Средняя частота сделок
