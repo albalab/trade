@@ -168,7 +168,7 @@ export default {
 
 
               // Ограничиваем массив последних 1000 объектов
-              if (localOrderbooks.length > 1000) {
+              if (localOrderbooks.length > 500) {
                 localOrderbooks.shift();
               }
 

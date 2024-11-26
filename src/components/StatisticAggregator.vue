@@ -91,8 +91,8 @@ export default {
 
   methods: {
 
-    rangeAccumulator() {
-
+    aggregateStatistics() {
+      //console.log(items[0]);
     },
 
     updateAvgItemsLength() {
@@ -165,6 +165,9 @@ export default {
   watch: {
     items(newItems) {
       if (Array.isArray(newItems) && newItems.length > 0) {
+
+        this.aggregateStatistics(newItems);
+
         // Устанавливаем таймлайн
         this.updateTimeline(newItems);
 

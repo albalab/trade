@@ -202,6 +202,15 @@ export default {
           if (localTrades.length > 500) {
             localTrades.shift();
 
+            const tickerFrequency = this.tickerFrequency(localTrades);
+            const tickerFrequencyBuy = this.tickerFrequency(localTrades.filter(i=>i.side==='buy'));
+            const tickerFrequencySell = this.tickerFrequency(localTrades.filter(i=>i.side==='sell'));
+            localTrades.forEach(item => {
+              item.tickerFrequency = tickerFrequency[item.ticker];
+              item.tickerFrequencyBuy = tickerFrequencyBuy[item.ticker];
+              item.tickerFrequencySell = tickerFrequencySell[item.ticker];
+            });
+
             /*const tickerFrequency = this.tickerFrequency(localTrades);
             const tickerFrequencyBuy = this.tickerFrequency(localTrades.filter(i=>i.side==='buy'));
             const tickerFrequencySell = this.tickerFrequency(localTrades.filter(i=>i.side==='sell'));
