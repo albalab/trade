@@ -236,6 +236,10 @@ export default {
     this._renderCount = 0;
     this.updateRenderTime();
 
+    if (this.type === 'orderbooks') {
+      this.leftRange = 1000;
+      this.rightRange = 5000;
+    }
     if (this.type === 'quotes') {
       this.leftRange = 60000;
       this.rightRange = 10000;

@@ -45,7 +45,6 @@ export default {
         const bids = orderbook.bids.map(bid => ({ ...bid, price: parseFloat(bid.price) }));
         const asks = orderbook.asks.map(ask => ({ ...ask, price: parseFloat(ask.price) }));
 
-
         // Лучшая цена Bid
         const bestBidPrice = Math.max(...bids.map(bid => bid.price));
 
