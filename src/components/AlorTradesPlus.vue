@@ -120,9 +120,9 @@ export default {
 
     tradesStatistics() {
       return {
-        tradeHistory: this.tradeHistory,
-        tradeHistoryBuy: this.tradeHistoryBuy,
-        tradeHistorySell: this.tradeHistorySell,
+        //tradeHistory: this.tradeHistory,
+        //tradeHistoryBuy: this.tradeHistoryBuy,
+        //tradeHistorySell: this.tradeHistorySell,
         tickerStats: this.tickerStats,
         advantageousBuyDifferences: this.advantageousBuyDifferences,
         advantageousSellDifferences: this.advantageousSellDifferences,

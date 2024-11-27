@@ -681,14 +681,14 @@ export default {
       }
     },
 
-    updateOrderbooks(orderbooks) {
-      this.globalData.orderbooks = orderbooks;
+    updateOrderbooks() {
+      //this.globalData.orderbooks = orderbooks;
     },
-    updateCandles(candles) {
-      this.globalData.candles = candles;
+    updateCandles() {
+      //this.globalData.candles = candles;
     },
-    updateQuotes(quotes) {
-      this.globalData.quotes = quotes;
+    updateQuotes() {
+      //this.globalData.quotes = quotes;
     },
     updateTrades(trades) {
       this.globalData.trades = trades;
