@@ -308,7 +308,7 @@ export default {
       this.signals.push(signal);
 
       // Ограничение длины массива до 200 элементов
-      if (this.signals.length > 200) {
+      if (this.signals.length > 500) {
         this.signals.shift(); // Удалить первый (старый) элемент
       }
     },
@@ -345,6 +345,7 @@ export default {
 
 // Пример корректировки одной стратегии (остальные стратегии аналогичны):
     volumeImbalanceStrategy(tickerData) {
+      //console.log(tickerData);
       if (tickerData.orderbookTotalBidVolume > tickerData.orderbookTotalAskVolume * 1.5) {
         this.addSignal({
           ticker: tickerData.tradeTicker,
@@ -680,14 +681,14 @@ export default {
       }
     },
 
-    updateOrderbooks() {
-      //this.globalData.orderbooks = orderbooks;
+    updateOrderbooks(orderbooks) {
+      this.globalData.orderbooks = orderbooks;
     },
-    updateCandles() {
-      //this.globalData.candles = candles;
+    updateCandles(candles) {
+      this.globalData.candles = candles;
     },
-    updateQuotes() {
-      //this.globalData.quotes = quotes;
+    updateQuotes(quotes) {
+      this.globalData.quotes = quotes;
     },
     updateTrades(trades) {
       this.globalData.trades = trades;
