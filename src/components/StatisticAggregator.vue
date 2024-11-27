@@ -48,6 +48,13 @@
           :style="{ left: calculatePosition(currentTime) + '%' }"
           title="Current time"
       ></div>
+      <div
+          v-if="lastServerTime"
+          class="timeline-server-time"
+          :style="{ left: calculatePosition(lastServerTime) + '%' }"
+          title="Last server time"
+      ></div>
+
     </div>
   </div>
 </template>
@@ -69,6 +76,7 @@ export default {
       leftRange: 1000,
       rightRange: 1000,
 
+      lastServerTime: null,
       currentTime: null,
 
       itemsCounter: 0,
@@ -172,69 +180,6 @@ export default {
       }
     },
 
-    /*aggregateStatistics(items) {
-
-      const TCSG = this.TCSG;
-
-      items.forEach((item) => {
-        if(item.type === 'trade' && item.ticker !== 'IMOEX2'){
-
-          if(item.ticker === 'TCSG'){
-
-            //const level0 = this.getGeometricLevel(TCSG[0].counterLevel, 500);
-            //const level1 = this.getGeometricLevel(TCSG[1].counterLevel, 500);
-
-            // последний в списке элемент не копирует свое значение при переполнении
-            if (TCSG[2].counterLevel >= 4000) {
-              TCSG[2] = {
-                sum: TCSG[1].sum,
-                counterLevel: TCSG[1].counterLevel
-              };
-            } else {
-              TCSG[2].sum += parseFloat(item.price);
-              TCSG[2].counterLevel++;
-            }
-
-            // Уровень 1
-            if (TCSG[1].counterLevel >= 2000) {
-              TCSG[1] = {
-                sum: TCSG[0].sum,
-                counterLevel: TCSG[0].counterLevel
-              };
-            } else {
-              TCSG[1].sum += parseFloat(item.price);
-              TCSG[1].counterLevel++;
-            }
-
-            // Уровень 0
-            if (TCSG[0].counterLevel >= 1000) {
-              TCSG[0] = {
-                sum: TCSG[0].sum / TCSG[0].counterLevel,
-                counterLevel: 0
-              };
-            } else {
-              TCSG[0].sum += parseFloat(item.price);
-              TCSG[0].counterLevel++;
-            }
-
-
-
-            //должна вестись работа сразу со всеми уровнями
-
-          }
-
-          //console.log(item.price);
-
-          //if(items[0].side) console.log(items[0].side)
-
-          //if(this.accumulatedTickerStats[])
-
-          //else console.log(items[0])
-        }
-      });
-
-    },*/
-
     updateAvgItemsLength() {
       if (this.updatesCount > 0) {
         this.avgItemsLength = this.totalItemsLength / this.updatesCount;
@@ -250,10 +195,6 @@ export default {
         this.avgPerMinute = this.avgPerSecond * 60; // Среднее в минуту
         this.avgPerHour = this.avgPerSecond * 3600; // Среднее в час
       }
-    },
-
-    updateCurrentTime() {
-      this.currentTime = new Date().toISOString();
     },
 
     updateTimeline(items) {
@@ -314,12 +255,21 @@ export default {
     items(newItems) {
       if (Array.isArray(newItems) && newItems.length > 0) {
 
+        /*this.currentTime = null;
+        setTimeout(() => {
+          this.currentTime = new Date();
+        }, 0);*/
+
+
+
+        this.currentTime = new Date();
+        this.lastServerTime = new Date(newItems[newItems.length-1].serverTime);
+
         this.aggregateStatistics(newItems);
 
         // Устанавливаем таймлайн
         this.updateTimeline(newItems);
 
-        this.updateCurrentTime();
 
         // Увеличиваем общий счетчик сделок
         this.itemsCounter += newItems.length;
@@ -389,12 +339,16 @@ export default {
   height: 2px;
 }
 
+.timeline-server-time,
 .timeline-current-time {
   position: absolute;
   height: 100%;
-  width: 2px;
+  width: 1px;
   background-color: red;
   opacity: 0.8;
   z-index: 10;
+}
+.timeline-server-time{
+  background-color: orange;
 }
 </style>

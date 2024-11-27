@@ -161,8 +161,6 @@ export default {
 
             if (quote.ticker && quote.last_price !== undefined) {
 
-              quote.time = quote.last_price_timestamp * 1000;
-
               if (tickerStats[quote.ticker]) {
                 tickerStats[quote.ticker]++;
               } else {
