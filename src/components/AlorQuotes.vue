@@ -102,6 +102,9 @@ export default {
       const accumulatedStats = { ...this.accumulatedQuoteStats };
 
       newQuotes.forEach((quote) => {
+
+        quote.type = 'quote';
+
         const ticker = quote.ticker;
 
         // Обновляем накопительную статистику

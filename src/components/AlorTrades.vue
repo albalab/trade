@@ -146,6 +146,8 @@ export default {
 
         newTrades.forEach(trade => {
 
+          trade.type = 'trade';
+
           if (tickerStats[trade.ticker]) {
             tickerStats[trade.ticker]++;
           } else {

@@ -3,12 +3,28 @@
     <h3>Statistic Aggregator</h3>
     Last render time: {{lastRenderTime}} {{_renderCount}}<br>
 
-    counter: {{ counter }}<br>
+    itemsCounter: {{ itemsCounter }}<br>
     Chunk items length: {{ items.length }}<br>
     Avg per second: {{ avgPerSecond.toFixed(2) }}<br>
     Avg per minute: {{ avgPerMinute.toFixed(2) }}<br>
     Avg per hour: {{ avgPerHour.toFixed(2) }}<br>
     Avg length of items: {{ avgItemsLength.toFixed(2) }}<br>
+
+    <div v-for="(item, i) in tickerData.TCSG" :key="item.id" style="padding: 5px; border: solid 1px #ccc; margin: 0 0 5px;">
+      <div v-if="getGeometricLevel(item.counterLevel, 500) === i">
+        TCSG {{item.sum/item.counterLevel}} LEVEL: {{getGeometricLevel(item.counterLevel, 500)}}
+        <div v-for="(value, key) in item" :key="value.id">
+          {{ key }}: {{value}}<br>
+        </div>
+      </div>
+    </div>
+
+<!--    <div v-for="item in tickerData.LKOH" :key="item.id" style="padding: 5px; border: solid 1px #ccc; margin: 0 0 5px;">
+      LKOH {{item.sum/item.counterLevel}}
+      <div v-for="(value, key) in item" :key="value.id">
+        {{ key }}: {{value}}<br>
+      </div>
+    </div>-->
 
     <div class="timeline">
       <div
@@ -55,41 +71,42 @@ export default {
 
       currentTime: null,
 
-      counter: 0, // Общий счетчик сделок
-      startTime: null, // Время начала подсчета
-      avgPerSecond: 0, // Средняя скорость в секунду
-      avgPerMinute: 0, // Средняя скорость в минуту
-      avgPerHour: 0, // Средняя скорость в час
-      totalItemsLength: 0, // Сумма длин массивов items
-      updatesCount: 0, // Количество обновлений items
-      avgItemsLength: 0, // Средняя длина массива items
-      timelineStart: null, // Начало таймлайна
-      timelineEnd: null, // Конец таймлайна
-      pointSpacing: 0, // Шаг между точками по вертикали
-      pointCycle: 10, // Количество точек в одном цикле сверху вниз
+      itemsCounter: 0,
+      startTime: null,
+      avgPerSecond: 0,
+      avgPerMinute: 0,
+      avgPerHour: 0,
+      totalItemsLength: 0,
+      updatesCount: 0,
+      avgItemsLength: 0,
+      timelineStart: null,
+      timelineEnd: null,
+      pointSpacing: 0,
+      pointCycle: 10,
 
-      buyManager: null, // Менеджер диапазонов для `buy`
-      sellManager: null, // Менеджер диапазонов для `sell`
+      buyManager: null,
+      sellManager: null,
 
       accumulatedTickerStats: {
-        'GAZP': {
-          '0-100': {filled: false, level: 100, sum: 0, levelCount: 0,},
-          '100-200': {filled: false, level: 200, sum: 0, levelCount: 0,},
-          '100-400': {filled: false, level: 400, sum: 0, levelCount: 0,},
-        },
-        'LKOH': {
-          '0-100': {filled: false, level: 100, sum: 0, levelCount: 0,},
-          '100-200': {filled: false, level: 200, sum: 0, levelCount: 0,},
-          '100-400': {filled: false, level: 400, sum: 0, levelCount: 0,},
-        },
-        'SBER': {
-          '0-100': {filled: false, level: 100, sum: 0, levelCount: 0,},
-          '100-200': {filled: false, level: 200, sum: 0, levelCount: 0,},
-          '100-400': {filled: false, level: 400, sum: 0, levelCount: 0,},
-        },
+
       },
 
-
+      tickerData: {
+        /*TCSG: [
+          { sum: 0, counterLevel: 0 }, // Уровень 0
+          { sum: 0, counterLevel: 0 }, // Уровень 1
+          { sum: 0, counterLevel: 0 }, // Уровень 2
+          { sum: 0, counterLevel: 0 }, // Уровень 2
+        ],
+        LKOH: [
+          { sum: 0, counterLevel: 0 },
+          { sum: 0, counterLevel: 0 },
+          { sum: 0, counterLevel: 0 },
+          { sum: 0, counterLevel: 0 },
+        ],*/
+        // Другие тикеры можно добавить сюда
+      },
+      thresholds: [500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000, 512000], // Пороговые значения
     };
   },
 
@@ -101,9 +118,122 @@ export default {
       this._renderCount++;
     },
 
-    aggregateStatistics() {
-      //console.log(items[0]);
+    getGeometricLevel(i, start) {
+      if (i < start) return 0;
+      return Math.floor(Math.log(i / start) / Math.log(2)) + 1;
     },
+
+    isInGeometricSeries(i, start) {
+      return i >= start && (i % start === 0) && (Math.log(i / start) / Math.log(2)) % 1 === 0;
+    },
+
+    aggregateStatistics(items) {
+      items.forEach((item) => {
+        if (item.type === 'trade' && item.ticker !== 'IMOEX2') {
+          // Если тикер еще не добавлен, инициализируем его
+          if (!this.tickerData[item.ticker]) {
+            this.initializeTicker(item.ticker);
+          }
+
+          //console.log(item);
+
+          if(!item.tickerFrequency) return
+          
+          // Обновляем уровни для текущего тикера
+          this.updateLevels(this.tickerData[item.ticker], this.thresholds, item.tickerFrequency);
+        }
+      });
+    },
+    initializeTicker(ticker) {
+      // Инициализация нового тикера с пустыми уровнями
+      this.tickerData[ticker] = this.thresholds.map(() => ({
+        sum: 0,
+        counterLevel: 0,
+      }));
+    },
+    updateLevels(levels, thresholds, value) {
+      for (let i = levels.length - 1; i >= 0; i--) {
+        if (levels[i].counterLevel >= thresholds[i]) {
+          if (i > 0) {
+            // Копируем данные с предыдущего уровня
+            levels[i] = { ...levels[i - 1] };
+          } else {
+            // Для уровня 0 усредняем и сбрасываем
+            levels[i] = {
+              sum: levels[i].sum / levels[i].counterLevel,
+              counterLevel: 0,
+            };
+          }
+        } else {
+          // Обновляем текущий уровень
+          levels[i].sum += parseFloat(value);
+          levels[i].counterLevel++;
+        }
+      }
+    },
+
+    /*aggregateStatistics(items) {
+
+      const TCSG = this.TCSG;
+
+      items.forEach((item) => {
+        if(item.type === 'trade' && item.ticker !== 'IMOEX2'){
+
+          if(item.ticker === 'TCSG'){
+
+            //const level0 = this.getGeometricLevel(TCSG[0].counterLevel, 500);
+            //const level1 = this.getGeometricLevel(TCSG[1].counterLevel, 500);
+
+            // последний в списке элемент не копирует свое значение при переполнении
+            if (TCSG[2].counterLevel >= 4000) {
+              TCSG[2] = {
+                sum: TCSG[1].sum,
+                counterLevel: TCSG[1].counterLevel
+              };
+            } else {
+              TCSG[2].sum += parseFloat(item.price);
+              TCSG[2].counterLevel++;
+            }
+
+            // Уровень 1
+            if (TCSG[1].counterLevel >= 2000) {
+              TCSG[1] = {
+                sum: TCSG[0].sum,
+                counterLevel: TCSG[0].counterLevel
+              };
+            } else {
+              TCSG[1].sum += parseFloat(item.price);
+              TCSG[1].counterLevel++;
+            }
+
+            // Уровень 0
+            if (TCSG[0].counterLevel >= 1000) {
+              TCSG[0] = {
+                sum: TCSG[0].sum / TCSG[0].counterLevel,
+                counterLevel: 0
+              };
+            } else {
+              TCSG[0].sum += parseFloat(item.price);
+              TCSG[0].counterLevel++;
+            }
+
+
+
+            //должна вестись работа сразу со всеми уровнями
+
+          }
+
+          //console.log(item.price);
+
+          //if(items[0].side) console.log(items[0].side)
+
+          //if(this.accumulatedTickerStats[])
+
+          //else console.log(items[0])
+        }
+      });
+
+    },*/
 
     updateAvgItemsLength() {
       if (this.updatesCount > 0) {
@@ -116,7 +246,7 @@ export default {
       const elapsedTimeInSeconds = (currentTime - this.startTime) / 1000; // Время с начала в секундах
 
       if (elapsedTimeInSeconds > 0) {
-        this.avgPerSecond = this.counter / elapsedTimeInSeconds; // Среднее в секунду
+        this.avgPerSecond = this.itemsCounter / elapsedTimeInSeconds; // Среднее в секунду
         this.avgPerMinute = this.avgPerSecond * 60; // Среднее в минуту
         this.avgPerHour = this.avgPerSecond * 3600; // Среднее в час
       }
@@ -191,12 +321,8 @@ export default {
 
         this.updateCurrentTime();
 
-        if (this.startTime === null) {
-          this.startTime = new Date(); // Фиксируем начало времени, если еще не зафиксировано
-        }
-
         // Увеличиваем общий счетчик сделок
-        this.counter += newItems.length;
+        this.itemsCounter += newItems.length;
 
         // Увеличиваем общую сумму длины массивов
         this.totalItemsLength += newItems.length;

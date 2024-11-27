@@ -173,7 +173,7 @@ export default {
           newCandles.forEach(candle => {
 
             candle.time = candle.time * 1000;
-
+            candle.type = 'candle';
 
             if (candle.ticker && candle.time && candle.open !== undefined &&
                 candle.close !== undefined && candle.high !== undefined &&

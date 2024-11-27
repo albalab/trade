@@ -159,6 +159,7 @@ export default {
 
             if (orderbook.ticker && orderbook.bids && orderbook.asks) {
 
+              orderbook.type = 'orderbook';
               orderbook.time = orderbook.ms_timestamp;
 
               localOrderbooks.push(orderbook);
