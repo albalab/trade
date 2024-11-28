@@ -28,7 +28,7 @@ export const tickers = [
     'PLZL',
     'SMLT',
     'SVAV',
-    'TCSG',
+    'T',
     'TRNFP',
     'VRSB',
     'YDEX',

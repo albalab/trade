@@ -1,0 +1,116 @@
+<template>
+  <div>
+    <h3>Levels Renderer</h3>
+    <!-- Выбор тикера -->
+    <div v-if="type === 'trades'">
+      <label for="ticker">Selected Ticker:</label>
+      <input
+          type="text"
+          id="ticker"
+          v-model="selectedTicker"
+      />
+    </div>
+
+    <!-- Отображение статистики по выбранному тикеру -->
+    <div v-if="tickerData[selectedTicker]">
+      <div
+          v-for="(item, index) in tickerData[selectedTicker]"
+          :key="index"
+          style="padding: 5px; border: solid 1px #ccc; margin: 0 0 5px;"
+      >
+        <div v-if="showLevel(item, index)">
+          Level {{ index }}: Average: {{ item.sum / item.counterLevel || 0 }}<br />
+          Total Count: {{ item.counterLevel }}<br />
+          Total Sum: {{ item.sum }}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<script>
+export default {
+  name: "LevelsRenderer",
+  props: {
+    type: String,
+    items: Array,
+  },
+  data() {
+    return {
+      tickerData: {},
+
+      selectedTicker: "SBER",
+
+      thresholds: [500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000, 512000], // Пороговые значения
+    };
+  },
+
+  computed: {
+
+  },
+
+  methods: {
+
+    showLevel(item, index){
+      const currentLevel = this.getGeometricLevel(item.counterLevel, 500);
+      if( currentLevel === index) return true;
+      if( index > 0 && currentLevel - 1 === index) return true;
+    },
+
+    getGeometricLevel(i, start) {
+      if (i < start) return 0;
+      return Math.floor(Math.log(i / start) / Math.log(2)) + 1;
+    },
+
+    aggregateStatistics(items) {
+      items.forEach((item) => {
+        if (item.type === "trade" && item.ticker !== "IMOEX2") {
+          // Инициализация тикера, если его еще нет
+          if (!this.tickerData[item.ticker]) {
+            this.initializeTicker(item.ticker);
+          }
+          // Обновление уровней для тикера
+          this.updateLevels(this.tickerData[item.ticker], this.thresholds, item.tickerFrequency);
+        }
+      });
+    },
+    initializeTicker(ticker) {
+      this.tickerData[ticker] = this.thresholds.map(() => ({
+        sum: 0,
+        counterLevel: 0,
+      }));
+    },
+    updateLevels(levels, thresholds, value) {
+      for (let i = levels.length - 1; i >= 0; i--) {
+        if (levels[i].counterLevel >= thresholds[i]) {
+          if (i > 0) {
+            levels[i] = { ...levels[i - 1] };
+          } else {
+            levels[i] = {
+              sum: levels[i].sum / levels[i].counterLevel,
+              counterLevel: 0,
+            };
+          }
+        } else {
+          levels[i].sum += parseFloat(value);
+          levels[i].counterLevel++;
+        }
+      }
+    },
+
+  },
+
+  watch: {
+    items(newItems) {
+      if (Array.isArray(newItems) && newItems.length > 0) {
+        this.aggregateStatistics(newItems); // Пересчитываем статистику
+      }
+    },
+  },
+
+  mounted () {
+
+  }
+};
+</script>

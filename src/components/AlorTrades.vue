@@ -1,22 +1,40 @@
 <template>
   <div>
 
-<!--    {{historyTickers}}<br>
-    {{tradeCounter}}<br>
-    F: {{trades[0]?.tickerFrequency}}-->
+    <StatisticRenderer
+        :type="type"
+        :items="newTrades"
+    />
+
+
+    <LevelsRenderer
+        :type="type"
+        :items="newTrades"
+    />
+
+
+    <!--    {{historyTickers}}<br>
+        {{tradeCounter}}<br>
+        F: {{trades[0]?.tickerFrequency}}-->
   </div>
 </template>
 
 <script>
-
-
+import StatisticRenderer from "./StatisticRenderer.vue";
 import { tickersSteps } from '../tickersSteps.js';
+import LevelsRenderer from "./LevelsRenderer.vue";
 
 export default {
   name: 'alor-trades',
+  components: {
+    StatisticRenderer,
+    LevelsRenderer
+  },
   
   data() {
     return {
+
+      newTrades: [],
 
       tradesSummary: {},
       groupedTrades: {},
@@ -208,6 +226,7 @@ export default {
 
         this.tickerStats = tickerStats;
 
+        this.newTrades = newTrades;
         this.$emit('update-trades', newTrades);
         this.$emit('update-trades-summary', this.tradesSummary);
         this.$emit('update-trades-counters', this.tradesCounters);

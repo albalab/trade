@@ -21,13 +21,6 @@
       </div>
     </div>
 
-<!--    <div v-for="item in tickerData.LKOH" :key="item.id" style="padding: 5px; border: solid 1px #ccc; margin: 0 0 5px;">
-      LKOH {{item.sum/item.counterLevel}}
-      <div v-for="(value, key) in item" :key="value.id">
-        {{ key }}: {{value}}<br>
-      </div>
-    </div>-->
-
     <div class="timeline">
       <div
           v-for="(item, index) in items"
@@ -104,7 +97,7 @@ export default {
       },
 
       tickerData: {
-        /*TCSG: [
+        /*T: [
           { sum: 0, counterLevel: 0 }, // Уровень 0
           { sum: 0, counterLevel: 0 }, // Уровень 1
           { sum: 0, counterLevel: 0 }, // Уровень 2

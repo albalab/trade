@@ -1,7 +1,6 @@
 <template>
   <div>
 
-    <StatisticAggregator v-if="currentTrades" :items="currentTrades"  type="trades"/>
 
     <AlorTrades
         @update-trades="updateTrades"
@@ -13,7 +12,9 @@
 
 <script>
 import AlorTrades from './AlorTrades.vue';
-import StatisticAggregator from './StatisticAggregator.vue';
+/*import StatisticAggregator from './StatisticAggregator.vue';
+import StatisticContainer from './StatisticContainer.vue';*/
+
 //import {useCacheStore} from "@/stores/cacheStore";
 import {onUnmounted} from "vue";
 export default {
@@ -64,7 +65,8 @@ export default {
 
   components: {
     AlorTrades,
-    StatisticAggregator,
+    //StatisticAggregator,
+    //StatisticContainer,
 
   },
 

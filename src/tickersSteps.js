@@ -132,7 +132,7 @@ export const tickersSteps = {
     SVCB: 0.005,
     TATN: 0.1,
     TATNP: 0.1,
-    TCSG: 0.5,
+    T: 0.5,
     TGKA: 0.000002,
     TGKB: 0.000005,
     TGKBP: 0.00001,
