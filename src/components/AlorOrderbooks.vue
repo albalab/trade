@@ -13,6 +13,11 @@ export default {
   name: 'alor-order-book',
   data() {
     return {
+
+      orderbooksSummary: {},
+      groupedOrderbooks: {},
+      sortedOrderbooksStats: {},
+      
       orderbookCounter: 0,
 
       tickersSteps,
@@ -34,7 +39,7 @@ export default {
       }
     },
 
-    marketSummary() {
+    /*orderbooksSummary() {
       const summary = {};
 
       // Обработка данных ордербука
@@ -103,7 +108,7 @@ export default {
       });
 
       return summary;
-    },
+    },*/
 
     sortedOrderbookGlobalStats() {
       return Object.fromEntries(
@@ -120,14 +125,14 @@ export default {
       }, {});
     },
 
-    sortedOrderbooksStats() {
+    /*sortedOrderbooksStats() {
       return Object.entries(this.groupedOrderbookLastStats)
           .sort(([, a], [, b]) => b.length - a.length)
           .reduce((acc, [key, value]) => {
             acc[key] = value.length;
             return acc;
           }, {});
-    },
+    },*/
     
   },
 
@@ -139,10 +144,22 @@ export default {
 
       // Обрабатываем получение сообщений от WebSocket сервера
       socket.onmessage = (event) => {
-        const newOrderbooks = JSON.parse(event.data);
+        const data = JSON.parse(event.data);
 
+        if (!Array.isArray(data)) return;
+        
+        const newOrderbooks = data.filter(item => item.type === 'orderbook');
+        const orderbooksSummary = data.filter(item => item.type === 'orderbooksSummary');
+        const groupedOrderbooks = data.filter(item => item.type === 'groupedOrderbooks');
+        const sortedOrderbooksStats = data.filter(item => item.type === 'sortedOrderbooksStats');
+
+        this.orderbooksSummary = orderbooksSummary.length ? orderbooksSummary[0].data : {}
+        this.groupedOrderbooks = groupedOrderbooks.length ? groupedOrderbooks[0].data : {}
+        this.sortedOrderbooksStats = sortedOrderbooksStats.length ? sortedOrderbooksStats[0].data : {}
+
+        
         if (Array.isArray(newOrderbooks)) {
-
+          
           const localOrderbooks = [...this.orderbooks];
           let orderbookCounter = this.orderbookCounter;
           const orderbookGlobalStats = { ...this.orderbookGlobalStats };
@@ -176,7 +193,7 @@ export default {
 
           this.$emit('update-orderbooks', newOrderbooks);
           this.$emit('update-orderbooks-counters', this.orderbooksCounters);
-          this.$emit('update-orderbooks-summary', this.marketSummary);
+          this.$emit('update-orderbooks-summary', this.orderbooksSummary);
 
         } else {
           console.warn('Received non-array data:', newOrderbooks); // Логирование данных, если это не массив

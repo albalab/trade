@@ -12,6 +12,10 @@ export default {
   data() {
     return {
 
+      candlesSummary: {},
+      groupedCandles: {},
+      sortedCandlesStats: {},
+
       candleCounter: 0,
 
       accumulatedCandleStats: {},
@@ -47,7 +51,7 @@ export default {
       );
     },
 
-    candlesSummary() {
+    /*candlesSummary() {
       const summary = {};
 
       // Обработка данных свечей
@@ -100,7 +104,7 @@ export default {
             acc[key] = value.length;
             return acc;
           }, {});
-    },
+    },*/
 
   },
 
@@ -151,7 +155,18 @@ export default {
       const socket = new WebSocket('wss://refine.video/candles/');
 
       socket.onmessage = (event) => {
-        const newCandles = JSON.parse(event.data);
+        const data = JSON.parse(event.data);
+
+        if (!Array.isArray(data)) return;
+
+        const newCandles = data.filter(item => item.type === 'candle');
+        const candlesSummary = data.filter(item => item.type === 'candlesSummary');
+        const groupedCandles = data.filter(item => item.type === 'groupedCandles');
+        const sortedCandlesStats = data.filter(item => item.type === 'sortedCandlesStats');
+
+        this.candlesSummary = candlesSummary.length ? candlesSummary[0].data : {}
+        this.groupedCandles = groupedCandles.length ? groupedCandles[0].data : {}
+        this.sortedCandlesStats = sortedCandlesStats.length ? sortedCandlesStats[0].data : {}
 
         if (Array.isArray(newCandles)) {
 
@@ -199,7 +214,7 @@ export default {
           this.$emit('update-candles-summary', this.candlesSummary);
 
         } else {
-          console.warn('Received non-array data:', newCandles); // Логирование данных, если это не массив
+          console.warn('Received non-array data:', data); // Логирование данных, если это не массив
         }
       };
 

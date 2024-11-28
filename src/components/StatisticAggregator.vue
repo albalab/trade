@@ -10,9 +10,14 @@
     Avg per hour: {{ avgPerHour.toFixed(2) }}<br>
     Avg length of items: {{ avgItemsLength.toFixed(2) }}<br>
 
-    <div v-for="(item, i) in tickerData.TCSG" :key="item.id" style="padding: 5px; border: solid 1px #ccc; margin: 0 0 5px;">
+
+    <div v-if="type === 'trades'">
+      <input type="text" v-model="selectedTicker"/>
+    </div>
+
+    <div v-for="(item, i) in tickerData[selectedTicker]" :key="item.id" style="padding: 5px; border: solid 1px #ccc; margin: 0 0 5px;">
       <div v-if="getGeometricLevel(item.counterLevel, 500) === i">
-        TCSG {{item.sum/item.counterLevel}} LEVEL: {{getGeometricLevel(item.counterLevel, 500)}}
+        {{item.sum/item.counterLevel}} LEVEL: {{getGeometricLevel(item.counterLevel, 500)}}
         <div v-for="(value, key) in item" :key="value.id">
           {{ key }}: {{value}}<br>
         </div>
@@ -71,6 +76,8 @@ export default {
 
   data() {
     return {
+      selectedTicker: 'SBER',
+
       lastRenderTime: null,
 
       leftRange: 1000,
