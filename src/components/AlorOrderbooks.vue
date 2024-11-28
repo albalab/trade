@@ -120,13 +120,6 @@ export default {
       }, {});
     },
 
-    sortedOrderbookLastStats() {
-      const grouped = this.groupedOrderbookLastStats;
-      return Object.fromEntries(
-          Object.entries(grouped).sort(([, a], [, b]) => b.length - a.length)
-      );
-    },
-
     sortedOrderbooksStats() {
       return Object.entries(this.groupedOrderbookLastStats)
           .sort(([, a], [, b]) => b.length - a.length)

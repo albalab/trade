@@ -12,6 +12,10 @@ export default {
   name: "alor-quotes",
   data() {
     return {
+      sortedQuotesStats: {},
+      groupedQuotes: {},
+      quotesSummary: {},
+
       quoteCounter: 0,
       accumulatedQuoteStats: {}, // Накопительная статистика
       tickerStats: {},
@@ -45,7 +49,7 @@ export default {
       );
     },
 
-    marketSummary() {
+    /*quotesSummary() {
       const summary = {};
 
       // Обработка данных котировок
@@ -70,9 +74,9 @@ export default {
       });
 
       return summary;
-    },
+    },*/
 
-    groupedQuotes() {
+    /*groupedQuotes() {
       if (!this.quotes) return {};
 
       return this.quotes.reduce((acc, quote) => {
@@ -83,16 +87,16 @@ export default {
         acc[ticker].push(quote);
         return acc;
       }, {});
-    },
+    },*/
 
-    sortedQuotesStats() {
+    /*sortedQuotesStats() {
       return Object.entries(this.groupedQuotes)
           .sort(([, a], [, b]) => b.length - a.length)
           .reduce((acc, [key, value]) => {
             acc[key] = value.length;
             return acc;
           }, {});
-    },
+    },*/
 
   },
 
@@ -103,7 +107,7 @@ export default {
 
       newQuotes.forEach((quote) => {
 
-        quote.type = 'quote';
+        //quote.type = 'quote';
 
         const ticker = quote.ticker;
 
@@ -147,7 +151,18 @@ export default {
       const socket = new WebSocket('wss://refine.video/quotes/');
 
       socket.onmessage = (event) => {
-        const newQuotes = JSON.parse(event.data);
+        let data = JSON.parse(event.data);
+
+        if (!Array.isArray(data)) return;
+
+        const newQuotes = data.filter(item => item.type === 'quote');
+        const quotesSummary = data.filter(item => item.type === 'quotesSummary');
+        const groupedQuotes = data.filter(item => item.type === 'groupedQuotes');
+        const sortedQuotesStats = data.filter(item => item.type === 'sortedQuotesStats');
+
+        this.quotesSummary = quotesSummary.length ? quotesSummary[0].data : {}
+        this.groupedQuotes = groupedQuotes.length ? groupedQuotes[0].data : {}
+        this.sortedQuotesStats = sortedQuotesStats.length ? sortedQuotesStats[0].data : {}
 
         if (Array.isArray(newQuotes)) {
 
@@ -188,7 +203,7 @@ export default {
 
           this.$emit('update-quotes', newQuotes);
           this.$emit('update-quotes-counters', this.quotesCounters);
-          this.$emit('update-quotes-summary', this.marketSummary);
+          this.$emit('update-quotes-summary', this.quotesSummary);
 
         } else {
           console.warn("Received non-array data:", newQuotes);

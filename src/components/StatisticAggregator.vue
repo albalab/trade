@@ -197,13 +197,13 @@ export default {
       }
     },
 
-    updateTimeline(items) {
+    updateTimeline() {
       //const firstTime = new Date(items[0].time).getTime();
 
       /*const currentTimestamp = Math.floor(Date.now() / 1000); // Текущее время в секундах
       const futureTimestamp = currentTimestamp + 1; // На секунду вперед
 */
-      const lastTime = new Date(items[items.length - 1].time).getTime();
+      const lastTime = this.lastServerTime.getTime();
 
       if (!lastTime) return;
 
@@ -236,13 +236,9 @@ export default {
     this._renderCount = 0;
     this.updateRenderTime();
 
-    if (this.type === 'orderbooks') {
-      this.leftRange = 1000;
-      this.rightRange = 5000;
-    }
     if (this.type === 'quotes') {
       this.leftRange = 60000;
-      this.rightRange = 10000;
+      this.rightRange = 60000;
     }
     if (this.type === 'candles') {
       this.leftRange = 70000;
@@ -347,12 +343,12 @@ export default {
 .timeline-current-time {
   position: absolute;
   height: 100%;
-  width: 1px;
-  background-color: red;
+  width: 2px;
+  background-color: green;
   opacity: 0.8;
   z-index: 10;
 }
 .timeline-server-time{
-  background-color: orange;
+  background-color: red;
 }
 </style>

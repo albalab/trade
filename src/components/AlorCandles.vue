@@ -82,15 +82,6 @@ export default {
       return summary;
     },
 
-    tickerArray() {
-      return this.tickerInput.split(',').map(ticker => ticker.trim()); // Преобразуем строку в массив
-    },
-
-    // Обратный порядок для отображения актуальных данных в начале
-    reversedCandles() {
-      return this.candles.slice().reverse(); // Возвращаем перевернутую копию массива
-    },
-
     groupedCandles() {
       return this.candles.reduce((acc, candle) => {
         const ticker = candle.ticker;

@@ -192,6 +192,19 @@
       </div>
     </div>-->
 
+<!--    <input type="text" v-model="selectedTicker"/><br>
+    <div style="padding: 10px;">
+      <div v-for="(item, key) in summaryData[selectedTicker]" :key="item?.id">
+        {{key}}: {{item}}
+      </div>
+    </div>-->
+
+    <input type="text" v-model="selectedTicker"/><br>
+    <div style="padding: 10px;">
+      <div v-for="(item, key) in summaryData[selectedTicker]" :key="item?.id">
+        {{key}}: {{item}}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -687,8 +700,8 @@ export default {
     updateCandles() {
       //this.globalData.candles = candles;
     },
-    updateQuotes() {
-      //this.globalData.quotes = quotes;
+    updateQuotes(quotes) {
+      this.globalData.quotes = quotes;
     },
     updateTrades(trades) {
       this.globalData.trades = trades;
