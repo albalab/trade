@@ -5,10 +5,6 @@
 
     itemsCounter: {{ itemsCounter }}<br>
     Chunk items length: {{ items.length }}<br>
-    Avg per second: {{ avgPerSecond.toFixed(2) }}<br>
-    Avg per minute: {{ avgPerMinute.toFixed(2) }}<br>
-    Avg per hour: {{ avgPerHour.toFixed(2) }}<br>
-    Avg length of items: {{ avgItemsLength.toFixed(2) }}<br>
 
 
     <div v-if="type === 'trades'">
@@ -17,6 +13,7 @@
 
     <div v-for="(item, i) in tickerData[selectedTicker]" :key="item.id" style="padding: 5px; border: solid 1px #ccc; margin: 0 0 5px;">
       <div v-if="getGeometricLevel(item.counterLevel, 500) === i">
+
         {{item.sum/item.counterLevel}} LEVEL: {{getGeometricLevel(item.counterLevel, 500)}}
         <div v-for="(value, key) in item" :key="value.id">
           {{ key }}: {{value}}<br>
@@ -93,7 +90,7 @@ export default {
       avgPerHour: 0,
       totalItemsLength: 0,
       updatesCount: 0,
-      avgItemsLength: 0,
+
       timelineStart: null,
       timelineEnd: null,
       pointSpacing: 0,
@@ -187,22 +184,6 @@ export default {
       }
     },
 
-    updateAvgItemsLength() {
-      if (this.updatesCount > 0) {
-        this.avgItemsLength = this.totalItemsLength / this.updatesCount;
-      }
-    },
-
-    updateAveragesByTime() {
-      const currentTime = new Date();
-      const elapsedTimeInSeconds = (currentTime - this.startTime) / 1000; // Время с начала в секундах
-
-      if (elapsedTimeInSeconds > 0) {
-        this.avgPerSecond = this.itemsCounter / elapsedTimeInSeconds; // Среднее в секунду
-        this.avgPerMinute = this.avgPerSecond * 60; // Среднее в минуту
-        this.avgPerHour = this.avgPerSecond * 3600; // Среднее в час
-      }
-    },
 
     updateTimeline() {
       //const firstTime = new Date(items[0].time).getTime();
@@ -286,13 +267,6 @@ export default {
 
         // Увеличиваем количество обновлений
         this.updatesCount++;
-
-        // Пересчитываем среднюю длину массива items
-        this.updateAvgItemsLength();
-
-        // Пересчитываем средние значения по времени
-        this.updateAveragesByTime();
-
 
         newItems.forEach(() => {
 
