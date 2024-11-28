@@ -39,11 +39,12 @@
 export default {
   name: "StatisticRenderer",
   props: {
-    type: String,
     items: Array,
   },
   data() {
     return {
+
+      type: null,
 
       itemsCounter: 0, // Счётчик элементов
       renderCount: 0, // Счётчик рендеров
@@ -100,6 +101,7 @@ export default {
   //this.updateRenderTime(); // Обновляем время рендера
   watch: {
     items(newItems) {
+      if(newItems.length) this.type = newItems[newItems.length - 1].type;
       if (Array.isArray(newItems) && newItems.length > 0) {
         this.updateRenderTime();
         this.updateCounter(newItems);

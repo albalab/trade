@@ -2,7 +2,8 @@
   <div>
     <h3>Levels Renderer</h3>
     <!-- Выбор тикера -->
-    <div v-if="type === 'trades'">
+
+    <div>
       <label for="ticker">Selected Ticker:</label>
       <input
           type="text"
@@ -12,7 +13,22 @@
     </div>
 
     <!-- Отображение статистики по выбранному тикеру -->
-    <div v-if="tickerData[selectedTicker]">
+    <div v-if="levelsStats[selectedTicker]">
+      <div
+          v-for="(item, index) in levelsStats[selectedTicker]"
+          :key="index"
+          style="padding: 5px; border: solid 1px #ccc; margin: 0 0 5px;"
+      >
+        <div v-if="showLevel(item, index)">
+          Level {{ index }}: Average: {{ item.sum / item.counterLevel || 0 }}<br />
+          Level Count: {{ item.counterLevel }}<br />
+          Level Sum: {{ item.sum }}
+        </div>
+      </div>
+    </div>
+dd
+    <!-- Отображение статистики по выбранному тикеру -->
+<!--    <div v-if="tickerData[selectedTicker]">
       <div
           v-for="(item, index) in tickerData[selectedTicker]"
           :key="index"
@@ -24,7 +40,7 @@
           Total Sum: {{ item.sum }}
         </div>
       </div>
-    </div>
+    </div>-->
 
   </div>
 </template>
@@ -34,6 +50,7 @@ export default {
   name: "LevelsRenderer",
   props: {
     type: String,
+    levelsStats: Object,
     items: Array,
   },
   data() {
@@ -63,7 +80,7 @@ export default {
       return Math.floor(Math.log(i / start) / Math.log(2)) + 1;
     },
 
-    aggregateStatistics(items) {
+    /*aggregateStatistics(items) {
       items.forEach((item) => {
         if (item.type === "trade" && item.ticker !== "IMOEX2") {
           // Инициализация тикера, если его еще нет
@@ -97,16 +114,16 @@ export default {
           levels[i].counterLevel++;
         }
       }
-    },
+    },*/
 
   },
 
   watch: {
-    items(newItems) {
+    /*items(newItems) {
       if (Array.isArray(newItems) && newItems.length > 0) {
-        this.aggregateStatistics(newItems); // Пересчитываем статистику
+        this.aggregateStatistics(newItems);
       }
-    },
+    },*/
   },
 
   mounted () {

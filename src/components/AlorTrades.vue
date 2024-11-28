@@ -2,13 +2,12 @@
   <div>
 
     <StatisticRenderer
-        :type="type"
         :items="newTrades"
     />
 
 
     <LevelsRenderer
-        :type="type"
+        :levelsStats="levelsStats"
         :items="newTrades"
     />
 
@@ -35,6 +34,7 @@ export default {
     return {
 
       newTrades: [],
+      levelsStats: {},
 
       tradesSummary: {},
       groupedTrades: {},
@@ -163,10 +163,16 @@ export default {
         const tradesSummary = data.filter(item => item.type === 'tradesSummary');
         const groupedTrades = data.filter(item => item.type === 'groupedTrades');
         const sortedTradesStats = data.filter(item => item.type === 'sortedTradesStats');
+        const levelsStats = data.filter(item => item.type === 'levelsStats');
+
+        console.log(levelsStats);
 
         this.sortedTradesStats = sortedTradesStats.length ? sortedTradesStats[0].data : {}
         this.groupedTrades = groupedTrades.length ? groupedTrades[0].data : {}
         this.tradesSummary = tradesSummary.length ? tradesSummary[0].data : {}
+        this.levelsStats = levelsStats.length ? levelsStats[0].data : {}; // Сохраняем данные по уровням
+
+
 
         //console.log(groupedTrades);
 
@@ -230,6 +236,7 @@ export default {
         this.$emit('update-trades', newTrades);
         this.$emit('update-trades-summary', this.tradesSummary);
         this.$emit('update-trades-counters', this.tradesCounters);
+        this.$emit('update-levels-stats', this.levelsStats);
 
       };
     },
