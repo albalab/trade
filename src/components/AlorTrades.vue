@@ -163,9 +163,9 @@ export default {
         const tradesSummary = data.filter(item => item.type === 'tradesSummary');
         const groupedTrades = data.filter(item => item.type === 'groupedTrades');
         const sortedTradesStats = data.filter(item => item.type === 'sortedTradesStats');
-        const levelsStats = data.filter(item => item.type === 'levelsStats');
+        const levelsStats = data.filter(item => item.type === 'globalLevelsStats');
 
-        console.log(levelsStats);
+        //console.log(newTrades);
 
         this.sortedTradesStats = sortedTradesStats.length ? sortedTradesStats[0].data : {}
         this.groupedTrades = groupedTrades.length ? groupedTrades[0].data : {}

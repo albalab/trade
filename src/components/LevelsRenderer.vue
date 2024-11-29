@@ -20,13 +20,18 @@
           style="padding: 5px; border: solid 1px #ccc; margin: 0 0 5px;"
       >
         <div v-if="showLevel(item, index)">
+          <div style="background: #eee; position: relative; height: 4px; width: 100%;">
+            <div style="background: blue; height: 100%;" :style="{width: `${100*(item.counterLevel/getLevelValue(index,500))}%`}"></div>
+          </div>
+
+
           Level {{ index }}: Average: {{ item.sum / item.counterLevel || 0 }}<br />
           Level Count: {{ item.counterLevel }}<br />
           Level Sum: {{ item.sum }}
         </div>
       </div>
     </div>
-dd
+
     <!-- Отображение статистики по выбранному тикеру -->
 <!--    <div v-if="tickerData[selectedTicker]">
       <div
@@ -69,15 +74,19 @@ export default {
 
   methods: {
 
-    showLevel(item, index){
-      const currentLevel = this.getGeometricLevel(item.counterLevel, 500);
-      if( currentLevel === index) return true;
-      if( index > 0 && currentLevel - 1 === index) return true;
+    getLevelValue(index, start) {
+      return start * Math.pow(2, index);
     },
 
     getGeometricLevel(i, start) {
       if (i < start) return 0;
       return Math.floor(Math.log(i / start) / Math.log(2)) + 1;
+    },
+
+    showLevel(item, index){
+      const currentLevel = this.getGeometricLevel(item.counterLevel, 500);
+      if( currentLevel === index) return true;
+      if( index > 0 && currentLevel - 1 === index) return true;
     },
 
     /*aggregateStatistics(items) {

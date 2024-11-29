@@ -1,6 +1,8 @@
 <template>
   <div class="panels-container">
 
+    <SessionManager />
+
     <div style="height: 200px; overflow: auto;">
       <div v-for="signal in signals" :key="signal.id">
         {{signal}}
@@ -209,6 +211,8 @@
 </template>
 
 <script>
+import SessionManager from './SessionManager';
+
 import { sendLimitOrder as importedSendLimitOrder } from '../modules/LimitOrderModule.js';
 import AlorTradesPlus from './AlorTradesPlus.vue';
 import AlorOrderbooksPlus from './AlorOrderbooksPlus.vue';
@@ -219,6 +223,7 @@ import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
 //import AlorTradeHistoryDiagram from './AlorTradeHistoryDiagram.vue';
 
 import { useCacheStore } from '@/stores/cacheStore';
+
 
 export default {
   name: 'MergedComponent',
@@ -237,6 +242,7 @@ export default {
   },
 
   components: {
+    SessionManager,
     AlorTradesPlus,
     AlorOrderbooksPlus,
     AlorCandlesPlus,
@@ -272,6 +278,7 @@ export default {
   },
 
   computed: {
+
     buyFrequency() {
       // Подсчитываем частоту для "buy"
       const frequency = this.signals
@@ -318,17 +325,21 @@ export default {
 
     // Метод для добавления сигнала в массив с ограничением длины
     addSignal(signal) {
-      this.signals.push(signal);
+
+      const signals = [...this.signals.reverse()];
+
+      signals.push(signal);
 
       // Ограничение длины массива до 200 элементов
-      if (this.signals.length > 500) {
-        this.signals.shift(); // Удалить первый (старый) элемент
+      if (signals.length > 500) {
+        signals.shift(); // Удалить первый (старый) элемент
       }
+
+      this.signals = signals.reverse();
     },
 
     executeStrategies(data) {
       const avgVolume = 5000; // Условное среднее значение
-      //const avgFrequency = 30; // Средняя частота сделок
       const avgRange = 0.1; // Средний диапазон свечи
 
       Object.keys(data).forEach((ticker) => {
@@ -348,7 +359,7 @@ export default {
         this.candleVolumeStrategy(tickerData, avgVolume);
         this.smallBodyBreakoutStrategy(tickerData);
         this.shadowStrategy(tickerData);
-        //this.tradeFrequencySpikeStrategy(tickerData, avgFrequency);
+        this.tradeCostSpikeStrategy(tickerData);
         this.candleRangeStrategy(tickerData, avgRange);
         this.averagePriceImbalanceStrategy(tickerData);
         this.candleStrengthStrategy(tickerData);
@@ -461,17 +472,19 @@ export default {
     },
 
 // 6. Стратегия на частоте сделок
-    /*tradeFrequencySpikeStrategy(tickerData, avgFrequency) {
-      if (tickerData.tradeTickerFrequency > avgFrequency * 1.5) {
+    tradeCostSpikeStrategy(tickerData) {
+      //console.log(tickerData);
+      if (tickerData.tradeVolumeAbsoluteRub > 200000) {
         const action = tickerData.tradeSide === "buy" ? "buy" : "sell";
         this.addSignal({
           ticker: tickerData.tradeTicker,
           action,
           price: tickerData.tradePrice,
-          reason: "Trade frequency spike, action: " + action,
+          cost: tickerData.tradeVolumeAbsoluteRub,
+          reason: "Trade cost spike, action: " + action,
         });
       }
-    },*/
+    },
 
 // 7. Стратегия на основе диапазона свечи
     candleRangeStrategy(tickerData, avgRange) {
