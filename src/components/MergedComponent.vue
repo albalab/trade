@@ -1,7 +1,25 @@
 <template>
   <div class="panels-container">
 
-    <SessionManager />
+<!--    <SessionManager />-->
+
+    <div style="overflow: auto; height: 500px;">
+      <div class="table table-trade">
+        <div class="table-row">
+          <div class="table-cell">Ticker</div>
+          <div class="table-cell" v-for="item in getFields(summaryData)" :key="item?.id">
+            {{item}}
+          </div>
+        </div>
+        <div class="table-row" v-for="(item, key) in summaryData" :key="item?.id">
+          <div class="table-cell">{{key}}</div>
+          <div class="table-cell" v-for="(value, key) in item" :key="value?.id">
+            <span v-if="key === 'spread'">{{parseFloat(value).toFixed(3)}}</span>
+            <span v-else>{{value}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div style="height: 200px; overflow: auto;">
       <div v-for="signal in signals" :key="signal.id">
@@ -112,9 +130,9 @@
             @select-ticker="selectTicker"
         />
 
-        <AlorTradesPlus
+        <AlorTrades
             :profitPercent="profitPercent"
-            @update-trades-statistics="updateTradesStatistics"
+            @update-trades="updateTrades"
             @update-trades-counters="updateTradesCounters"
             @update-trades-summary="updateTrades"/>
       </div>
@@ -128,7 +146,7 @@
             @select-ticker="selectTicker"
         />
 
-        <AlorOrderbooksPlus
+        <AlorOrderbooks
             @update-orderbooks-counters="updateOrderbooksCounters"
             @update-orderbooks-summary="updateOrderbooks"/>
       </div>
@@ -142,7 +160,7 @@
             @select-ticker="selectTicker"
         />
 
-        <AlorCandlesPlus
+        <AlorCandles
             @update-candles-counters="updateCandlesCounters"
             @update-candles-summary="updateCandles"/>
       </div>
@@ -156,7 +174,7 @@
             @select-ticker="selectTicker"
         />
 
-        <AlorQuotesPlus
+        <AlorQuotes
             @update-quotes-counters="updateQuotesCounters"
             @update-quotes-summary="updateQuotes"/>
       </div>
@@ -170,10 +188,6 @@
       <button @click="sendLimitOrder(1, priceOrder, tickerOrder, 'MOEX', sideOrder, 'D88141')">
         Отправить лимитный ордер
       </button>
-    </div>
-
-    <div style="margin: 0 0 10px;">
-      <button @click="resetCache">Reset Cache</button>
     </div>
 
 <!--    <div style="margin: 0 0 10px;">
@@ -202,51 +216,51 @@
     </div>-->
 
     <input type="text" v-model="selectedTicker"/><br>
+
     <div style="padding: 10px;">
       <div v-for="(item, key) in summaryData[selectedTicker]" :key="item?.id">
         {{key}}: {{item}}
       </div>
     </div>
+
   </div>
 </template>
 
 <script>
-import SessionManager from './SessionManager';
+//import SessionManager from './SessionManager';
 
 import { sendLimitOrder as importedSendLimitOrder } from '../modules/LimitOrderModule.js';
-import AlorTradesPlus from './AlorTradesPlus.vue';
-import AlorOrderbooksPlus from './AlorOrderbooksPlus.vue';
-import AlorCandlesPlus from './AlorCandlesPlus.vue';
-import AlorQuotesPlus from './AlorQuotesPlus.vue';
+//import AlorTradesPlus from './AlorTradesPlus.vue';
+
 import AlorStatsDiagram from './AlorStatsDiagram.vue';
 import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
 //import AlorTradeHistoryDiagram from './AlorTradeHistoryDiagram.vue';
 
-import { useCacheStore } from '@/stores/cacheStore';
-
+//import { useCacheStore } from '@/stores/cacheStore';
+import AlorTrades from "@/components/AlorTrades.vue";
+import AlorOrderbooks from '@/components/AlorOrderbooks.vue';
+import AlorCandles from '@/components/AlorCandlesPlus.vue';
+import AlorQuotes from '@/components/AlorQuotes.vue';
 
 export default {
   name: 'MergedComponent',
 
   setup() {
-    const cacheStore = useCacheStore();
+    //const cacheStore = useCacheStore();
 
-    // Функция для сброса состояния в Pinia
-    const resetCache = () => {
-      cacheStore.resetStore(); // Вызов метода сброса в Pinia
-    };
-
-    return {
-      resetCache,
-    };
   },
 
   components: {
-    SessionManager,
-    AlorTradesPlus,
-    AlorOrderbooksPlus,
-    AlorCandlesPlus,
-    AlorQuotesPlus,
+    AlorTrades,
+    AlorOrderbooks,
+    AlorQuotes,
+    AlorCandles,
+
+    //SessionManager,
+    //AlorTradesPlus,
+    //AlorOrderbooksPlus,
+    //AlorCandlesPlus,
+    //AlorQuotesPlus,
     AlorStatsDiagram,
     AlorAdvantageousDeals,
     //AlorTradeHistoryDiagram,
@@ -254,6 +268,8 @@ export default {
 
   data() {
     return {
+
+      inProgress: false,
 
       isSaveEnabled: false,
 
@@ -274,6 +290,12 @@ export default {
       historyLimit: 20, // Настраиваемый параметр: сколько записей хранить
 
       signals: [],
+
+      fields: [
+        "trades.tradeSide",
+        "trades.tradePrice"
+      ],
+
     }
   },
 
@@ -322,6 +344,13 @@ export default {
   },
 
   methods: {
+
+    getFields(summaryData){
+      if(!summaryData) return;
+      const firstTicker = Object.keys(summaryData)[0];
+      if(!firstTicker) return;
+      return Object.keys(summaryData[firstTicker]);
+    },
 
     // Метод для добавления сигнала в массив с ограничением длины
     addSignal(signal) {
@@ -474,7 +503,7 @@ export default {
 // 6. Стратегия на частоте сделок
     tradeCostSpikeStrategy(tickerData) {
       //console.log(tickerData);
-      if (tickerData.tradeVolumeAbsoluteRub > 200000) {
+      if (tickerData.tradeVolumeAbsoluteRub > 1000000) {
         const action = tickerData.tradeSide === "buy" ? "buy" : "sell";
         this.addSignal({
           ticker: tickerData.tradeTicker,
@@ -751,13 +780,14 @@ export default {
       const result = { ...this.summaryData };
 
       // Оставляем только аггрегированные данные с тикерами
-      const tickerSections = ['trades', 'candles', 'orderbooks', 'quotes']; // Укажите секции, содержащие тикеры
+      const tickerSections = ['trades']; // Укажите секции, содержащие тикеры
 
       for (const section in data) {
         if (!tickerSections.includes(section)) continue; // Пропускаем ненужные секции
 
         for (const ticker in data[section]) {
           if (!result[ticker]) result[ticker] = {}; // Инициализация объекта для тикера
+
           Object.assign(result[ticker], data[section][ticker]); // Объединяем данные тикера
         }
       }
@@ -826,7 +856,16 @@ export default {
           return;
         }
 
+        //throtthle
+        if(this.inProgress) return;
+        this.inProgress = true;
+        setTimeout(()=>{
+          this.inProgress = false;
+        }, 500);
+
+
         this.updateSummaryData();
+        //this.updateFlatObjectNested();
 
         // Создаем новый срез данных
         const snapshot = {
@@ -861,6 +900,22 @@ export default {
 </script>
 
 <style>
+.table-trade{
+
+}
+.table-trade .table-cell{
+  white-space: nowrap;
+}
+
+.table{
+  display: table;
+}
+.table-row{
+  display: table-row;
+}
+.table-cell{
+  display: table-cell;
+}
 
 .panels-container{
   padding: 20px;

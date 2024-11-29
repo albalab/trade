@@ -12,8 +12,7 @@
 
 <script>
 import AlorTrades from './AlorTrades.vue';
-/*import StatisticAggregator from './StatisticAggregator.vue';
-import StatisticContainer from './StatisticContainer.vue';*/
+
 
 //import {useCacheStore} from "@/stores/cacheStore";
 import {onUnmounted} from "vue";
@@ -65,9 +64,6 @@ export default {
 
   components: {
     AlorTrades,
-    //StatisticAggregator,
-    //StatisticContainer,
-
   },
 
   data() {

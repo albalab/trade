@@ -51,61 +51,6 @@ export default {
       );
     },
 
-    /*candlesSummary() {
-      const summary = {};
-
-      // Обработка данных свечей
-      this.candles.forEach((candle) => {
-        const { ticker } = candle;
-        summary[ticker] = summary[ticker] || {};
-
-        //summary[ticker].candleLastClosePriceLevel = Math.round(close/this.tickersSteps[ticker]);
-
-        Object.entries(candle).forEach(([key, value]) => {
-          const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-          summary[ticker][`candle${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
-        });
-
-        //console.log(candle);
-
-        summary[ticker].candleBodySize = Math.abs(parseFloat(candle.close) - parseFloat(candle.open));
-        summary[ticker].candleDirection = parseFloat(candle.close) > parseFloat(candle.open) ? "up" : "down";
-        summary[ticker].candleRange = parseFloat(candle.high) - parseFloat(candle.low);
-        summary[ticker].candleShadowSize = summary[ticker].candleRange - summary[ticker].candleBodySize;
-        summary[ticker].candleUpperShadow = parseFloat(candle.high) - Math.max(parseFloat(candle.open), parseFloat(candle.close));
-        summary[ticker].candleLowerShadow = Math.min(parseFloat(candle.open), parseFloat(candle.close)) - parseFloat(candle.low);
-        summary[ticker].candleRealBodyToRangeRatio = summary[ticker].candleBodySize / summary[ticker].candleRange;
-        summary[ticker].candleVolumePerRange = candle.volume / summary[ticker].candleRange;
-        summary[ticker].candleStrength = summary[ticker].candleBodySize * candle.volume;
-
-
-        //summary[ticker].candleVolume = volume;
-        //summary[ticker].timestampCandle = time;
-      });
-
-      return summary;
-    },
-
-    groupedCandles() {
-      return this.candles.reduce((acc, candle) => {
-        const ticker = candle.ticker;
-        if (!acc[ticker]) {
-          acc[ticker] = [];
-        }
-        acc[ticker].push(candle);
-        return acc;
-      }, {});
-    },
-
-    sortedCandlesStats() {
-      return Object.entries(this.groupedCandles)
-          .sort(([, a], [, b]) => b.length - a.length)
-          .reduce((acc, [key, value]) => {
-            acc[key] = value.length;
-            return acc;
-          }, {});
-    },*/
-
   },
 
   methods: {
@@ -163,10 +108,14 @@ export default {
         const candlesSummary = data.filter(item => item.type === 'candlesSummary');
         const groupedCandles = data.filter(item => item.type === 'groupedCandles');
         const sortedCandlesStats = data.filter(item => item.type === 'sortedCandlesStats');
+        const redisMergedData = data.filter(item => item.type === 'redisMergedData');
 
         this.candlesSummary = candlesSummary.length ? candlesSummary[0].data : {}
         this.groupedCandles = groupedCandles.length ? groupedCandles[0].data : {}
         this.sortedCandlesStats = sortedCandlesStats.length ? sortedCandlesStats[0].data : {}
+        this.redisMergedData = redisMergedData.length ? redisMergedData[0].data : {}
+
+        //console.log(redisMergedData);
 
         if (Array.isArray(newCandles)) {
 
