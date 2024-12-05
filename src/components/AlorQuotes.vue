@@ -1,15 +1,19 @@
 <template>
   <div>
-
+    <StatisticRenderer
+        :items="newQuotes"
+    />
   </div>
 </template>
 
 <script>
 import {tickers} from "@/tickers";
 import {tickersSteps} from "@/tickersSteps";
+import StatisticRenderer from "@/components/StatisticRenderer.vue";
 
 export default {
   name: "alor-quotes",
+  components: {StatisticRenderer},
   data() {
     return {
       sortedQuotesStats: {},
@@ -25,6 +29,7 @@ export default {
       tickersSteps,
       tickers,
 
+      newQuotes: [],
       quotes: [], // Массив для хранения данных о котировках
       orderbookGlobalStats: tickers.reduce((obj, ticker) => ({ ...obj, [ticker]: 0 }), {}),
 
@@ -48,55 +53,6 @@ export default {
           Object.entries(this.accumulatedQuoteStats).sort(([, a], [, b]) => b - a)
       );
     },
-
-    /*quotesSummary() {
-      const summary = {};
-
-      // Обработка данных котировок
-      this.quotes.forEach((quote) => {
-
-        const { ticker } = quote;
-        summary[ticker] = summary[ticker] || {};
-
-        Object.entries(quote).forEach(([key, value]) => {
-          const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-          summary[ticker][`quote${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
-        });
-
-        summary[ticker].quoteSpread = quote.ask - quote.bid; //Показывает "ширину" рынка. Чем меньше spread, тем ликвиднее рынок.
-        summary[ticker].quoteMidPrice = (quote.ask + quote.bid) / 2; //Текущая рыночная стоимость инструмента.
-
-
-        //summary[ticker].lastClosePrice = close;
-        //summary[ticker].quoteDescription = description;
-        //summary[ticker].quoteVolume = volume;
-        //summary[ticker].timestampCandle = time;
-      });
-
-      return summary;
-    },*/
-
-    /*groupedQuotes() {
-      if (!this.quotes) return {};
-
-      return this.quotes.reduce((acc, quote) => {
-        const ticker = quote.ticker;
-        if (!acc[ticker]) {
-          acc[ticker] = [];
-        }
-        acc[ticker].push(quote);
-        return acc;
-      }, {});
-    },*/
-
-    /*sortedQuotesStats() {
-      return Object.entries(this.groupedQuotes)
-          .sort(([, a], [, b]) => b.length - a.length)
-          .reduce((acc, [key, value]) => {
-            acc[key] = value.length;
-            return acc;
-          }, {});
-    },*/
 
   },
 
@@ -148,10 +104,14 @@ export default {
 
 
     connectToWebSocket() {
-      const socket = new WebSocket('wss://refine.video/quotes/');
+      //const socket = new WebSocket('wss://signalfabric.com/quotes/');
+      const socket = new WebSocket('wss://signalfabric.com/datastream/');
 
       socket.onmessage = (event) => {
+
+
         let data = JSON.parse(event.data);
+        data = data?.aggregatedQuotes;
 
         if (!Array.isArray(data)) return;
 
@@ -171,6 +131,7 @@ export default {
           let quoteCounter = this.quoteCounter;
 
           this.processNewQuotes(newQuotes);
+          this.newQuotes = newQuotes;
 
           newQuotes.forEach((quote) => {
 

@@ -115,3 +115,55 @@ export default {
   }
 };
 </script>
+
+<style>
+.table {
+  display: table;
+  width: 100%;
+}
+
+.table-row {
+  display: table-row;
+}
+
+.table-cell {
+  display: table-cell;
+  padding: 0 2px;
+}
+
+.timeline {
+  position: relative;
+  width: 100%;
+  height: 30px; /* Увеличиваем высоту для размещения точек */
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  margin-top: 20px;
+}
+
+
+.timeline-point {
+  position: absolute;
+  height: 100%;
+  width: 1px;
+  background-color: #007bff;
+  opacity: 0.6;
+}
+
+.timeline-point-candle {
+  width: 2px;
+  height: 2px;
+}
+
+.timeline-server-time,
+.timeline-current-time {
+  position: absolute;
+  height: 100%;
+  width: 2px;
+  background-color: green;
+  opacity: 0.8;
+  z-index: 10;
+}
+.timeline-server-time{
+  background-color: red;
+}
+</style>

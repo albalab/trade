@@ -1,190 +1,125 @@
 <template>
   <div>
-
+    <StatisticRenderer :items="newCandles" />
   </div>
 </template>
 
 <script>
-import { tickersSteps } from '../tickersSteps.js';
-import { tickers } from '../tickers.js';
+import StatisticRenderer from "@/components/StatisticRenderer.vue";
+import { tickers, tickersSteps } from "@/tickers";
+
 export default {
-  name: 'alor-candles',
+  name: "alor-candles",
+  components: { StatisticRenderer },
   data() {
     return {
+      // Основные данные
+      candles: [],
+      newCandles: [],
+      accumulatedCandleStats: {},
+      tickerStats: {},
+      collectedClosePrice: {},
 
+      // Сводная информация
       candlesSummary: {},
       groupedCandles: {},
       sortedCandlesStats: {},
 
+      // Параметры
       candleCounter: 0,
+      maxLength: 100,
 
-      accumulatedCandleStats: {},
-
-      tickerInput: "",
-
-      tickerStats: {},
-
-      tickersSteps,
+      // Импортированные значения
       tickers,
-
-      cacheCandles: [],
-
-      candles: [], // Массив для хранения данных о свечах
-
-      collectedClosePrice: {}, // Хранилище для коллекции цен закрытия
-      maxLength: 100 // Максимальная длина массива для каждого тикера
+      tickersSteps,
     };
   },
   computed: {
-
     candlesCounters() {
       return {
         candlesStats: this.sortedCandlesStats,
         candleCounter: this.candleCounter,
-        candlesCounters: this.sortedAccumulatedCandleStats, //this.tickerStats,
-      }
+        candlesCounters: this.sortedAccumulatedCandleStats,
+      };
     },
-
     sortedAccumulatedCandleStats() {
       return Object.fromEntries(
-          Object.entries(this.accumulatedCandleStats).sort(([, valueA], [, valueB]) => valueB - valueA)
+          Object.entries(this.accumulatedCandleStats).sort(([, a], [, b]) => b - a)
       );
     },
-
   },
-
   methods: {
-
     processNewCandles(newCandles) {
       const accumulatedStats = { ...this.accumulatedCandleStats };
 
       newCandles.forEach((candle) => {
-        const ticker = candle.ticker;
-        accumulatedStats[ticker] = (accumulatedStats[ticker] || 0) + 1;
-        this.candles.push(candle);
+        const { ticker, close } = candle;
 
-        // Ограничиваем размер массива
-        if (this.candles.length > 200) this.candles.shift();
+        // Обновление статистики
+        accumulatedStats[ticker] = (accumulatedStats[ticker] || 0) + 1;
+
+        // Обновление массива свечей
+        if (!this.collectedClosePrice[ticker]) {
+          this.collectedClosePrice[ticker] = [];
+        }
+        this.collectedClosePrice[ticker].push(close);
+
+        if (this.collectedClosePrice[ticker].length > this.maxLength) {
+          this.collectedClosePrice[ticker] = this.collectedClosePrice[ticker].slice(-this.maxLength);
+        }
       });
 
       this.accumulatedCandleStats = accumulatedStats;
     },
 
-    collectCandleData(candles) {
-      // Создаем локальную копию для обновления
-      const updatedClosePrice = {...this.collectedClosePrice};
+    handleWebSocketMessage(data) {
+      const newCandles = data.filter((item) => item.type === "candle");
+      const candlesSummary = data.find((item) => item.type === "candlesSummary");
+      const groupedCandles = data.find((item) => item.type === "groupedCandles");
+      const sortedCandlesStats = data.find((item) => item.type === "sortedCandlesStats");
 
-      candles.forEach(candle => {
-        const {ticker, close} = candle;
+      if (candlesSummary) this.candlesSummary = candlesSummary.data || {};
+      if (groupedCandles) this.groupedCandles = groupedCandles.data || {};
+      if (sortedCandlesStats) this.sortedCandlesStats = sortedCandlesStats.data || {};
 
-        // Проверяем, существует ли массив для тикера, если нет - создаем
-        if (!updatedClosePrice[ticker]) {
-          updatedClosePrice[ticker] = [];
+      if (Array.isArray(newCandles) && newCandles.length) {
+        this.processNewCandles(newCandles);
+        this.candles.push(...newCandles);
+
+        if (this.candles.length > this.maxLength) {
+          this.candles.splice(0, this.candles.length - this.maxLength);
         }
 
-        // Добавляем цену закрытия в массив
-        updatedClosePrice[ticker].push(close);
+        this.newCandles = newCandles;
+        this.candleCounter += newCandles.length;
 
-        // Если длина массива превышает maxLength, удаляем старые значения
-        if (updatedClosePrice[ticker].length > this.maxLength) {
-          updatedClosePrice[ticker] = updatedClosePrice[ticker].slice(-this.maxLength);
-        }
-      });
-
-      // Обновляем collectedClosePrice в конце
-      this.collectedClosePrice = updatedClosePrice;
+        this.$emit("update-candles", newCandles);
+        this.$emit("update-candles-counters", this.candlesCounters);
+        this.$emit("update-candles-summary", this.candlesSummary);
+      }
     },
 
     connectToWebSocket() {
-
-      const socket = new WebSocket('wss://refine.video/candles/');
+      const socket = new WebSocket("wss://signalfabric.com/datastream/");
 
       socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-
-        if (!Array.isArray(data)) return;
-
-        const newCandles = data.filter(item => item.type === 'candle');
-        const candlesSummary = data.filter(item => item.type === 'candlesSummary');
-        const groupedCandles = data.filter(item => item.type === 'groupedCandles');
-        const sortedCandlesStats = data.filter(item => item.type === 'sortedCandlesStats');
-        const redisMergedData = data.filter(item => item.type === 'redisMergedData');
-
-        this.candlesSummary = candlesSummary.length ? candlesSummary[0].data : {}
-        this.groupedCandles = groupedCandles.length ? groupedCandles[0].data : {}
-        this.sortedCandlesStats = sortedCandlesStats.length ? sortedCandlesStats[0].data : {}
-        this.redisMergedData = redisMergedData.length ? redisMergedData[0].data : {}
-
-        //console.log(redisMergedData);
-
-        if (Array.isArray(newCandles)) {
-
-          const candles = [...this.candles];
-          const tickerStats = {...this.tickerStats};
-          let candleCounter = this.candleCounter;
-
-          this.processNewCandles(newCandles);
-
-          newCandles.forEach(candle => {
-
-            if (candle.ticker && candle.time && candle.open !== undefined &&
-                candle.close !== undefined && candle.high !== undefined &&
-                candle.low !== undefined && candle.volume !== undefined) {
-
-              if (tickerStats[candle.ticker]) {
-                tickerStats[candle.ticker]++;
-              } else {
-                tickerStats[candle.ticker] = 1;
-              }
-
-              candles.push(candle);
-
-              candleCounter++;
-
-              if (candles.length > 200) {
-                candles.shift();
-              }
-            } else {
-              console.warn('Received invalid candle data:', candle); // Логирование некорректных данных
-            }
-          });
-
-          this.cacheCandles = this.collectCandleData(newCandles); //[...this.cacheCandles, ...newCandles];
-          //console.log(newCandles.length);
-
-          // Обновляем реактивные свойства один раз после цикла
-          this.candles = candles;
-          this.tickerStats = tickerStats;
-          this.candleCounter = candleCounter;
-
-          //console.log(newCandles[0])
-          this.$emit('update-candles', newCandles);
-          this.$emit('update-candles-counters', this.candlesCounters);
-          this.$emit('update-candles-summary', this.candlesSummary);
-
-        } else {
-          console.warn('Received non-array data:', data); // Логирование данных, если это не массив
+        try {
+          let data = JSON.parse(event.data);
+          data = data?.aggregatedCandles;
+          if (Array.isArray(data)) this.handleWebSocketMessage(data);
+        } catch (error) {
+          console.error("Failed to process WebSocket message:", error);
         }
       };
 
-      socket.onopen = () => {
-        console.log('Connected to WebSocket');
-      };
-
-      socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-
-      socket.onclose = () => {
-        console.log('WebSocket connection closed');
-      };
-    }
+      socket.onopen = () => console.log("Connected to WebSocket");
+      socket.onerror = (error) => console.error("WebSocket error:", error);
+      socket.onclose = () => console.log("WebSocket connection closed");
+    },
   },
-
   mounted() {
     this.connectToWebSocket();
   },
-
 };
 </script>
 

@@ -11,6 +11,10 @@ const routes = [
         component: () => import('../components/AlorOrderbooks.vue')
     },
     {
+        path: '/datastream',
+        component: () => import('../components/AlorDataStream.vue')
+    },
+    {
         path: '/alorcandles',
         component: () => import('../components/AlorCandles.vue')
     },

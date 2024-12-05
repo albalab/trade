@@ -1,6 +1,15 @@
 <template>
   <div class="panels-container">
 
+    <AlorDataStream
+        @update-candles="updateCandles"
+        @update-quotes="updateQuotes"
+        @update-orderbooks="updateOrderbooks"
+        @update-trades="updateTrades"
+        @update-candles-counters="updateCandlesCounters"
+        @update-candles-summary="updateCandles"
+    />
+
 <!--    <SessionManager />-->
 
     <div style="overflow: auto; height: 500px;">
@@ -239,8 +248,10 @@ import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
 //import { useCacheStore } from '@/stores/cacheStore';
 import AlorTrades from "@/components/AlorTrades.vue";
 import AlorOrderbooks from '@/components/AlorOrderbooks.vue';
-import AlorCandles from '@/components/AlorCandlesPlus.vue';
+import AlorCandles from '@/components/AlorCandles.vue';
 import AlorQuotes from '@/components/AlorQuotes.vue';
+
+import AlorDataStream from '@/components/AlorDataStream.vue';
 
 export default {
   name: 'MergedComponent',
@@ -255,6 +266,7 @@ export default {
     AlorOrderbooks,
     AlorQuotes,
     AlorCandles,
+    AlorDataStream,
 
     //SessionManager,
     //AlorTradesPlus,
@@ -712,7 +724,7 @@ export default {
           globalDataHistory: this.globalDataHistory // История данных
         };
 
-        //const response = await fetch('https://refine.video/best-deals/', {
+        //const response = await fetch('https://signalfabric.com/best-deals/', {
         const response = await fetch('http://localhost:8080/best-deals/', {
           method: 'POST',
           headers: {

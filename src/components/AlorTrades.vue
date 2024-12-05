@@ -152,10 +152,12 @@ export default {
     },
 
     connectToWebSocket() {
-      const socket = new WebSocket('wss://refine.video/trades/');
+      const socket = new WebSocket('wss://signalfabric.com/datastream/');
       socket.onmessage = (event) => {
 
         let data = JSON.parse(event.data);
+        data = data?.aggregatedTrades;
+        //console.log(data);
 
         if (!Array.isArray(data)) return;
 

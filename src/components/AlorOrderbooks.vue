@@ -1,6 +1,8 @@
 <template>
   <div>
-
+    <StatisticRenderer
+        :items="newOrderbooks"
+    />
   </div>
 </template>
 
@@ -8,9 +10,11 @@
 <script>
 import { tickersSteps } from '../tickersSteps.js';
 import { tickers } from '../tickers.js';
+import StatisticRenderer from "@/components/StatisticRenderer.vue";
 
 export default {
   name: 'alor-order-book',
+  components: {StatisticRenderer},
   data() {
     return {
 
@@ -23,7 +27,7 @@ export default {
       tickersSteps,
       tickers,
 
-
+      newOrderbooks: [],
       orderbooks: [],
       orderbookGlobalStats: tickers.reduce((obj, ticker) => ({ ...obj, [ticker]: 0 }), {}),
     };
@@ -39,112 +43,25 @@ export default {
       }
     },
 
-    /*orderbooksSummary() {
-      const summary = {};
-
-      // Обработка данных ордербука
-      this.orderbooks.forEach((orderbook) => {
-        const { ticker } = orderbook;
-
-        // Преобразуем строки цен в числа для расчетов
-        const bids = orderbook.bids.map(bid => ({ ...bid, price: parseFloat(bid.price) }));
-        const asks = orderbook.asks.map(ask => ({ ...ask, price: parseFloat(ask.price) }));
-
-        // Лучшая цена Bid
-        const bestBidPrice = Math.max(...bids.map(bid => bid.price));
-
-        // Лучшая цена Ask
-        const bestAskPrice = Math.min(...asks.map(ask => ask.price));
-
-        // Разница между лучшими ценами (спред)
-        const spread = bestAskPrice - bestBidPrice;
-
-        // Суммарный объем Bid
-        const totalBidVolume = bids.reduce((sum, bid) => sum + bid.volume, 0);
-
-        // Суммарный объем Ask
-        const totalAskVolume = asks.reduce((sum, ask) => sum + ask.volume, 0);
-
-        // Общий объем в стакане
-        const totalDepth = totalBidVolume + totalAskVolume;
-
-        // Лучший объем в стакане
-        const bestDepth = (bids[0]?.volume || 0) + (asks[0]?.volume || 0);
-
-        // Средняя цена Bid
-        const averageBidPrice = bids.reduce((sum, bid) => sum + bid.price * bid.volume, 0) / totalBidVolume;
-
-        // Средняя цена Ask
-        const averageAskPrice = asks.reduce((sum, ask) => sum + ask.price * ask.volume, 0) / totalAskVolume;
-
-        // Общий дисбаланс объемов
-        const volumeImbalance = totalBidVolume - totalAskVolume;
-
-        // Средняя цена всех заявок (Bid и Ask)
-        const averageDepthPrice =
-            (bids.reduce((sum, bid) => sum + bid.price * bid.volume, 0) +
-                asks.reduce((sum, ask) => sum + ask.price * ask.volume, 0)) /
-            (totalBidVolume + totalAskVolume);
-
-        summary[ticker] = summary[ticker] || {};
-
-        summary[ticker].orderbookBestBidPrice = bestBidPrice;
-        summary[ticker].orderbookBestAskPrice = bestAskPrice;
-        summary[ticker].orderbookSpread = spread;
-        summary[ticker].orderbookTotalBidVolume = totalBidVolume;
-        summary[ticker].orderbookTotalAskVolume = totalAskVolume;
-        summary[ticker].orderbookTotalDepth = totalDepth;
-        summary[ticker].orderbookBestDepth = bestDepth;
-        summary[ticker].orderbookAverageBidPrice = averageBidPrice;
-        summary[ticker].orderbookAverageAskPrice = averageAskPrice;
-        summary[ticker].orderbookVolumeImbalance = volumeImbalance;
-        summary[ticker].orderbookAverageDepthPrice = averageDepthPrice;
-
-        Object.entries(orderbook).forEach(([key, value]) => {
-          const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-          summary[ticker][`orderbook${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
-        });
-
-      });
-
-      return summary;
-    },*/
-
     sortedOrderbookGlobalStats() {
       return Object.fromEntries(
           Object.entries(this.orderbookGlobalStats).sort(([, a], [, b]) => b - a)
       );
     },
 
-    groupedOrderbookLastStats() {
-      return this.orderbooks.reduce((acc, order) => {
-        const ticker = order.ticker;
-        if (!acc[ticker]) acc[ticker] = [];
-        acc[ticker].push(order);
-        return acc;
-      }, {});
-    },
-
-    /*sortedOrderbooksStats() {
-      return Object.entries(this.groupedOrderbookLastStats)
-          .sort(([, a], [, b]) => b.length - a.length)
-          .reduce((acc, [key, value]) => {
-            acc[key] = value.length;
-            return acc;
-          }, {});
-    },*/
-    
   },
 
   methods: {
 
     connectToWebSocket() {
       // Устанавливаем соединение с WebSocket сервером
-      const socket = new WebSocket('wss://refine.video/orderbooks/');
+      const socket = new WebSocket('wss://signalfabric.com/datastream/');
 
       // Обрабатываем получение сообщений от WebSocket сервера
       socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+
+        let data = JSON.parse(event.data);
+        data = data?.aggregatedOrderbooks;
 
         if (!Array.isArray(data)) return;
         
@@ -163,6 +80,8 @@ export default {
           const localOrderbooks = [...this.orderbooks];
           let orderbookCounter = this.orderbookCounter;
           const orderbookGlobalStats = { ...this.orderbookGlobalStats };
+
+          this.newOrderbooks = newOrderbooks;
 
           newOrderbooks.forEach(orderbook => {
 
