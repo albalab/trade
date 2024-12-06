@@ -1,4 +1,8 @@
 // services/WebSocketService.js
+
+import pako from "pako";
+import msgpack from 'msgpack-lite';
+
 class WebSocketService {
     constructor(url) {
         this.url = url;
@@ -16,22 +20,50 @@ class WebSocketService {
         };
 
         this.socket.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                this.handleMessage(data);
-            } catch (error) {
-                console.error("Failed to process WebSocket message:", error);
+            if (event.data instanceof Blob) {
+                const reader = new FileReader();
+
+                reader.onload = () => {
+                    try {
+                        // Преобразуем Blob в ArrayBuffer и затем в Uint8Array
+                        const compressedData = new Uint8Array(reader.result);
+                        const decompressed = pako.inflate(compressedData); // Распаковываем gzip
+                        //console.log("Распакованные данные:", decompressed);
+
+                        const decoded = msgpack.decode(decompressed); // Декодируем MessagePack
+                        //console.log("Декодированные данные:", decoded);
+
+                        this.handleMessage(decoded);
+                    } catch (error) {
+                        console.error("Ошибка декомпрессии или декодирования:", error);
+                    }
+                };
+
+                reader.onerror = () => {
+                    console.error("Ошибка чтения Blob:", reader.error);
+                };
+
+                // Читаем Blob как ArrayBuffer
+                reader.readAsArrayBuffer(event.data);
+            } else {
+                console.error("Получены данные не в формате Blob:", event.data);
             }
         };
 
-        this.socket.onerror = (error) => {
-            console.error("WebSocket error:", error);
-        };
 
         this.socket.onclose = () => {
             console.log("WebSocket connection closed");
             this.socket = null;
         };
+    }
+
+    processMessage(rawData) {
+        try {
+            const data = JSON.parse(rawData);
+            this.handleMessage(data);
+        } catch (error) {
+            console.error("Failed to parse WebSocket message:", error);
+        }
     }
 
     handleMessage(data) {
