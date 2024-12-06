@@ -1,14 +1,6 @@
 <template>
   <div class="panels-container">
 
-    <AlorDataStream
-        @update-candles="updateCandles"
-        @update-quotes="updateQuotes"
-        @update-orderbooks="updateOrderbooks"
-        @update-trades="updateTrades"
-        @update-candles-counters="updateCandlesCounters"
-        @update-candles-summary="updateCandles"
-    />
 
 <!--    <SessionManager />-->
 
@@ -251,8 +243,6 @@ import AlorOrderbooks from '@/components/AlorOrderbooks.vue';
 import AlorCandles from '@/components/AlorCandles.vue';
 import AlorQuotes from '@/components/AlorQuotes.vue';
 
-import AlorDataStream from '@/components/AlorDataStream.vue';
-
 export default {
   name: 'MergedComponent',
 
@@ -266,7 +256,6 @@ export default {
     AlorOrderbooks,
     AlorQuotes,
     AlorCandles,
-    AlorDataStream,
 
     //SessionManager,
     //AlorTradesPlus,

@@ -210,7 +210,7 @@ export default {
   },
 
   mounted() {
-    this.connectToWebSocket();
+    //this.connectToWebSocket();
   },
 
 };

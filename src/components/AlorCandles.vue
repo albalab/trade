@@ -7,6 +7,7 @@
 <script>
 import StatisticRenderer from "@/components/StatisticRenderer.vue";
 import { tickers, tickersSteps } from "@/tickers";
+import webSocketService from "@/services/WebSocketService";
 
 export default {
   name: "alor-candles",
@@ -72,7 +73,7 @@ export default {
       this.accumulatedCandleStats = accumulatedStats;
     },
 
-    handleWebSocketMessage(data) {
+    handleCandlesUpdate(data) {
       const newCandles = data.filter((item) => item.type === "candle");
       const candlesSummary = data.find((item) => item.type === "candlesSummary");
       const groupedCandles = data.find((item) => item.type === "groupedCandles");
@@ -98,27 +99,10 @@ export default {
         this.$emit("update-candles-summary", this.candlesSummary);
       }
     },
-
-    connectToWebSocket() {
-      const socket = new WebSocket("wss://signalfabric.com/datastream/");
-
-      socket.onmessage = (event) => {
-        try {
-          let data = JSON.parse(event.data);
-          data = data?.aggregatedCandles;
-          if (Array.isArray(data)) this.handleWebSocketMessage(data);
-        } catch (error) {
-          console.error("Failed to process WebSocket message:", error);
-        }
-      };
-
-      socket.onopen = () => console.log("Connected to WebSocket");
-      socket.onerror = (error) => console.error("WebSocket error:", error);
-      socket.onclose = () => console.log("WebSocket connection closed");
-    },
   },
   mounted() {
-    this.connectToWebSocket();
+    webSocketService.connect();
+    webSocketService.subscribe("aggregatedCandles", this.handleCandlesUpdate);
   },
 };
 </script>

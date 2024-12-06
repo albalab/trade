@@ -11,6 +11,7 @@
 import { tickersSteps } from '../tickersSteps.js';
 import { tickers } from '../tickers.js';
 import StatisticRenderer from "@/components/StatisticRenderer.vue";
+import webSocketService from "@/services/WebSocketService";
 
 export default {
   name: 'alor-order-book',
@@ -53,7 +54,63 @@ export default {
 
   methods: {
 
-    connectToWebSocket() {
+    handleOrderbooksUpdate(data){
+
+      const newOrderbooks = data.filter(item => item.type === 'orderbook');
+      const orderbooksSummary = data.filter(item => item.type === 'orderbooksSummary');
+      const groupedOrderbooks = data.filter(item => item.type === 'groupedOrderbooks');
+      const sortedOrderbooksStats = data.filter(item => item.type === 'sortedOrderbooksStats');
+
+      this.orderbooksSummary = orderbooksSummary.length ? orderbooksSummary[0].data : {}
+      this.groupedOrderbooks = groupedOrderbooks.length ? groupedOrderbooks[0].data : {}
+      this.sortedOrderbooksStats = sortedOrderbooksStats.length ? sortedOrderbooksStats[0].data : {}
+
+
+      if (Array.isArray(newOrderbooks)) {
+
+        const localOrderbooks = [...this.orderbooks];
+        let orderbookCounter = this.orderbookCounter;
+        const orderbookGlobalStats = { ...this.orderbookGlobalStats };
+
+        this.newOrderbooks = newOrderbooks;
+
+        newOrderbooks.forEach(orderbook => {
+
+          if (orderbook.ticker && orderbook.bids && orderbook.asks) {
+
+            localOrderbooks.push(orderbook);
+
+            orderbookCounter++;
+            orderbookGlobalStats[orderbook.ticker] = (orderbookGlobalStats[orderbook.ticker] || 0) + 1;
+
+
+            // Ограничиваем массив последних 1000 объектов
+            if (localOrderbooks.length > 500) {
+              localOrderbooks.shift();
+            }
+
+          } else {
+            console.warn('Received invalid order book data:', orderbook); // Логирование некорректных данных
+          }
+        });
+
+        // Обновляем реактивные свойства один раз после цикла
+        this.orderbooks = localOrderbooks;
+        this.orderbookCounter = orderbookCounter;
+        this.orderbookGlobalStats = orderbookGlobalStats;
+
+        //console.log(this.orderbooks[0])
+
+        this.$emit('update-orderbooks', newOrderbooks);
+        this.$emit('update-orderbooks-counters', this.orderbooksCounters);
+        this.$emit('update-orderbooks-summary', this.orderbooksSummary);
+
+      } else {
+        console.warn('Received non-array data:', newOrderbooks); // Логирование данных, если это не массив
+      }
+    },
+
+    /*connectToWebSocket() {
       // Устанавливаем соединение с WebSocket сервером
       const socket = new WebSocket('wss://signalfabric.com/datastream/');
 
@@ -63,60 +120,8 @@ export default {
         let data = JSON.parse(event.data);
         data = data?.aggregatedOrderbooks;
 
-        if (!Array.isArray(data)) return;
-        
-        const newOrderbooks = data.filter(item => item.type === 'orderbook');
-        const orderbooksSummary = data.filter(item => item.type === 'orderbooksSummary');
-        const groupedOrderbooks = data.filter(item => item.type === 'groupedOrderbooks');
-        const sortedOrderbooksStats = data.filter(item => item.type === 'sortedOrderbooksStats');
+        if (!Array.isArray(data)) this.handleOrderbooksData(data);
 
-        this.orderbooksSummary = orderbooksSummary.length ? orderbooksSummary[0].data : {}
-        this.groupedOrderbooks = groupedOrderbooks.length ? groupedOrderbooks[0].data : {}
-        this.sortedOrderbooksStats = sortedOrderbooksStats.length ? sortedOrderbooksStats[0].data : {}
-
-        
-        if (Array.isArray(newOrderbooks)) {
-          
-          const localOrderbooks = [...this.orderbooks];
-          let orderbookCounter = this.orderbookCounter;
-          const orderbookGlobalStats = { ...this.orderbookGlobalStats };
-
-          this.newOrderbooks = newOrderbooks;
-
-          newOrderbooks.forEach(orderbook => {
-
-            if (orderbook.ticker && orderbook.bids && orderbook.asks) {
-
-              localOrderbooks.push(orderbook);
-
-              orderbookCounter++;
-              orderbookGlobalStats[orderbook.ticker] = (orderbookGlobalStats[orderbook.ticker] || 0) + 1;
-
-
-              // Ограничиваем массив последних 1000 объектов
-              if (localOrderbooks.length > 500) {
-                localOrderbooks.shift();
-              }
-
-            } else {
-              console.warn('Received invalid order book data:', orderbook); // Логирование некорректных данных
-            }
-          });
-
-          // Обновляем реактивные свойства один раз после цикла
-          this.orderbooks = localOrderbooks;
-          this.orderbookCounter = orderbookCounter;
-          this.orderbookGlobalStats = orderbookGlobalStats;
-
-          //console.log(this.orderbooks[0])
-
-          this.$emit('update-orderbooks', newOrderbooks);
-          this.$emit('update-orderbooks-counters', this.orderbooksCounters);
-          this.$emit('update-orderbooks-summary', this.orderbooksSummary);
-
-        } else {
-          console.warn('Received non-array data:', newOrderbooks); // Логирование данных, если это не массив
-        }
       };
 
       socket.onopen = () => {
@@ -130,11 +135,15 @@ export default {
       socket.onclose = () => {
         console.log('WebSocket connection closed');
       };
-    }
+    }*/
   },
 
   mounted() {
-    this.connectToWebSocket();
+
+    webSocketService.connect();
+    webSocketService.subscribe("aggregatedOrderbooks", this.handleOrderbooksUpdate);
+
+    //this.connectToWebSocket();
   },
 
 };

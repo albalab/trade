@@ -10,6 +10,7 @@
 import {tickers} from "@/tickers";
 import {tickersSteps} from "@/tickersSteps";
 import StatisticRenderer from "@/components/StatisticRenderer.vue";
+import webSocketService from "@/services/WebSocketService";
 
 export default {
   name: "alor-quotes",
@@ -102,8 +103,64 @@ export default {
       this.collectedLastPrices = updatedLastPrices;
     },
 
+    handleQuotesUpdate(data) {
+      const newQuotes = data.filter(item => item.type === 'quote');
+      const quotesSummary = data.filter(item => item.type === 'quotesSummary');
+      const groupedQuotes = data.filter(item => item.type === 'groupedQuotes');
+      const sortedQuotesStats = data.filter(item => item.type === 'sortedQuotesStats');
 
-    connectToWebSocket() {
+      this.quotesSummary = quotesSummary.length ? quotesSummary[0].data : {}
+      this.groupedQuotes = groupedQuotes.length ? groupedQuotes[0].data : {}
+      this.sortedQuotesStats = sortedQuotesStats.length ? sortedQuotesStats[0].data : {}
+
+      if (Array.isArray(newQuotes)) {
+
+        const localQuotes = [...this.quotes];
+        const tickerStats = { ...this.tickerStats };
+        let quoteCounter = this.quoteCounter;
+
+        this.processNewQuotes(newQuotes);
+        this.newQuotes = newQuotes;
+
+        newQuotes.forEach((quote) => {
+
+          if (quote.ticker && quote.last_price !== undefined) {
+
+            if (tickerStats[quote.ticker]) {
+              tickerStats[quote.ticker]++;
+            } else {
+              tickerStats[quote.ticker] = 1;
+            }
+
+
+            //const quoteExtended = this.extendObject(quote, "quote");
+            localQuotes.push(quote);
+
+            quoteCounter++;
+
+            if (localQuotes.length > 200) {
+              localQuotes.shift();
+            }
+          } else {
+            console.warn("Invalid quote data:", quote);
+          }
+        });
+
+        this.cacheQuotes = this.collectQuoteData(localQuotes);
+        this.quotes = localQuotes;
+        this.quoteCounter = quoteCounter;
+        this.tickerStats = tickerStats;
+
+        this.$emit('update-quotes', newQuotes);
+        this.$emit('update-quotes-counters', this.quotesCounters);
+        this.$emit('update-quotes-summary', this.quotesSummary);
+
+      } else {
+        console.warn("Received non-array data:", newQuotes);
+      }
+    },
+
+    /*connectToWebSocket() {
       //const socket = new WebSocket('wss://signalfabric.com/quotes/');
       const socket = new WebSocket('wss://signalfabric.com/datastream/');
 
@@ -113,62 +170,9 @@ export default {
         let data = JSON.parse(event.data);
         data = data?.aggregatedQuotes;
 
-        if (!Array.isArray(data)) return;
-
-        const newQuotes = data.filter(item => item.type === 'quote');
-        const quotesSummary = data.filter(item => item.type === 'quotesSummary');
-        const groupedQuotes = data.filter(item => item.type === 'groupedQuotes');
-        const sortedQuotesStats = data.filter(item => item.type === 'sortedQuotesStats');
-
-        this.quotesSummary = quotesSummary.length ? quotesSummary[0].data : {}
-        this.groupedQuotes = groupedQuotes.length ? groupedQuotes[0].data : {}
-        this.sortedQuotesStats = sortedQuotesStats.length ? sortedQuotesStats[0].data : {}
-
-        if (Array.isArray(newQuotes)) {
-
-          const localQuotes = [...this.quotes];
-          const tickerStats = { ...this.tickerStats };
-          let quoteCounter = this.quoteCounter;
-
-          this.processNewQuotes(newQuotes);
-          this.newQuotes = newQuotes;
-
-          newQuotes.forEach((quote) => {
-
-            if (quote.ticker && quote.last_price !== undefined) {
-
-              if (tickerStats[quote.ticker]) {
-                tickerStats[quote.ticker]++;
-              } else {
-                tickerStats[quote.ticker] = 1;
-              }
+        if (!Array.isArray(data)) this.handleQuotesUpdate;
 
 
-              //const quoteExtended = this.extendObject(quote, "quote");
-              localQuotes.push(quote);
-
-              quoteCounter++;
-
-              if (localQuotes.length > 200) {
-                localQuotes.shift();
-              }
-            } else {
-              console.warn("Invalid quote data:", quote);
-            }
-          });
-
-          this.cacheQuotes = this.collectQuoteData(localQuotes);
-          this.quotes = localQuotes;
-          this.quoteCounter = quoteCounter;
-          this.tickerStats = tickerStats;
-
-          this.$emit('update-quotes', newQuotes);
-          this.$emit('update-quotes-counters', this.quotesCounters);
-          this.$emit('update-quotes-summary', this.quotesSummary);
-
-        } else {
-          console.warn("Received non-array data:", newQuotes);
-        }
       };
 
       socket.onopen = () => {
@@ -182,11 +186,15 @@ export default {
       socket.onclose = () => {
         console.log("WebSocket connection closed");
       };
-    },
+    },*/
   },
 
   mounted() {
-    this.connectToWebSocket();
+
+    webSocketService.connect();
+    webSocketService.subscribe("aggregatedQuotes", this.handleQuotesUpdate);
+
+    //this.connectToWebSocket();
   },
 
 };

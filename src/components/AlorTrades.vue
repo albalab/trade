@@ -22,6 +22,7 @@
 import StatisticRenderer from "./StatisticRenderer.vue";
 import { tickersSteps } from '../tickersSteps.js';
 import LevelsRenderer from "./LevelsRenderer.vue";
+import webSocketService from "@/services/WebSocketService";
 
 export default {
   name: 'alor-trades',
@@ -140,6 +141,88 @@ export default {
       }, {});
     },*/
 
+    handleTradesUpdate(data){
+      const newTrades = data.filter(item => item.type === 'trade');
+      const tradesSummary = data.filter(item => item.type === 'tradesSummary');
+      const groupedTrades = data.filter(item => item.type === 'groupedTrades');
+      const sortedTradesStats = data.filter(item => item.type === 'sortedTradesStats');
+      const levelsStats = data.filter(item => item.type === 'globalLevelsStats');
+
+      //console.log(newTrades);
+
+      this.sortedTradesStats = sortedTradesStats.length ? sortedTradesStats[0].data : {}
+      this.groupedTrades = groupedTrades.length ? groupedTrades[0].data : {}
+      this.tradesSummary = tradesSummary.length ? tradesSummary[0].data : {}
+      this.levelsStats = levelsStats.length ? levelsStats[0].data : {}; // Сохраняем данные по уровням
+
+
+
+      //console.log(groupedTrades);
+
+      this.updateAccumulatedTradeStats(newTrades);
+
+      const tickerStats = { ...this.tickerStats };
+      let localTrades = [...this.trades];
+
+
+      let localTradeCounterBuy = this.tradeCounterBuy;
+      let localTradeCounterSell = this.tradeCounterSell;
+      let localTradeCounter = this.tradeCounter;
+
+      newTrades.forEach(trade => {
+
+        if (tickerStats[trade.ticker]) {
+          tickerStats[trade.ticker]++;
+        } else {
+          tickerStats[trade.ticker] = 1;
+        }
+
+        localTradeCounter++;
+        if (trade.side === 'buy') {
+          localTradeCounterBuy++;
+        } else if (trade.side === 'sell') {
+          localTradeCounterSell++;
+        }
+
+        localTrades.push(trade);
+
+        //console.log(trade);
+
+        if (localTrades.length > 500) {
+          localTrades.shift();
+
+          /*const tickerFrequency = this.tickerFrequency(localTrades);
+          const tickerFrequencyBuy = this.tickerFrequency(localTrades.filter(i=>i.side==='buy'));
+          const tickerFrequencySell = this.tickerFrequency(localTrades.filter(i=>i.side==='sell'));
+          localTrades.forEach(item => {
+            item.tickerFrequency = tickerFrequency[item.ticker];
+            item.tickerFrequencyBuy = tickerFrequencyBuy[item.ticker];
+            item.tickerFrequencySell = tickerFrequencySell[item.ticker];
+          });*/
+
+        }
+
+      });
+
+      //console.log('Buy', this.calculateBuyTotalByTicker(localTrades));
+      //console.log('Sell', this.calculateSellTotalByTicker(localTrades));
+
+      this.trades = localTrades;
+
+      this.tradeCounterBuy = localTradeCounterBuy;
+      this.tradeCounterSell = localTradeCounterSell;
+      this.tradeCounter = localTradeCounter;
+
+      this.tickerStats = tickerStats;
+
+      this.newTrades = newTrades;
+      this.$emit('update-trades', newTrades);
+      this.$emit('update-trades-summary', this.tradesSummary);
+      this.$emit('update-trades-counters', this.tradesCounters);
+      this.$emit('update-levels-stats', this.levelsStats);
+
+    },
+
     updateAccumulatedTradeStats(trades) {
       const stats = { ...this.accumulatedTradeStats };
 
@@ -151,7 +234,7 @@ export default {
       this.accumulatedTradeStats = stats;
     },
 
-    connectToWebSocket() {
+    /*connectToWebSocket() {
       const socket = new WebSocket('wss://signalfabric.com/datastream/');
       socket.onmessage = (event) => {
 
@@ -159,94 +242,19 @@ export default {
         data = data?.aggregatedTrades;
         //console.log(data);
 
-        if (!Array.isArray(data)) return;
+        if (!Array.isArray(data)) this.handleTradesUpdate(data);
 
-        const newTrades = data.filter(item => item.type === 'trade');
-        const tradesSummary = data.filter(item => item.type === 'tradesSummary');
-        const groupedTrades = data.filter(item => item.type === 'groupedTrades');
-        const sortedTradesStats = data.filter(item => item.type === 'sortedTradesStats');
-        const levelsStats = data.filter(item => item.type === 'globalLevelsStats');
-
-        //console.log(newTrades);
-
-        this.sortedTradesStats = sortedTradesStats.length ? sortedTradesStats[0].data : {}
-        this.groupedTrades = groupedTrades.length ? groupedTrades[0].data : {}
-        this.tradesSummary = tradesSummary.length ? tradesSummary[0].data : {}
-        this.levelsStats = levelsStats.length ? levelsStats[0].data : {}; // Сохраняем данные по уровням
-
-
-
-        //console.log(groupedTrades);
-
-        this.updateAccumulatedTradeStats(newTrades);
-
-        const tickerStats = { ...this.tickerStats };
-        let localTrades = [...this.trades];
-
-
-        let localTradeCounterBuy = this.tradeCounterBuy;
-        let localTradeCounterSell = this.tradeCounterSell;
-        let localTradeCounter = this.tradeCounter;
-
-        newTrades.forEach(trade => {
-
-          if (tickerStats[trade.ticker]) {
-            tickerStats[trade.ticker]++;
-          } else {
-            tickerStats[trade.ticker] = 1;
-          }
-
-          localTradeCounter++;
-          if (trade.side === 'buy') {
-            localTradeCounterBuy++;
-          } else if (trade.side === 'sell') {
-            localTradeCounterSell++;
-          }
-
-          localTrades.push(trade);
-
-          //console.log(trade);
-
-          if (localTrades.length > 500) {
-            localTrades.shift();
-
-            /*const tickerFrequency = this.tickerFrequency(localTrades);
-            const tickerFrequencyBuy = this.tickerFrequency(localTrades.filter(i=>i.side==='buy'));
-            const tickerFrequencySell = this.tickerFrequency(localTrades.filter(i=>i.side==='sell'));
-            localTrades.forEach(item => {
-              item.tickerFrequency = tickerFrequency[item.ticker];
-              item.tickerFrequencyBuy = tickerFrequencyBuy[item.ticker];
-              item.tickerFrequencySell = tickerFrequencySell[item.ticker];
-            });*/
-
-          }
-
-        });
-
-        //console.log('Buy', this.calculateBuyTotalByTicker(localTrades));
-        //console.log('Sell', this.calculateSellTotalByTicker(localTrades));
-
-        this.trades = localTrades;
-
-        this.tradeCounterBuy = localTradeCounterBuy;
-        this.tradeCounterSell = localTradeCounterSell;
-        this.tradeCounter = localTradeCounter;
-
-        this.tickerStats = tickerStats;
-
-        this.newTrades = newTrades;
-        this.$emit('update-trades', newTrades);
-        this.$emit('update-trades-summary', this.tradesSummary);
-        this.$emit('update-trades-counters', this.tradesCounters);
-        this.$emit('update-levels-stats', this.levelsStats);
 
       };
-    },
+    },*/
 
   },
 
   mounted() {
-    this.connectToWebSocket();
+
+    webSocketService.connect();
+    webSocketService.subscribe("aggregatedTrades", this.handleTradesUpdate);
+    //this.connectToWebSocket();
   },
 
 };
