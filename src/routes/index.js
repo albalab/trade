@@ -3,9 +3,6 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 // Определяем маршруты
 const routes = [
     {
-        path: '/dashboard',
-        component: () => import('../components/UnifiedDashboard.vue')},
-    {
         path: '/mergedcomponent',
         component: () => import('../components/MergedComponent.vue')
     },
