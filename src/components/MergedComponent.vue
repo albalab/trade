@@ -134,6 +134,7 @@
         <AlorTrades
             :profitPercent="profitPercent"
             @update-trades="updateTrades"
+            @update-trades-statistics="updateTradesStatistics"
             @update-trades-counters="updateTradesCounters"
             @update-trades-summary="updateTrades"/>
       </div>

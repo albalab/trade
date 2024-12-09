@@ -40,6 +40,7 @@ export default {
       tradesSummary: {},
       groupedTrades: {},
       sortedTradesStats: {},
+      tradesStatistics: {},
 
       tradeCounter: 0,
       tradeCounterBuy: 0,
@@ -142,20 +143,22 @@ export default {
     },*/
 
     handleTradesUpdate(data){
+
+
       const newTrades = data.filter(item => item.type === 'trade');
       const tradesSummary = data.filter(item => item.type === 'tradesSummary');
       const groupedTrades = data.filter(item => item.type === 'groupedTrades');
       const sortedTradesStats = data.filter(item => item.type === 'sortedTradesStats');
       const levelsStats = data.filter(item => item.type === 'globalLevelsStats');
+      const tradesStatistics = data.filter(item => item.type === 'tradesStatistics');
 
       //console.log(newTrades);
 
       this.sortedTradesStats = sortedTradesStats.length ? sortedTradesStats[0].data : {}
       this.groupedTrades = groupedTrades.length ? groupedTrades[0].data : {}
       this.tradesSummary = tradesSummary.length ? tradesSummary[0].data : {}
-      this.levelsStats = levelsStats.length ? levelsStats[0].data : {}; // Сохраняем данные по уровням
-
-
+      this.levelsStats = levelsStats.length ? levelsStats[0].data : {};
+      this.tradesStatistics = tradesStatistics.length ? tradesStatistics[0].data : {};
 
       //console.log(groupedTrades);
 
@@ -163,7 +166,6 @@ export default {
 
       const tickerStats = { ...this.tickerStats };
       let localTrades = [...this.trades];
-
 
       let localTradeCounterBuy = this.tradeCounterBuy;
       let localTradeCounterSell = this.tradeCounterSell;
@@ -220,6 +222,7 @@ export default {
       this.$emit('update-trades-summary', this.tradesSummary);
       this.$emit('update-trades-counters', this.tradesCounters);
       this.$emit('update-levels-stats', this.levelsStats);
+      this.$emit('update-trades-statistics', this.tradesStatistics);
 
     },
 
