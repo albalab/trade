@@ -28,6 +28,7 @@
       </div>
     </div>
 
+
     <div class="panels-grid">
 
       <div class="panel" style="height: 600px; overflow: auto;">
@@ -35,8 +36,8 @@
         <h2>Signals</h2>
 
         <AlorStatsDiagram
-            :totalCounts="buyFrequency"
-            :streamObjects="sellFrequency"
+            :totalItemsStats="buyFrequency"
+            :streamItemsStats="sellFrequency"
             @select-ticker="selectTicker"
         />
 
@@ -55,6 +56,8 @@
         <div style="margin: 0 0 5px;">
           <input type="text" v-model="profitPercent"/>
         </div>
+
+        {{globalData?.tradesStatistics}}
 
         <!-- Топ 10 выгодных сделок (Покупки) -->
         <AlorAdvantageousDeals
@@ -126,8 +129,8 @@
 
 
         <AlorStatsDiagram
-            :totalCounts="globalData?.tradesCounters?.tradesCounters"
-            :streamObjects="globalData?.tradesCounters?.tradesStats"
+            :totalItemsStats="globalData?.tradesCounters?.tradesCounters"
+            :streamItemsStats="globalData?.tradesCounters?.tradesStats"
             @select-ticker="selectTicker"
         />
 
@@ -143,8 +146,8 @@
         <h2>Orderbooks</h2>
 
         <AlorStatsDiagram
-            :totalCounts="globalData?.orderbooksCounters?.orderbooksCounters"
-            :streamObjects="globalData?.orderbooksCounters?.orderbooksStats"
+            :totalItemsStats="globalData?.orderbooksCounters?.orderbooksCounters"
+            :streamItemsStats="globalData?.orderbooksCounters?.orderbooksStats"
             @select-ticker="selectTicker"
         />
 
@@ -157,8 +160,8 @@
         <h2>Candles</h2>
 
         <AlorStatsDiagram
-            :totalCounts="globalData?.candlesCounters?.candlesCounters"
-            :streamObjects="globalData?.candlesCounters?.candlesStats"
+            :totalItemsStats="globalData?.candlesCounters?.candlesCounters"
+            :streamItemsStats="globalData?.candlesCounters?.candlesStats"
             @select-ticker="selectTicker"
         />
 
@@ -171,8 +174,8 @@
         <h2>Quotes</h2>
 
         <AlorStatsDiagram
-            :totalCounts="globalData?.quotesCounters?.quotesCounters"
-            :streamObjects="globalData?.quotesCounters?.quotesStats"
+            :totalItemsStats="globalData?.quotesCounters?.quotesCounters"
+            :streamItemsStats="globalData?.quotesCounters?.quotesStats"
             @select-ticker="selectTicker"
         />
 

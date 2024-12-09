@@ -1,10 +1,13 @@
 <template>
-  <div style="overflow: hidden; height: 350px;">
+  <div class="stats-diagram">
     <div style="display: grid; grid-template-columns: 1fr 1fr;">
       <div>
-        <h3>Total counts</h3>
+        <h3>All</h3>
+        <div class="info">
+          Items:  {{ Object.keys(totalItemsStats).length }}
+        </div>
         <div class="stats-diagram">
-          <div v-for="(count, ticker) in totalCounts" :key="ticker" class="row">
+          <div v-for="(count, ticker) in totalItemsStats" :key="ticker" class="row">
             <div class="cell">
               <div class="ticker-info">
                 <span class="ticker" @click="$emit('select-ticker', ticker)">{{ ticker }}</span> {{ count }}
@@ -12,7 +15,7 @@
               <div class="progress-bar-container">
                 <div
                     class="progress-bar"
-                    :style="{ width: `${(count / Math.max(...Object.values(totalCounts))) * 100}%` }">
+                    :style="{ width: `${(count / Math.max(...Object.values(totalItemsStats))) * 100}%` }">
                 </div>
               </div>
             </div>
@@ -20,9 +23,12 @@
         </div>
       </div>
       <div>
-        <h3>Stream objects {{ Object.keys(streamObjects).length }}</h3>
+        <h3>Stream</h3>
+        <div class="info">
+          Items:   {{ Object.keys(streamItemsStats).length }}
+        </div>
         <div class="stats-diagram">
-          <div v-for="(count, ticker) in streamObjects" :key="ticker" class="row">
+          <div v-for="(count, ticker) in streamItemsStats" :key="ticker" class="row">
             <div class="cell" :class="{ 'highlighted': isHighlighted(ticker) }">
               <div class="ticker-info">
                 <span class="ticker" @click="$emit('select-ticker', ticker)">{{ ticker }}</span> {{ count }}
@@ -30,7 +36,7 @@
               <div class="progress-bar-container">
                 <div
                     class="progress-bar"
-                    :style="{ width: `${(count / Math.max(...Object.values(streamObjects))) * 100}%` }">
+                    :style="{ width: `${(count / Math.max(...Object.values(streamItemsStats))) * 100}%` }">
                 </div>
               </div>
             </div>
@@ -45,34 +51,34 @@
 export default {
   name: 'AlorStatsDiagram',
   props: {
-    totalCounts: {
+    totalItemsStats: {
       type: Object,
       required: true,
       default: () => ({})
     },
-    streamObjects: {
+    streamItemsStats: {
       type: Object,
       required: true,
       default: () => ({})
     }
   },
   computed: {
-    sortedTotalCounts() {
-      return Object.entries(this.totalCounts).sort(([, a], [, b]) => b - a).map(([ticker]) => ticker);
+    sortedtotalItemsStats() {
+      return Object.entries(this.totalItemsStats).sort(([, a], [, b]) => b - a).map(([ticker]) => ticker);
     },
-    sortedStreamObjects() {
-      return Object.entries(this.streamObjects).sort(([, a], [, b]) => b - a).map(([ticker]) => ticker);
+    sortedstreamItemsStats() {
+      return Object.entries(this.streamItemsStats).sort(([, a], [, b]) => b - a).map(([ticker]) => ticker);
     },
-    top10StreamObjects() {
-      return this.sortedStreamObjects.slice(0, 10);
+    top10streamItemsStats() {
+      return this.sortedstreamItemsStats.slice(0, 10);
     }
   },
   methods: {
     isHighlighted(ticker) {
-      const streamRank = this.top10StreamObjects.indexOf(ticker);
-      const totalRank = this.sortedTotalCounts.indexOf(ticker);
+      const streamRank = this.top10streamItemsStats.indexOf(ticker);
+      const totalRank = this.sortedtotalItemsStats.indexOf(ticker);
 
-      // Подсветить, если тикер из топ-10 `streamObjects` поднялся выше
+      // Подсветить, если тикер из топ-10 `streamItemsStats` поднялся выше
       return streamRank !== -1 && (totalRank === -1 || streamRank < totalRank);
     }
   }
@@ -80,7 +86,10 @@ export default {
 </script>
 
 <style scoped>
-
+.stats-diagram{
+  overflow: hidden;
+  height: 350px;
+}
 .progress-bar-container {
   background: #f0f0f0;
   height: 4px;
@@ -102,5 +111,8 @@ export default {
 
 .highlighted {
   color: #ff0bf7;
+}
+.info{
+  margin: 0 0 10px;
 }
 </style>
