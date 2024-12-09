@@ -31,7 +31,7 @@
 
     <div class="panels-grid">
 
-      <div class="panel" style="height: 600px; overflow: auto;">
+      <div class="panel" style="height: 1100px; overflow: auto;">
 
         <h2>Signals</h2>
 
@@ -56,8 +56,6 @@
         <div style="margin: 0 0 5px;">
           <input type="text" v-model="profitPercent"/>
         </div>
-
-        {{globalData?.tradesStatistics}}
 
         <!-- Топ 10 выгодных сделок (Покупки) -->
         <AlorAdvantageousDeals
