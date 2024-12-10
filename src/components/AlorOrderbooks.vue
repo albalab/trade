@@ -19,7 +19,7 @@ export default {
   data() {
     return {
 
-      orderbooksSummary: {},
+      orderbooksMetrics: {},
       groupedOrderbooks: {},
       sortedOrderbooksStats: {},
       
@@ -57,11 +57,11 @@ export default {
     handleOrderbooksUpdate(data){
 
       const newOrderbooks = data.filter(item => item.type === 'orderbook');
-      const orderbooksSummary = data.filter(item => item.type === 'orderbooksSummary');
+      const orderbooksMetrics = data.filter(item => item.type === 'orderbooksMetrics');
       const groupedOrderbooks = data.filter(item => item.type === 'groupedOrderbooks');
       const sortedOrderbooksStats = data.filter(item => item.type === 'sortedOrderbooksStats');
 
-      this.orderbooksSummary = orderbooksSummary.length ? orderbooksSummary[0].data : {}
+      this.orderbooksMetrics = orderbooksMetrics.length ? orderbooksMetrics[0].data : {}
       this.groupedOrderbooks = groupedOrderbooks.length ? groupedOrderbooks[0].data : {}
       this.sortedOrderbooksStats = sortedOrderbooksStats.length ? sortedOrderbooksStats[0].data : {}
 
@@ -103,7 +103,7 @@ export default {
 
         this.$emit('update-orderbooks', newOrderbooks);
         this.$emit('update-orderbooks-counters', this.orderbooksCounters);
-        this.$emit('update-orderbooks-summary', this.orderbooksSummary);
+        this.$emit('update-orderbooks-metrics', this.orderbooksMetrics);
 
       } else {
         console.warn('Received non-array data:', newOrderbooks); // Логирование данных, если это не массив

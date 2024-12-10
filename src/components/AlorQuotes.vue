@@ -19,7 +19,7 @@ export default {
     return {
       sortedQuotesStats: {},
       groupedQuotes: {},
-      quotesSummary: {},
+      quotesMetrics: {},
 
       quoteCounter: 0,
       accumulatedQuoteStats: {}, // Накопительная статистика
@@ -105,11 +105,11 @@ export default {
 
     handleQuotesUpdate(data) {
       const newQuotes = data.filter(item => item.type === 'quote');
-      const quotesSummary = data.filter(item => item.type === 'quotesSummary');
+      const quotesMetrics = data.filter(item => item.type === 'quotesMetrics');
       const groupedQuotes = data.filter(item => item.type === 'groupedQuotes');
       const sortedQuotesStats = data.filter(item => item.type === 'sortedQuotesStats');
 
-      this.quotesSummary = quotesSummary.length ? quotesSummary[0].data : {}
+      this.quotesMetrics = quotesMetrics.length ? quotesMetrics[0].data : {}
       this.groupedQuotes = groupedQuotes.length ? groupedQuotes[0].data : {}
       this.sortedQuotesStats = sortedQuotesStats.length ? sortedQuotesStats[0].data : {}
 
@@ -151,9 +151,11 @@ export default {
         this.quoteCounter = quoteCounter;
         this.tickerStats = tickerStats;
 
+        //console.log(this.quotesMetrics);
+
         this.$emit('update-quotes', newQuotes);
         this.$emit('update-quotes-counters', this.quotesCounters);
-        this.$emit('update-quotes-summary', this.quotesSummary);
+        this.$emit('update-quotes-metrics', this.quotesMetrics);
 
       } else {
         console.warn("Received non-array data:", newQuotes);

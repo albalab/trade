@@ -134,10 +134,10 @@
 
         <AlorTrades
             :profitPercent="profitPercent"
-            @update-trades="updateTrades"
+            @update-trades="updateTradesMetrics"
             @update-trades-statistics="updateTradesStatistics"
             @update-trades-counters="updateTradesCounters"
-            @update-trades-summary="updateTrades"/>
+            @update-trades-metrics="updateTradesMetrics"/>
       </div>
       <div class="panel">
 
@@ -151,7 +151,7 @@
 
         <AlorOrderbooks
             @update-orderbooks-counters="updateOrderbooksCounters"
-            @update-orderbooks-summary="updateOrderbooks"/>
+            @update-orderbooks-metrics="updateOrderbooksMetrics"/>
       </div>
       <div class="panel">
 
@@ -165,7 +165,7 @@
 
         <AlorCandles
             @update-candles-counters="updateCandlesCounters"
-            @update-candles-summary="updateCandles"/>
+            @update-candles-metrics="updateCandlesMetrics"/>
       </div>
       <div class="panel">
 
@@ -179,7 +179,7 @@
 
         <AlorQuotes
             @update-quotes-counters="updateQuotesCounters"
-            @update-quotes-summary="updateQuotes"/>
+            @update-quotes-metrics="updateQuotesMetrics"/>
       </div>
     </div>
 
@@ -715,6 +715,8 @@ export default {
           globalDataHistory: this.globalDataHistory // История данных
         };
 
+        console.log('Sending data:', JSON.stringify(data, null, 2));
+
         //const response = await fetch('https://signalfabric.com/best-deals/', {
         const response = await fetch('http://localhost:8080/best-deals/', {
           method: 'POST',
@@ -739,17 +741,17 @@ export default {
       }
     },
 
-    updateOrderbooks() {
-      //this.globalData.orderbooks = orderbooks;
+    updateOrderbooksMetrics(orderbooksMetrics) {
+      this.globalData.orderbooksMetrics = orderbooksMetrics;
     },
-    updateCandles() {
-      //this.globalData.candles = candles;
+    updateCandlesMetrics(candlesMetrics) {
+      this.globalData.candlesMetrics = candlesMetrics;
     },
-    updateQuotes(quotes) {
-      this.globalData.quotes = quotes;
+    updateQuotesMetrics(quotesMetrics) {
+      this.globalData.quotesMetrics = quotesMetrics;
     },
-    updateTrades(trades) {
-      this.globalData.trades = trades;
+    updateTradesMetrics(tradesMetrics) {
+      this.globalData.tradesMetrics = tradesMetrics;
     },
 
     updateTradesStatistics(tradesStatistics) {
@@ -783,10 +785,10 @@ export default {
       const result = { ...this.summaryData };
 
       // Оставляем только аггрегированные данные с тикерами
-      const tickerSections = ['trades']; // Укажите секции, содержащие тикеры
+      const sectionsWithTickers = ['tradesMetrics', 'quotesMetrics', 'orderbooksMetrics', 'candlesMetrics']; // Укажите секции, содержащие тикеры
 
       for (const section in data) {
-        if (!tickerSections.includes(section)) continue; // Пропускаем ненужные секции
+        if (!sectionsWithTickers.includes(section)) continue; // Пропускаем ненужные секции
 
         for (const ticker in data[section]) {
           if (!result[ticker]) result[ticker] = {}; // Инициализация объекта для тикера

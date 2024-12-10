@@ -22,7 +22,7 @@ export default {
       collectedClosePrice: {},
 
       // Сводная информация
-      candlesSummary: {},
+      candlesMetrics: {},
       groupedCandles: {},
       sortedCandlesStats: {},
 
@@ -75,11 +75,11 @@ export default {
 
     handleCandlesUpdate(data) {
       const newCandles = data.filter((item) => item.type === "candle");
-      const candlesSummary = data.find((item) => item.type === "candlesSummary");
+      const candlesMetrics = data.find((item) => item.type === "candlesMetrics");
       const groupedCandles = data.find((item) => item.type === "groupedCandles");
       const sortedCandlesStats = data.find((item) => item.type === "sortedCandlesStats");
 
-      if (candlesSummary) this.candlesSummary = candlesSummary.data || {};
+      if (candlesMetrics) this.candlesMetrics = candlesMetrics.data || {};
       if (groupedCandles) this.groupedCandles = groupedCandles.data || {};
       if (sortedCandlesStats) this.sortedCandlesStats = sortedCandlesStats.data || {};
 
@@ -96,7 +96,7 @@ export default {
 
         this.$emit("update-candles", newCandles);
         this.$emit("update-candles-counters", this.candlesCounters);
-        this.$emit("update-candles-summary", this.candlesSummary);
+        this.$emit("update-candles-metrics", this.candlesMetrics);
       }
     },
   },

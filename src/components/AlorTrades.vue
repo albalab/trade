@@ -106,22 +106,22 @@ export default {
     },
 
    /* marketSummary() {
-      const summary = {};
+      const metrics = {};
 
       this.trades.forEach((trade) => {
         const { ticker, qty } = trade;
 
-        summary[ticker] = summary[ticker] || {};
-        summary[ticker].tradeVolumeAbsoluteRub = parseFloat(trade.price) * trade.qty;
-        summary[ticker].tradeVolume = qty;
+        metrics[ticker] = metrics[ticker] || {};
+        metrics[ticker].tradeVolumeAbsoluteRub = parseFloat(trade.price) * trade.qty;
+        metrics[ticker].tradeVolume = qty;
 
         Object.entries(trade).forEach(([key, value]) => {
           const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-          summary[ticker][`trade${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
+          metrics[ticker][`trade${camelCaseKey.charAt(0).toUpperCase()}${camelCaseKey.slice(1)}`] = value;
         });
 
       });
-      return summary;
+      return metrics;
     },*/
 
   },
@@ -146,7 +146,7 @@ export default {
 
 
       const newTrades = data.filter(item => item.type === 'trade');
-      const tradesSummary = data.filter(item => item.type === 'tradesSummary');
+      const tradesMetrics = data.filter(item => item.type === 'tradesMetrics');
       const groupedTrades = data.filter(item => item.type === 'groupedTrades');
       const sortedTradesStats = data.filter(item => item.type === 'sortedTradesStats');
       const levelsStats = data.filter(item => item.type === 'globalLevelsStats');
@@ -156,7 +156,7 @@ export default {
 
       this.sortedTradesStats = sortedTradesStats.length ? sortedTradesStats[0].data : {}
       this.groupedTrades = groupedTrades.length ? groupedTrades[0].data : {}
-      this.tradesSummary = tradesSummary.length ? tradesSummary[0].data : {}
+      this.tradesMetrics = tradesMetrics.length ? tradesMetrics[0].data : {}
       this.levelsStats = levelsStats.length ? levelsStats[0].data : {};
       this.tradesStatistics = tradesStatistics.length ? tradesStatistics[0].data : {};
 
@@ -219,7 +219,7 @@ export default {
 
       this.newTrades = newTrades;
       this.$emit('update-trades', newTrades);
-      this.$emit('update-trades-summary', this.tradesSummary);
+      this.$emit('update-trades-metrics', this.tradesMetrics);
       this.$emit('update-trades-counters', this.tradesCounters);
       this.$emit('update-levels-stats', this.levelsStats);
       this.$emit('update-trades-statistics', this.tradesStatistics);

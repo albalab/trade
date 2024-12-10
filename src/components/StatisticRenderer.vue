@@ -1,12 +1,11 @@
 <template>
   <div>
-    <h3>Statistic Renderer</h3>
+
     <p>
       Last render time: {{ lastRenderTime }} <br />
       Render view count: {{ renderCount }} <br />
 
       Chunk items length: {{ items.length }} <br />
-      Items counter: {{ itemsCounter }} <br />
     </p>
 
 
@@ -71,10 +70,6 @@ export default {
       }
     },
 
-    updateCounter(items) {
-      this.itemsCounter = this.itemsCounter + items.length;
-    },
-
     updateRenderTime() {
       this.lastRenderTime = new Date().toLocaleString(); // Обновляем время
       this.renderCount++; // Увеличиваем счётчик рендеров
@@ -104,7 +99,6 @@ export default {
       if(newItems.length) this.type = newItems[newItems.length - 1].type;
       if (Array.isArray(newItems) && newItems.length > 0) {
         this.updateRenderTime();
-        this.updateCounter(newItems);
         this.updateTimeline();
       }
     },
