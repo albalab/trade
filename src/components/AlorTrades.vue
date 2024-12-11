@@ -145,6 +145,9 @@ export default {
     handleTradesUpdate(data){
 
 
+      //console.log(data);
+
+
       const newTrades = data.filter(item => item.type === 'trade');
       const tradesMetrics = data.filter(item => item.type === 'tradesMetrics');
       const groupedTrades = data.filter(item => item.type === 'groupedTrades');
