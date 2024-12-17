@@ -124,7 +124,7 @@ export default {
 
         newQuotes.forEach((quote) => {
 
-          if (quote.ticker && quote.last_price !== undefined) {
+          if (quote.ticker && quote.lastPrice !== undefined) {
 
             if (tickerStats[quote.ticker]) {
               tickerStats[quote.ticker]++;
