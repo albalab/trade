@@ -81,26 +81,23 @@ export default {
 
     handleTradesUpdate(data){
 
-      const newTrades = data.filter(item => item.type === 'trade');
-      this.updateAccumulatedTradeStats(newTrades);
-
-
+      //const newTrades = data.filter(item => item.type === 'trade');
 
 
       //const tickerStats = { ...this.tickerStats };
-      let localTrades = [...this.trades];
+      /*let localTrades = [...this.trades];
 
       let localTradeCounterBuy = this.tradeCounterBuy;
       let localTradeCounterSell = this.tradeCounterSell;
-      let localTradeCounter = this.tradeCounter;
+      let localTradeCounter = this.tradeCounter;*/
 
-      newTrades.forEach(trade => {
+      /*newTrades.forEach(trade => {
 
-        /*if (tickerStats[trade.ticker]) {
+        /!*if (tickerStats[trade.ticker]) {
           tickerStats[trade.ticker]++;
         } else {
           tickerStats[trade.ticker] = 1;
-        }*/
+        }*!/
 
         localTradeCounter++;
         if (trade.side === 'buy') {
@@ -116,14 +113,14 @@ export default {
         }
 
       });
-
-      this.trades = localTrades;
+*/
+      /*this.trades = localTrades;
 
       this.tradeCounterBuy = localTradeCounterBuy;
       this.tradeCounterSell = localTradeCounterSell;
-      this.tradeCounter = localTradeCounter;
-      this.tradesStore.newTrades = newTrades;
+      this.tradeCounter = localTradeCounter;*/
 
+      const newTrades = data.filter((item) => item.type === "newTrades");
       const tradesMetrics = data.filter(item => item.type === 'tradesMetrics');
       const sortedTradesStats = data.filter(item => item.type === 'sortedTradesStats');
       const levelsStats = data.filter(item => item.type === 'globalLevelsStats');
@@ -132,6 +129,7 @@ export default {
       const tickerStats = data.find(item => item.type === 'tickerStats')?.data || {};
       const tickerFrequency = data.find(item => item.type === 'tickerFrequency')?.data || {};
 
+      this.tradesStore.newTrades = newTrades[0].data;
       this.tradesStore.tradesStats = sortedTradesStats[0].data;
       this.tradesStore.tradesMetrics = tradesMetrics[0].data;
       this.tradesStore.levelsStats = levelsStats[0].data;
@@ -139,21 +137,7 @@ export default {
       this.tradesStore.accumulatedTradesStats = accumulatedTradesStats.data;
       this.tradesStore.tickerStats = tickerStats;
       this.tradesStore.tickerFrequency = tickerFrequency;
-    },
 
-    updateAccumulatedTradeStats(trades) {
-      const stats = { ...this.accumulatedTradeStats };
-
-      trades.forEach((trade) => {
-        const { ticker } = trade;
-        stats[ticker] = (stats[ticker] || 0) + 1;
-      });
-
-      const sortedItemsStats = Object.fromEntries(
-          Object.entries(stats).sort(([, a], [, b]) => b - a)
-      );
-
-      this.tradesStore.totalItemsStats = sortedItemsStats;
     },
 
   },
@@ -162,7 +146,6 @@ export default {
 
     webSocketService.connect();
     webSocketService.subscribe("aggregatedTrades", this.handleTradesUpdate);
-    //this.connectToWebSocket();
   },
 
 };

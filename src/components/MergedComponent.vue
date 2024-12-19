@@ -785,13 +785,13 @@ export default {
       }
     },
 
-    updateOrderbooksMetrics(orderbooksMetrics) {
+    /*updateOrderbooksMetrics(orderbooksMetrics) {
       this.globalData.orderbooksMetrics = orderbooksMetrics;
     },
 
     updateQuotesMetrics(quotesMetrics) {
       this.globalData.quotesMetrics = quotesMetrics;
-    },
+    },*/
     /*updateTradesMetrics(tradesMetrics) {
       this.globalData.tradesMetrics = tradesMetrics;
     },*/
@@ -831,6 +831,8 @@ export default {
       };
       const summaryData = { ...this.summaryData };
 
+      //console.log(data);
+
       // Оставляем только аггрегированные данные с тикерами
       const sectionsWithTickers = ['tradesMetrics', 'quotesMetrics', 'orderbooksMetrics', 'candlesMetrics']; // Укажите секции, содержащие тикеры
 
@@ -850,6 +852,12 @@ export default {
 
   },
 
+  mounted() {
+    setInterval(() => {
+      this.updateSummaryData();
+    }, 1000);
+
+  },
 
   watch: {
     'tradesStore.tradesStatistics.advantageousBuyDifferences': {

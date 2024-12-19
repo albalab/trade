@@ -41,7 +41,6 @@ export default {
   },
   methods: {
 
-
     handleCandlesUpdate(data) {
 
       const newCandles = data.filter((item) => item.type === "newCandles");
@@ -59,9 +58,6 @@ export default {
       this.candlesStore.candlesStats = candlesStats.data;
       this.candlesStore.candlesFixedArray = itemsFixedArray.data;
       this.candlesStore.candlesCounter = candlesCounter.data;
-
-      //console.log(accumulatedCandlesStats.data)
-      //if (newCandles) this.newCandles = newCandles;
 
     },
   },
