@@ -1,5 +1,6 @@
 <template>
   <div>
+
     <StatisticRenderer
         :items="orderbooksStore.newOrderbooks"
     />

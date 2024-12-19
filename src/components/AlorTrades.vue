@@ -67,14 +67,6 @@ export default {
 
   computed: {
 
-    tradesCounters() {
-      return {
-        tradeCounter: this.tradeCounter,
-        tradeCounterBuy: this.tradeCounterBuy,
-        tradeCounterSell: this.tradeCounterSell,
-      }
-    },
-
   },
 
   methods: {
@@ -120,23 +112,27 @@ export default {
       this.tradeCounterSell = localTradeCounterSell;
       this.tradeCounter = localTradeCounter;*/
 
-      const newTrades = data.filter((item) => item.type === "newTrades");
-      const tradesMetrics = data.filter(item => item.type === 'tradesMetrics');
-      const sortedTradesStats = data.filter(item => item.type === 'sortedTradesStats');
-      const levelsStats = data.filter(item => item.type === 'globalLevelsStats');
-      const tradesStatistics = data.filter(item => item.type === 'tradesStatistics');
-      const accumulatedTradesStats = data.find((item) => item.type === "accumulatedTradesStats");
-      const tickerStats = data.find(item => item.type === 'tickerStats')?.data || {};
-      const tickerFrequency = data.find(item => item.type === 'tickerFrequency')?.data || {};
+      const newTrades = data.find((item) => item.type === "newTrades").data || [];
+      const tradesMetrics = data.find((item) => item.type === "tradesMetrics").data || [];
+      const sortedTradesStats = data.find((item) => item.type === "sortedTradesStats").data || [];
+      const levelsStats = data.find((item) => item.type === "globalLevelsStats").data || [];
+      const tradesStatistics = data.find((item) => item.type === "tradesStatistics").data || [];
+      const accumulatedTradesStats = data.find((item) => item.type === "accumulatedTradesStats").data || {};
+      const tickerStats = data.find((item) => item.type === "tickerStats")?.data || {};
+      const tickerFrequency = data.find((item) => item.type === "tickerFrequency")?.data || {};
+      const tickerFrequencyBuy = data.find((item) => item.type === "tickerFrequencyBuy")?.data || {};
+      const tickerFrequencySell = data.find((item) => item.type === "tickerFrequencySell")?.data || {};
 
-      this.tradesStore.newTrades = newTrades[0].data;
-      this.tradesStore.tradesStats = sortedTradesStats[0].data;
-      this.tradesStore.tradesMetrics = tradesMetrics[0].data;
-      this.tradesStore.levelsStats = levelsStats[0].data;
-      this.tradesStore.tradesStatistics = tradesStatistics[0].data;
-      this.tradesStore.accumulatedTradesStats = accumulatedTradesStats.data;
+      this.tradesStore.newTrades = newTrades;
+      this.tradesStore.tradesStats = sortedTradesStats;
+      this.tradesStore.tradesMetrics = tradesMetrics;
+      this.tradesStore.levelsStats = levelsStats;
+      this.tradesStore.tradesStatistics = tradesStatistics;
+      this.tradesStore.accumulatedTradesStats = accumulatedTradesStats;
       this.tradesStore.tickerStats = tickerStats;
       this.tradesStore.tickerFrequency = tickerFrequency;
+      this.tradesStore.tickerFrequencyBuy = tickerFrequencyBuy;
+      this.tradesStore.tickerFrequencySell = tickerFrequencySell;
 
     },
 
