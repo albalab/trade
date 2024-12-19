@@ -1,13 +1,14 @@
 <template>
   <div>
     <StatisticRenderer
-        :items="newOrderbooks"
+        :items="orderbooksStore.newOrderbooks"
     />
   </div>
 </template>
 
 
 <script>
+import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { tickersSteps } from '../tickersSteps.js';
 import { tickers } from '../tickers.js';
 import StatisticRenderer from "@/components/StatisticRenderer.vue";
@@ -15,7 +16,16 @@ import webSocketService from "@/services/WebSocketService";
 
 export default {
   name: 'alor-order-book',
-  components: {StatisticRenderer},
+
+  components: {
+    StatisticRenderer
+  },
+
+  setup() {
+    const orderbooksStore = useOrderbooksStore();
+    return { orderbooksStore }
+  },
+
   data() {
     return {
 
@@ -36,78 +46,47 @@ export default {
 
   computed: {
 
-    orderbooksCounters() {
-      return {
-        orderbooksStats: this.sortedOrderbooksStats,
-        orderbookCounter: this.orderbookCounter,
-        orderbooksCounters: this.sortedOrderbookGlobalStats,
-      }
-    },
-
-    sortedOrderbookGlobalStats() {
-      return Object.fromEntries(
-          Object.entries(this.orderbookGlobalStats).sort(([, a], [, b]) => b - a)
-      );
-    },
-
   },
 
   methods: {
 
     handleOrderbooksUpdate(data){
 
-      const newOrderbooks = data.filter(item => item.type === 'orderbook');
+      /*const newCandles = data.filter((item) => item.type === "newCandles");
+      const collectedClosePrice = data.find((item) => item.type === "collectedClosePrice");
+      const candlesMetrics = data.find((item) => item.type === "candlesMetrics");
+      const candlesStats = data.find((item) => item.type === "candlesStats");
+      const accumulatedCandlesStats = data.find((item) => item.type === "accumulatedCandlesStats");
+      const candleCounter = data.find((item) => item.type === "candleCounter");
+      const itemsFixedArray = data.find((item) => item.type === "itemsFixedArray");*/
+
+      //const sortedOrderbooksStats = data.filter(item => item.type === 'sortedOrderbooksStats');
+
+      const newOrderbooks = data.filter((item) => item.type === "newOrderbooks");
       const orderbooksMetrics = data.filter(item => item.type === 'orderbooksMetrics');
-      const groupedOrderbooks = data.filter(item => item.type === 'groupedOrderbooks');
-      const sortedOrderbooksStats = data.filter(item => item.type === 'sortedOrderbooksStats');
+      const orderbooksStats = data.find((item) => item.type === "orderbooksStats");
+      const accumulatedOrderbooksStats = data.find((item) => item.type === "accumulatedOrderbooksStats");
+      const orderbooksCounter = data.find((item) => item.type === "orderbooksCounter");
+      const itemsFixedArray = data.find((item) => item.type === "itemsFixedArray");
 
-      this.orderbooksMetrics = orderbooksMetrics.length ? orderbooksMetrics[0].data : {}
-      this.groupedOrderbooks = groupedOrderbooks.length ? groupedOrderbooks[0].data : {}
+      this.orderbooksStore.newOrderbooks = newOrderbooks[0].data;
+
+      this.orderbooksStore.orderbooksMetrics = orderbooksMetrics.data;
+      this.orderbooksStore.accumulatedOrderbooksStats = accumulatedOrderbooksStats.data;
+      this.orderbooksStore.orderbooksStats = orderbooksStats.data;
+      this.orderbooksStore.orderbooksFixedArray = itemsFixedArray.data;
+      this.orderbooksStore.orderbooksCounter = orderbooksCounter.data;
+
+      /*
+      this.orderbooksStore.orderbooksMetrics = orderbooksMetrics.length ? orderbooksMetrics[0].data : {}
       this.sortedOrderbooksStats = sortedOrderbooksStats.length ? sortedOrderbooksStats[0].data : {}
+      this.orderbooksStore.newOrderbooks = newOrderbooks[0].data;
+      this.orderbooksStore.orderbooksMetrics = orderbooksMetrics.data;
+      this.orderbooksStore.accumulatedOrderbooksStats = accumulatedOrderbooksStats.data;
+      this.orderbooksStore.orderbooksStats = orderbooksStats.data;
+      this.orderbooksStore.orderbooksFixedArray = itemsFixedArray.data;
+      this.orderbooksStore.orderbooksCounter = orderbooksCounter.data;*/
 
-
-      if (Array.isArray(newOrderbooks)) {
-
-        const localOrderbooks = [...this.orderbooks];
-        let orderbookCounter = this.orderbookCounter;
-        const orderbookGlobalStats = { ...this.orderbookGlobalStats };
-
-        this.newOrderbooks = newOrderbooks;
-
-        newOrderbooks.forEach(orderbook => {
-
-          if (orderbook.ticker && orderbook.bids && orderbook.asks) {
-
-            localOrderbooks.push(orderbook);
-
-            orderbookCounter++;
-            orderbookGlobalStats[orderbook.ticker] = (orderbookGlobalStats[orderbook.ticker] || 0) + 1;
-
-
-            // Ограничиваем массив последних 1000 объектов
-            if (localOrderbooks.length > 500) {
-              localOrderbooks.shift();
-            }
-
-          } else {
-            console.warn('Received invalid order book data:', orderbook); // Логирование некорректных данных
-          }
-        });
-
-        // Обновляем реактивные свойства один раз после цикла
-        this.orderbooks = localOrderbooks;
-        this.orderbookCounter = orderbookCounter;
-        this.orderbookGlobalStats = orderbookGlobalStats;
-
-        //console.log(this.orderbooks[0])
-
-        this.$emit('update-orderbooks', newOrderbooks);
-        this.$emit('update-orderbooks-counters', this.orderbooksCounters);
-        this.$emit('update-orderbooks-metrics', this.orderbooksMetrics);
-
-      } else {
-        console.warn('Received non-array data:', newOrderbooks); // Логирование данных, если это не массив
-      }
     },
 
     /*connectToWebSocket() {

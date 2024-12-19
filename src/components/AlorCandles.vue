@@ -1,33 +1,34 @@
 <template>
   <div>
-    <StatisticRenderer :items="newCandles" />
+    Total Candles: {{candlesStore.candleCounter}}<br>
+    <StatisticRenderer v-if="candlesStore.newCandles" :items="candlesStore.newCandles" />
   </div>
 </template>
 
 <script>
+import { useCandlesStore } from '@/stores/candlesStore';
 import StatisticRenderer from "@/components/StatisticRenderer.vue";
 import { tickers, tickersSteps } from "@/tickers";
 import webSocketService from "@/services/WebSocketService";
 
 export default {
   name: "alor-candles",
+
   components: { StatisticRenderer },
+
+  setup() {
+    const candlesStore = useCandlesStore();
+    return { candlesStore }
+  },
+
   data() {
     return {
-      // Основные данные
+
       candles: [],
       newCandles: [],
-      accumulatedCandleStats: {},
-      tickerStats: {},
-      collectedClosePrice: {},
 
-      // Сводная информация
       candlesMetrics: {},
-      groupedCandles: {},
-      sortedCandlesStats: {},
 
-      // Параметры
-      candleCounter: 0,
       maxLength: 100,
 
       // Импортированные значения
@@ -36,68 +37,32 @@ export default {
     };
   },
   computed: {
-    candlesCounters() {
-      return {
-        candlesStats: this.sortedCandlesStats,
-        candleCounter: this.candleCounter,
-        candlesCounters: this.sortedAccumulatedCandleStats,
-      };
-    },
-    sortedAccumulatedCandleStats() {
-      return Object.fromEntries(
-          Object.entries(this.accumulatedCandleStats).sort(([, a], [, b]) => b - a)
-      );
-    },
+
   },
   methods: {
-    processNewCandles(newCandles) {
-      const accumulatedStats = { ...this.accumulatedCandleStats };
 
-      newCandles.forEach((candle) => {
-        const { ticker, close } = candle;
-
-        // Обновление статистики
-        accumulatedStats[ticker] = (accumulatedStats[ticker] || 0) + 1;
-
-        // Обновление массива свечей
-        if (!this.collectedClosePrice[ticker]) {
-          this.collectedClosePrice[ticker] = [];
-        }
-        this.collectedClosePrice[ticker].push(close);
-
-        if (this.collectedClosePrice[ticker].length > this.maxLength) {
-          this.collectedClosePrice[ticker] = this.collectedClosePrice[ticker].slice(-this.maxLength);
-        }
-      });
-
-      this.accumulatedCandleStats = accumulatedStats;
-    },
 
     handleCandlesUpdate(data) {
-      const newCandles = data.filter((item) => item.type === "candle");
+
+      const newCandles = data.filter((item) => item.type === "newCandles");
+      const collectedClosePrice = data.find((item) => item.type === "collectedClosePrice");
       const candlesMetrics = data.find((item) => item.type === "candlesMetrics");
-      const groupedCandles = data.find((item) => item.type === "groupedCandles");
-      const sortedCandlesStats = data.find((item) => item.type === "sortedCandlesStats");
+      const candlesStats = data.find((item) => item.type === "candlesStats");
+      const accumulatedCandlesStats = data.find((item) => item.type === "accumulatedCandlesStats");
+      const candlesCounter = data.find((item) => item.type === "candlesCounter");
+      const itemsFixedArray = data.find((item) => item.type === "itemsFixedArray");
 
-      if (candlesMetrics) this.candlesMetrics = candlesMetrics.data || {};
-      if (groupedCandles) this.groupedCandles = groupedCandles.data || {};
-      if (sortedCandlesStats) this.sortedCandlesStats = sortedCandlesStats.data || {};
+      this.candlesStore.newCandles = newCandles[0].data;
+      this.candlesStore.candlesMetrics = candlesMetrics.data;
+      this.candlesStore.collectedClosePrice = collectedClosePrice.data;
+      this.candlesStore.accumulatedCandlesStats = accumulatedCandlesStats.data;
+      this.candlesStore.candlesStats = candlesStats.data;
+      this.candlesStore.candlesFixedArray = itemsFixedArray.data;
+      this.candlesStore.candlesCounter = candlesCounter.data;
 
-      if (Array.isArray(newCandles) && newCandles.length) {
-        this.processNewCandles(newCandles);
-        this.candles.push(...newCandles);
+      //console.log(accumulatedCandlesStats.data)
+      //if (newCandles) this.newCandles = newCandles;
 
-        if (this.candles.length > this.maxLength) {
-          this.candles.splice(0, this.candles.length - this.maxLength);
-        }
-
-        this.newCandles = newCandles;
-        this.candleCounter += newCandles.length;
-
-        this.$emit("update-candles", newCandles);
-        this.$emit("update-candles-counters", this.candlesCounters);
-        this.$emit("update-candles-metrics", this.candlesMetrics);
-      }
     },
   },
   mounted() {

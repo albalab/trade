@@ -1,33 +1,36 @@
 <template>
   <div class="panels-container">
 
-
 <!--    <SessionManager />-->
 
     <div style="overflow: auto; height: 500px;">
       <div class="table table-trade">
         <div class="table-row">
           <div class="table-cell">Ticker</div>
-          <div class="table-cell" v-for="item in getFields(summaryData)" :key="item?.id">
+          <div class="table-cell" v-for="item in summaryFields" :key="item?.id">
             {{item}}
           </div>
+
         </div>
-        <div class="table-row" v-for="(item, key) in summaryData" :key="item?.id">
+        <div class="table-row"
+             v-for="(item, key) in summaryData"
+             :key="item?.id">
           <div class="table-cell">{{key}}</div>
-          <div class="table-cell" v-for="(value, key) in item" :key="value?.id">
-            <span v-if="key === 'spread'">{{parseFloat(value).toFixed(3)}}</span>
-            <span v-else>{{value}}</span>
+          <div class="table-cell"
+               v-for="field in summaryFields"
+               :key="field?.id">
+            <span>{{item[field] || '-'}}</span>
           </div>
         </div>
       </div>
     </div>
 
     <div style="height: 200px; overflow: auto;">
-      <div v-for="signal in signals" :key="signal.id">
+      <div v-for="signal in signals"
+           :key="signal.id">
         {{signal}}
       </div>
     </div>
-
 
     <div class="panels-grid">
 
@@ -52,7 +55,6 @@
         <!--    {{buyFrequency}}<br>
             {{sellFrequency}}<br>-->
 
-
         <div style="margin: 0 0 5px;">
           <input type="text" v-model="profitPercent"/>
         </div>
@@ -60,7 +62,7 @@
         <!-- Топ 10 выгодных сделок (Покупки) -->
         <AlorAdvantageousDeals
             title="Выгодные сделки (Покупки)"
-            :deals="globalData?.tradesStatistics?.advantageousBuyDifferences"
+            :deals="tradesStore?.tradesStatistics?.advantageousBuyDifferences"
             operation="Buy"
             @select-ticker="selectTicker"
         />
@@ -68,7 +70,7 @@
         <!-- Топ 10 выгодных сделок (Продажи) -->
         <AlorAdvantageousDeals
             title="Выгодные сделки (Продажи)"
-            :deals="globalData?.tradesStatistics?.advantageousSellDifferences"
+            :deals="tradesStore?.tradesStatistics?.advantageousSellDifferences"
             operation="Sell"
             @select-ticker="selectTicker"
         />
@@ -127,25 +129,21 @@
 
 
         <AlorStatsDiagram
-            :totalItemsStats="globalData?.tradesCounters?.tradesCounters"
-            :streamItemsStats="globalData?.tradesCounters?.tradesStats"
+            :totalItemsStats="tradesStore?.accumulatedTradesStats"
+            :streamItemsStats="tradesStore?.tradesStats"
             @select-ticker="selectTicker"
         />
 
         <AlorTrades
-            :profitPercent="profitPercent"
-            @update-trades="updateTradesMetrics"
-            @update-trades-statistics="updateTradesStatistics"
-            @update-trades-counters="updateTradesCounters"
-            @update-trades-metrics="updateTradesMetrics"/>
+            :profitPercent="profitPercent"/>
       </div>
       <div class="panel">
 
         <h2>Orderbooks</h2>
 
         <AlorStatsDiagram
-            :totalItemsStats="globalData?.orderbooksCounters?.orderbooksCounters"
-            :streamItemsStats="globalData?.orderbooksCounters?.orderbooksStats"
+            :totalItemsStats="orderbooksStore?.accumulatedOrderbooksStats"
+            :streamItemsStats="orderbooksStore?.orderbooksStats"
             @select-ticker="selectTicker"
         />
 
@@ -158,22 +156,20 @@
         <h2>Candles</h2>
 
         <AlorStatsDiagram
-            :totalItemsStats="globalData?.candlesCounters?.candlesCounters"
-            :streamItemsStats="globalData?.candlesCounters?.candlesStats"
+            :totalItemsStats="candlesStore?.accumulatedCandlesStats"
+            :streamItemsStats="candlesStore?.candlesStats"
             @select-ticker="selectTicker"
         />
 
-        <AlorCandles
-            @update-candles-counters="updateCandlesCounters"
-            @update-candles-metrics="updateCandlesMetrics"/>
+        <AlorCandles />
       </div>
       <div class="panel">
 
         <h2>Quotes</h2>
 
         <AlorStatsDiagram
-            :totalItemsStats="globalData?.quotesCounters?.quotesCounters"
-            :streamItemsStats="globalData?.quotesCounters?.quotesStats"
+            :totalItemsStats="quotesStore?.accumulatedQuotesStats"
+            :streamItemsStats="quotesStore?.quotesStats"
             @select-ticker="selectTicker"
         />
 
@@ -196,7 +192,6 @@
 <!--    <div style="margin: 0 0 10px;">
       <div v-for="(item, key) in {
         ...globalData.tradesCounters,
-        ...globalData.candlesCounters,
         ...globalData.orderbooksCounters,
         ...globalData.quotesCounters}" :key="key">
         {{key}}: {{item}}
@@ -230,6 +225,13 @@
 </template>
 
 <script>
+
+import { useCandlesStore } from '@/stores/candlesStore';
+import { useTradesStore } from '@/stores/tradesStore';
+import { useOrderbooksStore } from '@/stores/orderbooksStore';
+import { useQuotesStore } from '@/stores/quotesStore';
+
+
 //import SessionManager from './SessionManager';
 
 import { sendLimitOrder as importedSendLimitOrder } from '../modules/LimitOrderModule.js';
@@ -249,8 +251,11 @@ export default {
   name: 'MergedComponent',
 
   setup() {
-    //const cacheStore = useCacheStore();
-
+    const tradesStore = useTradesStore();
+    const candlesStore = useCandlesStore();
+    const orderbooksStore = useOrderbooksStore();
+    const quotesStore = useQuotesStore();
+    return { candlesStore, tradesStore, quotesStore, orderbooksStore, }
   },
 
   components: {
@@ -271,6 +276,48 @@ export default {
 
   data() {
     return {
+
+      summaryTemplate: {
+        tradeVolumeChunkSum: 2,
+        tradeVolumeAbsoluteRubChunkSum: 449.74,
+        tradeTicker: 'SBER',
+        //tradeType: 'trade',
+        //tradeTime: '2024-12-17T15:28:05.2710280Z',
+        tradePrice: 224.87,
+        //tradeQty: 2,
+        tradeSide: 'buy',
+        //tradeServerTime: 'Tue Dec 17 2024 19:28:05 GMT+0400 (Armenia Standard Time)',
+        //tradeTimeDelay: 34,
+        //orderbookBestBidPrice: 224.85,
+        //orderbookBestAskPrice: 224.86,
+        orderbookSpread: 0.010000000000019327,
+        //orderbookTotalBidVolume: 2038,
+        //orderbookTotalAskVolume: 3444,
+        //orderbookTotalDepth: 5482,
+        //orderbookBestDepth: 203,
+        //orderbookAverageBidPrice: 224.77975956820413,
+        //orderbookAverageAskPrice: 224.91155923344948,
+        orderbookVolumeImbalance: -1406,
+        //orderbookAverageDepthPrice: 224.86256110908428,
+        quoteSpread: 0.020000000000010232,
+        quoteMidPrice: 224.85000000000002,
+        //quoteType: 'quote',
+        quoteTicker: 'SBER',
+        //quoteAsk: 224.86,
+        //quoteBid: 224.84,
+        quoteLastPrice: 224.83,
+        //quoteTime: 1734449288,
+        //quoteServerTime: 'Tue Dec 17 2024 19:28:10 GMT+0400 (Armenia Standard Time)',
+        //quoteTimeDelay: 1732714841616,
+        //candleOpen: 224.88,
+        candleClose: 224.84,
+        //candleHigh: 224.88,
+        //candleLow: 224.84,
+        candleVolume: 72,
+        //candleBodySize: 0.03999999999999204,
+        //candleRange: 0.03999999999999204,
+        candleDirection: 'down',
+      },
 
       inProgress: false,
 
@@ -303,6 +350,10 @@ export default {
   },
 
   computed: {
+
+    summaryFields() {
+      return Object.keys(this.summaryTemplate);
+    },
 
     buyFrequency() {
       // Подсчитываем частоту для "buy"
@@ -347,13 +398,6 @@ export default {
   },
 
   methods: {
-
-    getFields(summaryData){
-      if(!summaryData) return;
-      const firstTicker = Object.keys(summaryData)[0];
-      if(!firstTicker) return;
-      return Object.keys(summaryData[firstTicker]);
-    },
 
     // Метод для добавления сигнала в массив с ограничением длины
     addSignal(signal) {
@@ -457,7 +501,7 @@ export default {
       }
     },
 
-// 3. Стратегия на основе объема свечи
+    // 3. Стратегия на основе объема свечи
     candleVolumeStrategy(tickerData, avgVolume) {
       if (tickerData.candleVolume > avgVolume * 1.5) {
         const action = tickerData.candleDirection === "up" ? "buy" : "sell";
@@ -744,26 +788,22 @@ export default {
     updateOrderbooksMetrics(orderbooksMetrics) {
       this.globalData.orderbooksMetrics = orderbooksMetrics;
     },
-    updateCandlesMetrics(candlesMetrics) {
-      this.globalData.candlesMetrics = candlesMetrics;
-    },
+
     updateQuotesMetrics(quotesMetrics) {
       this.globalData.quotesMetrics = quotesMetrics;
     },
-    updateTradesMetrics(tradesMetrics) {
+    /*updateTradesMetrics(tradesMetrics) {
       this.globalData.tradesMetrics = tradesMetrics;
-    },
+    },*/
 
-    updateTradesStatistics(tradesStatistics) {
+    /*updateTradesStatistics(tradesStatistics) {
       this.globalData.tradesStatistics = tradesStatistics;
-    },
+    },*/
 
-    updateTradesCounters(tradesCounters) {
+    /*updateTradesCounters(tradesCounters) {
       this.globalData.tradesCounters = tradesCounters;
-    },
-    updateCandlesCounters(candlesCounters) {
-      this.globalData.candlesCounters = candlesCounters;
-    },
+    },*/
+
     updateOrderbooksCounters(orderbooksCounters) {
       this.globalData.orderbooksCounters = orderbooksCounters;
     },
@@ -781,8 +821,15 @@ export default {
     },
 
     updateSummaryData() {
-      const data = { ...this.globalData };
-      const result = { ...this.summaryData };
+
+      const data = {
+        ...this.globalData,
+        ...this.tradesStore,
+        ...this.quotesStore,
+        ...this.candlesStore,
+        ...this.orderbooksStore
+      };
+      const summaryData = { ...this.summaryData };
 
       // Оставляем только аггрегированные данные с тикерами
       const sectionsWithTickers = ['tradesMetrics', 'quotesMetrics', 'orderbooksMetrics', 'candlesMetrics']; // Укажите секции, содержащие тикеры
@@ -791,13 +838,13 @@ export default {
         if (!sectionsWithTickers.includes(section)) continue; // Пропускаем ненужные секции
 
         for (const ticker in data[section]) {
-          if (!result[ticker]) result[ticker] = {}; // Инициализация объекта для тикера
+          if (!summaryData[ticker]) summaryData[ticker] = {}; // Инициализация объекта для тикера
 
-          Object.assign(result[ticker], data[section][ticker]); // Объединяем данные тикера
+          Object.assign(summaryData[ticker], data[section][ticker]); // Объединяем данные тикера
         }
       }
 
-      this.summaryData = result;
+      this.summaryData = summaryData;
 
     },
 
@@ -805,13 +852,13 @@ export default {
 
 
   watch: {
-    'globalData.tradesStatistics.advantageousBuyDifferences': {
+    'tradesStore.tradesStatistics.advantageousBuyDifferences': {
       immediate: true,
       handler(newData) {
         this.processAdvantageousDifferences(newData, 'Buy');
       }
     },
-    'globalData.tradesStatistics.advantageousSellDifferences': {
+    'tradesStore.tradesStatistics.advantageousSellDifferences': {
       immediate: true,
       handler(newData) {
         this.processAdvantageousDifferences(newData, 'Sell');
@@ -877,7 +924,7 @@ export default {
           tradesStatistics: newData.tradesStatistics || {},
           tradesCounters: newData.tradesCounters || {},
           orderbooksCounters: newData.orderbooksCounters || {},
-          candlesCounters: newData.candlesCounters || {},
+
           quotesCounters: newData.quotesCounters || {},
           timestamp: new Date().toISOString() // Метка времени для среза
         };

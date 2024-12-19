@@ -21,13 +21,13 @@
       >
         <div v-if="showLevel(item, index)">
           <div style="background: #eee; position: relative; height: 4px; width: 100%;">
-            <div style="background: blue; height: 100%;" :style="{width: `${100*(item.counterLevel/getLevelValue(index,500))}%`}"></div>
+            <div style="background: blue; height: 100%;" :style="{width: `${(item.sum/item.counterLevel)}%`}"></div>
           </div>
 
 
-          Level {{ index }}: Average: {{ item.sum / item.counterLevel || 0 }}<br />
-          Level Count: {{ item.counterLevel }}<br />
-          Level Sum: {{ item.sum }}
+<!--          Level {{ index }}: Average: {{ item.sum / item.counterLevel || 0 }}<br />-->
+<!--          Level Count: {{ item.counterLevel }}<br />-->
+<!--          Level Sum: {{ item.sum }}-->
         </div>
       </div>
     </div>
@@ -51,6 +51,7 @@
 </template>
 
 <script>
+
 export default {
   name: "LevelsRenderer",
   props: {

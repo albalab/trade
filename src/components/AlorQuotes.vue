@@ -1,12 +1,15 @@
 <template>
   <div>
     <StatisticRenderer
-        :items="newQuotes"
+        :items="quotesStore.newQuotes"
     />
   </div>
 </template>
 
 <script>
+
+import { useQuotesStore } from '@/stores/quotesStore';
+
 import {tickers} from "@/tickers";
 import {tickersSteps} from "@/tickersSteps";
 import StatisticRenderer from "@/components/StatisticRenderer.vue";
@@ -14,11 +17,18 @@ import webSocketService from "@/services/WebSocketService";
 
 export default {
   name: "alor-quotes",
-  components: {StatisticRenderer},
+
+  components: { StatisticRenderer },
+
+  setup() {
+    const quotesStore = useQuotesStore();
+    return { quotesStore }
+  },
+
   data() {
     return {
-      sortedQuotesStats: {},
-      groupedQuotes: {},
+      //sortedQuotesStats: {},
+      //groupedQuotes: {},
       quotesMetrics: {},
 
       quoteCounter: 0,
@@ -41,47 +51,9 @@ export default {
   },
   computed: {
 
-    quotesCounters() {
-      return {
-        quoteCounter: this.quoteCounter,
-        quotesCounters: this.sortedAccumulatedQuoteStats, //this.tickerStats,
-        quotesStats: this.sortedQuotesStats,
-      }
-    },
-
-    sortedAccumulatedQuoteStats() {
-      return Object.fromEntries(
-          Object.entries(this.accumulatedQuoteStats).sort(([, a], [, b]) => b - a)
-      );
-    },
-
   },
 
   methods: {
-
-    processNewQuotes(newQuotes) {
-      const accumulatedStats = { ...this.accumulatedQuoteStats };
-
-      newQuotes.forEach((quote) => {
-
-        //quote.type = 'quote';
-
-        const ticker = quote.ticker;
-
-        // Обновляем накопительную статистику
-        accumulatedStats[ticker] = (accumulatedStats[ticker] || 0) + 1;
-
-        // Добавляем котировку в массив
-        this.quotes.push(quote);
-
-        // Ограничиваем размер массива
-        if (this.quotes.length > this.maxLength) {
-          this.quotes.shift();
-        }
-      });
-
-      this.accumulatedQuoteStats = accumulatedStats;
-    },
 
     collectQuoteData(quotes) {
       const updatedLastPrices = { ...this.collectedLastPrices };
@@ -103,92 +75,32 @@ export default {
       this.collectedLastPrices = updatedLastPrices;
     },
 
+
+
+
+
     handleQuotesUpdate(data) {
-      const newQuotes = data.filter(item => item.type === 'quote');
+
+      console.log(data)
+      const newQuotes = data.filter(item => item.type === 'newQuotes');
       const quotesMetrics = data.filter(item => item.type === 'quotesMetrics');
-      const groupedQuotes = data.filter(item => item.type === 'groupedQuotes');
-      const sortedQuotesStats = data.filter(item => item.type === 'sortedQuotesStats');
+      const quotesStats = data.filter(item => item.type === 'quotesStats');
+      const accumulatedQuotesStats = data.find((item) => item.type === "accumulatedQuotesStats");
+      const quotesCounter = data.find((item) => item.type === "quotesCounter");
+      const itemsFixedArray = data.find((item) => item.type === "itemsFixedArray");
 
-      this.quotesMetrics = quotesMetrics.length ? quotesMetrics[0].data : {}
-      this.groupedQuotes = groupedQuotes.length ? groupedQuotes[0].data : {}
-      this.sortedQuotesStats = sortedQuotesStats.length ? sortedQuotesStats[0].data : {}
+      this.quotesStore.quotesMetrics = quotesMetrics.length ? quotesMetrics[0]?.data : {}
 
-      if (Array.isArray(newQuotes)) {
-
-        const localQuotes = [...this.quotes];
-        const tickerStats = { ...this.tickerStats };
-        let quoteCounter = this.quoteCounter;
-
-        this.processNewQuotes(newQuotes);
-        this.newQuotes = newQuotes;
-
-        newQuotes.forEach((quote) => {
-
-          if (quote.ticker && quote.lastPrice !== undefined) {
-
-            if (tickerStats[quote.ticker]) {
-              tickerStats[quote.ticker]++;
-            } else {
-              tickerStats[quote.ticker] = 1;
-            }
+      this.quotesStore.newQuotes = newQuotes[0]?.data;
+      this.quotesStore.quotesMetrics = quotesMetrics?.data;
+      this.quotesStore.accumulatedQuotesStats = accumulatedQuotesStats?.data;
+      this.quotesStore.quotesStats = quotesStats[0]?.data;
+      this.quotesStore.quotesFixedArray = itemsFixedArray?.data;
+      this.quotesStore.quotesCounter = quotesCounter?.data;
 
 
-            //const quoteExtended = this.extendObject(quote, "quote");
-            localQuotes.push(quote);
-
-            quoteCounter++;
-
-            if (localQuotes.length > 200) {
-              localQuotes.shift();
-            }
-          } else {
-            console.warn("Invalid quote data:", quote);
-          }
-        });
-
-        this.cacheQuotes = this.collectQuoteData(localQuotes);
-        this.quotes = localQuotes;
-        this.quoteCounter = quoteCounter;
-        this.tickerStats = tickerStats;
-
-        //console.log(this.quotesMetrics);
-
-        this.$emit('update-quotes', newQuotes);
-        this.$emit('update-quotes-counters', this.quotesCounters);
-        this.$emit('update-quotes-metrics', this.quotesMetrics);
-
-      } else {
-        console.warn("Received non-array data:", newQuotes);
-      }
     },
 
-    /*connectToWebSocket() {
-      //const socket = new WebSocket('wss://signalfabric.com/quotes/');
-      const socket = new WebSocket('wss://signalfabric.com/datastream/');
-
-      socket.onmessage = (event) => {
-
-
-        let data = JSON.parse(event.data);
-        data = data?.aggregatedQuotes;
-
-        if (!Array.isArray(data)) this.handleQuotesUpdate;
-
-
-      };
-
-      socket.onopen = () => {
-        console.log("Connected to WebSocket");
-      };
-
-      socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-
-      socket.onclose = () => {
-        console.log("WebSocket connection closed");
-      };
-    },*/
   },
 
   mounted() {

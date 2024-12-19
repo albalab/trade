@@ -38,7 +38,7 @@
 export default {
   name: "StatisticRenderer",
   props: {
-    items: Array,
+    items: Object,
   },
   data() {
     return {
