@@ -81,22 +81,24 @@ export default {
 
     handleQuotesUpdate(data) {
 
-      console.log(data)
-      const newQuotes = data.filter(item => item.type === 'newQuotes');
-      const quotesMetrics = data.filter(item => item.type === 'quotesMetrics');
-      const quotesStats = data.filter(item => item.type === 'quotesStats');
-      const accumulatedQuotesStats = data.find((item) => item.type === "accumulatedQuotesStats");
-      const quotesCounter = data.find((item) => item.type === "quotesCounter");
-      const itemsFixedArray = data.find((item) => item.type === "itemsFixedArray");
 
-      this.quotesStore.quotesMetrics = quotesMetrics.length ? quotesMetrics[0]?.data : {}
+      const defaultValues = {
+        newQuotes: [],
+        quotesMetrics: [],
+        quotesStats: [],
+        accumulatedQuotesStats: {},
+        quotesCounter: {},
+        quotesFixedArray: {}
+      };
 
-      this.quotesStore.newQuotes = newQuotes[0]?.data;
-      this.quotesStore.quotesMetrics = quotesMetrics?.data;
-      this.quotesStore.accumulatedQuotesStats = accumulatedQuotesStats?.data;
-      this.quotesStore.quotesStats = quotesStats[0]?.data;
-      this.quotesStore.quotesFixedArray = itemsFixedArray?.data;
-      this.quotesStore.quotesCounter = quotesCounter?.data;
+      const quotesStoreData = data.reduce((acc, item) => {
+        if (item.type in defaultValues) {
+          acc[item.type] = item.data || defaultValues[item.type];
+        }
+        return acc;
+      }, { ...defaultValues });
+
+      Object.assign(this.quotesStore, quotesStoreData);
 
 
     },

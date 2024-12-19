@@ -43,21 +43,24 @@ export default {
 
     handleCandlesUpdate(data) {
 
-      const newCandles = data.filter((item) => item.type === "newCandles");
-      const collectedClosePrice = data.find((item) => item.type === "collectedClosePrice");
-      const candlesMetrics = data.find((item) => item.type === "candlesMetrics");
-      const candlesStats = data.find((item) => item.type === "candlesStats");
-      const accumulatedCandlesStats = data.find((item) => item.type === "accumulatedCandlesStats");
-      const candlesCounter = data.find((item) => item.type === "candlesCounter");
-      const itemsFixedArray = data.find((item) => item.type === "itemsFixedArray");
+      const defaultValues = {
+        newCandles: {},
+        collectedClosePrice: {},
+        candlesMetrics: {},
+        candlesStats: {},
+        accumulatedCandlesStats: {},
+        candlesCounter: {},
+        candlesFixedArray: {}
+      };
 
-      this.candlesStore.newCandles = newCandles[0].data;
-      this.candlesStore.candlesMetrics = candlesMetrics.data;
-      this.candlesStore.collectedClosePrice = collectedClosePrice.data;
-      this.candlesStore.accumulatedCandlesStats = accumulatedCandlesStats.data;
-      this.candlesStore.candlesStats = candlesStats.data;
-      this.candlesStore.candlesFixedArray = itemsFixedArray.data;
-      this.candlesStore.candlesCounter = candlesCounter.data;
+      const candlesStoreData = data.reduce((acc, item) => {
+        if (item.type in defaultValues) {
+          acc[item.type] = item.data || defaultValues[item.type];
+        }
+        return acc;
+      }, { ...defaultValues });
+
+      Object.assign(this.candlesStore, candlesStoreData);
 
     },
   },

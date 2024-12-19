@@ -53,20 +53,23 @@ export default {
 
     handleOrderbooksUpdate(data){
 
-      const newOrderbooks = data.filter((item) => item.type === "newOrderbooks");
-      const orderbooksMetrics = data.filter(item => item.type === 'orderbooksMetrics');
-      const orderbooksStats = data.find((item) => item.type === "orderbooksStats");
-      const accumulatedOrderbooksStats = data.find((item) => item.type === "accumulatedOrderbooksStats");
-      const orderbooksCounter = data.find((item) => item.type === "orderbooksCounter");
-      const itemsFixedArray = data.find((item) => item.type === "itemsFixedArray");
+      const defaultValues = {
+        newOrderbooks: [],
+        orderbooksMetrics: [],
+        orderbooksStats: {},
+        accumulatedOrderbooksStats: {},
+        orderbooksCounter: {},
+        orderbooksFixedArray: {}
+      };
 
-      this.orderbooksStore.newOrderbooks = newOrderbooks[0].data;
+      const orderbooksStoreData = data.reduce((acc, item) => {
+        if (item.type in defaultValues) {
+          acc[item.type] = item.data || defaultValues[item.type];
+        }
+        return acc;
+      }, { ...defaultValues });
 
-      this.orderbooksStore.orderbooksMetrics = orderbooksMetrics.data;
-      this.orderbooksStore.accumulatedOrderbooksStats = accumulatedOrderbooksStats.data;
-      this.orderbooksStore.orderbooksStats = orderbooksStats.data;
-      this.orderbooksStore.orderbooksFixedArray = itemsFixedArray.data;
-      this.orderbooksStore.orderbooksCounter = orderbooksCounter.data;
+      Object.assign(this.orderbooksStore, orderbooksStoreData);
 
     },
 
