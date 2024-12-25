@@ -3,23 +3,38 @@
 
 <!--    <SessionManager />-->
 
-    <div style="overflow: auto; height: 500px;">
+    <div style="">
       <div class="table table-trade">
-        <div class="table-row">
-          <div class="table-cell">Ticker</div>
-          <div class="table-cell" v-for="item in summaryFields" :key="item?.id">
-            {{item}}
-          </div>
-
-        </div>
-        <div class="table-row"
-             v-for="(item, key) in summaryData"
-             :key="item?.id">
-          <div class="table-cell">{{key}}</div>
+        <div class="table-row table-head">
+          <div class="table-cell"
+               @click="changeSort('ticker')">ticker</div>
+          <div class="table-cell">Levels Frequency</div>
           <div class="table-cell"
                v-for="field in summaryFields"
-               :key="field?.id">
-            <span>{{item[field] || '-'}}</span>
+               :key="field">
+            <span @click="changeSort(field)">{{field}}</span>
+            <span class="th-arrow" v-if="currentSortField === field">
+              {{ currentSortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </div>
+        </div>
+        <div class="table-row"
+             :class="{'selected': item[0] === selectedRow}"
+             @click="selectedRow=item[0]"
+             v-for="item in sortedSummaryData"
+             :key="item[0]">
+
+          <div class="table-cell">
+            {{ item[0] }}
+          </div>
+
+          <div class="table-cell">
+            <LevelsRenderer :levelsStats="tradesStore.levelsStats" :selectedTicker="item[0]"/>
+          </div>
+
+
+          <div class="table-cell" v-for="field in summaryFields" :key="field">
+            <span>{{ item[1][field] || '-' }}</span>
           </div>
         </div>
       </div>
@@ -134,8 +149,7 @@
             @select-ticker="selectTicker"
         />
 
-        <AlorTrades
-            :profitPercent="profitPercent"/>
+        <AlorTrades :profitPercent="profitPercent"/>
       </div>
       <div class="panel">
 
@@ -147,9 +161,7 @@
             @select-ticker="selectTicker"
         />
 
-        <AlorOrderbooks
-            @update-orderbooks-counters="updateOrderbooksCounters"
-            @update-orderbooks-metrics="updateOrderbooksMetrics"/>
+        <AlorOrderbooks />
       </div>
       <div class="panel">
 
@@ -174,8 +186,7 @@
         />
 
         <AlorQuotes
-            @update-quotes-counters="updateQuotesCounters"
-            @update-quotes-metrics="updateQuotesMetrics"/>
+            @update-quotes-counters="updateQuotesCounters"/>
       </div>
     </div>
 
@@ -216,7 +227,7 @@
     <input type="text" v-model="selectedTicker"/><br>
 
     <div style="padding: 10px;">
-      <div v-for="(item, key) in summaryData[selectedTicker]" :key="item?.id">
+      <div v-for="(item, key) in summaryData[selectedTicker]" :key="key">
         {{key}}: {{item}}
       </div>
     </div>
@@ -225,6 +236,7 @@
 </template>
 
 <script>
+
 
 import { useCandlesStore } from '@/stores/candlesStore';
 import { useTradesStore } from '@/stores/tradesStore';
@@ -246,6 +258,7 @@ import AlorTrades from "@/components/AlorTrades.vue";
 import AlorOrderbooks from '@/components/AlorOrderbooks.vue';
 import AlorCandles from '@/components/AlorCandles.vue';
 import AlorQuotes from '@/components/AlorQuotes.vue';
+import LevelsRenderer from "@/components/LevelsRenderer.vue";
 
 export default {
   name: 'MergedComponent',
@@ -259,10 +272,12 @@ export default {
   },
 
   components: {
+    LevelsRenderer,
     AlorTrades,
     AlorOrderbooks,
     AlorQuotes,
     AlorCandles,
+
 
     //SessionManager,
     //AlorTradesPlus,
@@ -277,46 +292,53 @@ export default {
   data() {
     return {
 
+      selectedRow: null,
+
+      currentSortField: 'Ticker',
+      currentSortDirection: 'asc',
+
       summaryTemplate: {
+        tradeTickerFrequency: 1,
         tradeVolumeChunkSum: 2,
         tradeVolumeAbsoluteRubChunkSum: 449.74,
-        tradeTicker: 'SBER',
+        tradePrice: 224.87,
+        tradeSide: 'buy',
+        orderbookSpread: 0.010000000000019327,
+        orderbookVolumeImbalance: -1406,
+        //quoteMidPrice: 224.85000000000002,
+        //quoteTicker: 'SBER',
+        quoteLastPrice: 224.83,
+        candleClose: 224.84,
+        candleVolume: 72,
+        candleDirection: 'down',
+
+        //candleBodySize: 0.03999999999999204,
+        //candleRange: 0.03999999999999204,
+        //tradeTicker: 'SBER',
         //tradeType: 'trade',
         //tradeTime: '2024-12-17T15:28:05.2710280Z',
-        tradePrice: 224.87,
-        //tradeQty: 2,
-        tradeSide: 'buy',
-        //tradeServerTime: 'Tue Dec 17 2024 19:28:05 GMT+0400 (Armenia Standard Time)',
-        //tradeTimeDelay: 34,
-        //orderbookBestBidPrice: 224.85,
-        //orderbookBestAskPrice: 224.86,
-        orderbookSpread: 0.010000000000019327,
+        //candleHigh: 224.88,
+        //candleLow: 224.84,
+        //quoteTime: 1734449288,
+        //quoteServerTime: 'Tue Dec 17 2024 19:28:10 GMT+0400 (Armenia Standard Time)',
+        //quoteTimeDelay: 1732714841616,
+        //candleOpen: 224.88,
+        //quoteAsk: 224.86,
+        //quoteBid: 224.84,
+        //quoteType: 'quote',
+        //orderbookAverageDepthPrice: 224.86256110908428,
+        //quoteSpread: 0.020000000000010232,
         //orderbookTotalBidVolume: 2038,
         //orderbookTotalAskVolume: 3444,
         //orderbookTotalDepth: 5482,
         //orderbookBestDepth: 203,
         //orderbookAverageBidPrice: 224.77975956820413,
         //orderbookAverageAskPrice: 224.91155923344948,
-        orderbookVolumeImbalance: -1406,
-        //orderbookAverageDepthPrice: 224.86256110908428,
-        quoteSpread: 0.020000000000010232,
-        quoteMidPrice: 224.85000000000002,
-        //quoteType: 'quote',
-        quoteTicker: 'SBER',
-        //quoteAsk: 224.86,
-        //quoteBid: 224.84,
-        quoteLastPrice: 224.83,
-        //quoteTime: 1734449288,
-        //quoteServerTime: 'Tue Dec 17 2024 19:28:10 GMT+0400 (Armenia Standard Time)',
-        //quoteTimeDelay: 1732714841616,
-        //candleOpen: 224.88,
-        candleClose: 224.84,
-        //candleHigh: 224.88,
-        //candleLow: 224.84,
-        candleVolume: 72,
-        //candleBodySize: 0.03999999999999204,
-        //candleRange: 0.03999999999999204,
-        candleDirection: 'down',
+        //tradeServerTime: 'Tue Dec 17 2024 19:28:05 GMT+0400 (Armenia Standard Time)',
+        //tradeTimeDelay: 34,
+        //orderbookBestBidPrice: 224.85,
+        //orderbookBestAskPrice: 224.86,
+        //tradeQty: 2,
       },
 
       inProgress: false,
@@ -352,7 +374,52 @@ export default {
   computed: {
 
     summaryFields() {
-      return Object.keys(this.summaryTemplate);
+      return Object.keys(this.summaryTemplate).sort();
+    },
+
+    sortedSummaryData() {
+      // Преобразуем объект в массив пар [ticker, dataObject] и фильтруем 'IMOEX2'
+      let entries = Object.entries(this.summaryData).filter(([ticker]) => ticker !== 'IMOEX2');
+
+      // Проверяем, выбрано ли поле для сортировки
+      if (this.currentSortField) {
+        entries.sort((a, b) => {
+          let valA, valB;
+
+          // Если сортировка по 'ticker', используем a[0] и b[0]
+          if (this.currentSortField === 'ticker') {
+            valA = a[0];
+            valB = b[0];
+          } else {
+            // Иначе сортируем по полю внутри dataObject
+            valA = a[1][this.currentSortField];
+            valB = b[1][this.currentSortField];
+          }
+
+          const aMissing = valA === undefined || valA === null;
+          const bMissing = valB === undefined || valB === null;
+
+          // Обработка отсутствующих значений
+          if (aMissing && bMissing) return 0;
+          if (aMissing) return 1; // a должно быть после b
+          if (bMissing) return -1; // b должно быть после a
+
+          // Сравнение числовых значений
+          if (typeof valA === 'number' && typeof valB === 'number') {
+            return this.currentSortDirection === 'asc' ? valA - valB : valB - valA;
+          }
+
+          // Сравнение строковых значений
+          const strA = String(valA).toLowerCase();
+          const strB = String(valB).toLowerCase();
+
+          if (strA < strB) return this.currentSortDirection === 'asc' ? -1 : 1;
+          if (strA > strB) return this.currentSortDirection === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+
+      return entries;
     },
 
     buyFrequency() {
@@ -398,6 +465,17 @@ export default {
   },
 
   methods: {
+
+    changeSort(field) {
+      if (this.currentSortField === field) {
+        // Если клик по тому же полю, то меняем направление
+        this.currentSortDirection = this.currentSortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        // Если выбрано новое поле, устанавливаем его и по умолчанию 'asc'
+        this.currentSortField = field;
+        this.currentSortDirection = 'asc';
+      }
+    },
 
     // Метод для добавления сигнала в массив с ограничением длины
     addSignal(signal) {
@@ -804,9 +882,8 @@ export default {
       this.globalData.tradesCounters = tradesCounters;
     },*/
 
-    updateOrderbooksCounters(orderbooksCounters) {
-      this.globalData.orderbooksCounters = orderbooksCounters;
-    },
+
+
     updateQuotesCounters(quotesCounters) {
       this.globalData.quotesCounters = quotesCounters;
     },
@@ -960,11 +1037,43 @@ export default {
 </script>
 
 <style>
+.table-trade .th-arrow{
+  position: absolute;
+  margin-left: 2px;
+}
 .table-trade{
+  background: white;
+  border-collapse: collapse;
+  color: #444;
+}
+.table-trade .table-cell{
+  border: solid 1px #eee;
+  padding: 2px 5px;
+}
+.table-trade .table-cell:first-child{
+  padding-left: 20px;
+}
+.table-trade .table-cell:last-child{
+  padding-right: 20px;
+}
 
+.table-trade .table-row:hover .table-cell{
+  background: rgba(234, 229, 255, 0.73);
+}
+.table-trade .table-row.selected .table-cell{
+  background: #f3e1ff;
+}
+.table-trade .table-row:first-child .table-cell{
+  padding-top: 10px;
+  padding-bottom: 5px;
 }
 .table-trade .table-cell{
   white-space: nowrap;
+}
+.table-trade .table-head{
+  user-select: none;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 .table{
@@ -974,7 +1083,9 @@ export default {
   display: table-row;
 }
 .table-cell{
+  height: 12px;
   display: table-cell;
+  vertical-align: middle;
 }
 
 .panels-container{
@@ -1035,7 +1146,6 @@ export default {
   width: 60px;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 11px;
 }
 .select-ticker{
   cursor: pointer;

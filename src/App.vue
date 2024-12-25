@@ -49,7 +49,7 @@ html, body{
   padding: 0;
   margin: 0;
   font-family: 'Verdana';
-  font-size: 12px;
+  font-size: 8px;
   letter-spacing: -0.02em;
 }
 ul,li{
@@ -70,10 +70,6 @@ ul,li{
 
 .stats-diagram .cell {
   padding-bottom: 5px;
-}
-
-.stats-diagram .ticker-info {
-  font-size: 10px;
 }
 
 .stats-diagram .ticker {

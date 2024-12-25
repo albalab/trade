@@ -6,9 +6,7 @@
     />
 
 
-    <LevelsRenderer
-        :levelsStats="tradesStore.levelsStats"
-    />
+    <LevelsRenderer :levelsStats="tradesStore.levelsStats" />
 
   </div>
 </template>

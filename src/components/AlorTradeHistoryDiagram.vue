@@ -90,6 +90,5 @@ export default {
   width: 60px;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 11px;
 }
 </style>

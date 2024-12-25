@@ -1,53 +1,39 @@
 <template>
-  <div>
-    <h3>Levels Renderer</h3>
-    <!-- Выбор тикера -->
 
-    <div>
-      <label for="ticker">Selected Ticker:</label>
-      <input
-          type="text"
-          id="ticker"
-          v-model="selectedTicker"
-      />
-    </div>
-
-    <!-- Отображение статистики по выбранному тикеру -->
     <div v-if="levelsStats[selectedTicker]">
-      <div
+
+
+      <div style="display: flex; height: 14px; flex-direction: row-reverse;">
+        <div
+            v-for="(item, index) in levelsStats[selectedTicker]"
+            :key="index"
+            style="margin: 0 0 0 1px; height: 100%; width: 2px;"
+        >
+          <div v-if="showLevel(item, index)" style="height: 100%;">
+            <div style="background: #eee; position: relative; height: 100%;">
+              <div style="position: absolute; bottom: 0; background: blue; width: 100%;" :style="{height: `${(item.sum/item.counterLevel)}%`}"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<!--      <div
           v-for="(item, index) in levelsStats[selectedTicker]"
           :key="index"
-          style="padding: 5px; border: solid 1px #ccc; margin: 0 0 5px;"
       >
         <div v-if="showLevel(item, index)">
-          <div style="background: #eee; position: relative; height: 4px; width: 100%;">
+          <div style="background: #eee; position: relative; height: 2px; width: 100%; margin: 0 0 1px;">
             <div style="background: blue; height: 100%;" :style="{width: `${(item.sum/item.counterLevel)}%`}"></div>
           </div>
-
-
-<!--          Level {{ index }}: Average: {{ item.sum / item.counterLevel || 0 }}<br />-->
-<!--          Level Count: {{ item.counterLevel }}<br />-->
-<!--          Level Sum: {{ item.sum }}-->
         </div>
-      </div>
+      </div>-->
+
+      <!--          Level {{ index }}: Average: {{ item.sum / item.counterLevel || 0 }}<br />-->
+      <!--          Level Count: {{ item.counterLevel }}<br />-->
+      <!--          Level Sum: {{ item.sum }}-->
+
     </div>
 
-    <!-- Отображение статистики по выбранному тикеру -->
-<!--    <div v-if="tickerData[selectedTicker]">
-      <div
-          v-for="(item, index) in tickerData[selectedTicker]"
-          :key="index"
-          style="padding: 5px; border: solid 1px #ccc; margin: 0 0 5px;"
-      >
-        <div v-if="showLevel(item, index)">
-          Level {{ index }}: Average: {{ item.sum / item.counterLevel || 0 }}<br />
-          Total Count: {{ item.counterLevel }}<br />
-          Total Sum: {{ item.sum }}
-        </div>
-      </div>
-    </div>-->
-
-  </div>
 </template>
 
 <script>
@@ -58,12 +44,13 @@ export default {
     type: String,
     levelsStats: Object,
     items: Array,
+    selectedTicker: String,
   },
   data() {
     return {
       tickerData: {},
 
-      selectedTicker: "SBER",
+      //selectedTicker: "SBER",
 
       thresholds: [500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000, 512000], // Пороговые значения
     };
