@@ -1,7 +1,21 @@
 <template>
   <div class="panels-container">
 
+    <div style="margin: 0 0 5px;">
+      <h3>Data Fabric:</h3>
+      Source counts: {{dataFabricStore}}<br>
+    </div>
+
+    <div style="margin: 0 0 5px;">
+      <h3>Alor channels:</h3>
+      Candles: {{candlesStore.sourceCandlesCount}}<br>
+      Trades: {{tradesStore.sourceTradesCount}}<br>
+      Orderbooks: {{orderbooksStore.sourceOrderbooksCount}}<br>
+      Quotes: {{quotesStore.sourceQuotesCount}}<br>
+    </div>
+
     <div>
+      <h3>Manual order:</h3>
       <input v-model="priceOrder" placeholder="price"><br>
       <input v-model="exchange" placeholder="ticker"><br>
       <input v-model="sideOrder" placeholder="side"><br>
@@ -240,6 +254,8 @@
         />
 
         <AlorOrderbooks />
+
+        <DataFabric />
       </div>
       <div class="panel">
 
@@ -306,6 +322,7 @@
 <script>
 
 
+import { useDataFabricStore } from '@/stores/dataFabricStore';
 import { useCandlesStore } from '@/stores/candlesStore';
 import { useTradesStore } from '@/stores/tradesStore';
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
@@ -328,6 +345,7 @@ import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
 //import AlorTradeHistoryDiagram from './AlorTradeHistoryDiagram.vue';
 
 //import { useCacheStore } from '@/stores/cacheStore';
+import DataFabric from "@/components/DataFabric.vue";
 import AlorTrades from "@/components/AlorTrades.vue";
 import AlorOrderbooks from '@/components/AlorOrderbooks.vue';
 import AlorCandles from '@/components/AlorCandles.vue';
@@ -338,14 +356,16 @@ export default {
   name: 'MergedComponent',
 
   setup() {
+    const dataFabricStore = useDataFabricStore();
     const tradesStore = useTradesStore();
     const candlesStore = useCandlesStore();
     const orderbooksStore = useOrderbooksStore();
     const quotesStore = useQuotesStore();
-    return { candlesStore, tradesStore, quotesStore, orderbooksStore, }
+    return { candlesStore, tradesStore, quotesStore, orderbooksStore, dataFabricStore, }
   },
 
   components: {
+    DataFabric,
     LevelsRenderer,
     AlorTrades,
     AlorOrderbooks,

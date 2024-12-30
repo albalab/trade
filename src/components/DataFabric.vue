@@ -1,30 +1,32 @@
 <template>
   <div>
+    <!--
     Total Candles: {{candlesStore.candleCounter}}<br>
     <StatisticRenderer v-if="candlesStore.newCandles" :items="candlesStore.newCandles" />
+    -->
   </div>
 </template>
 
 <script>
-import { useCandlesStore } from '@/stores/candlesStore';
-import StatisticRenderer from "@/components/StatisticRenderer.vue";
-import { tickers, tickersSteps } from "@/tickers";
+import { useDataFabricStore } from '@/stores/dataFabricStore';
+
+//import { tickers, tickersSteps } from "@/tickers";
 import webSocketService from "@/services/WebSocketService";
 
 export default {
-  name: "alor-candles",
+  name: "alor-data-fabric",
 
-  components: { StatisticRenderer },
+  
 
   setup() {
-    const candlesStore = useCandlesStore();
-    return { candlesStore }
+    const dataFabricStore = useDataFabricStore();
+    return { dataFabricStore }
   },
 
   data() {
     return {
 
-      candles: [],
+      /*candles: [],
       newCandles: [],
 
       candlesMetrics: {},
@@ -33,7 +35,7 @@ export default {
 
       // Импортированные значения
       tickers,
-      tickersSteps,
+      tickersSteps,*/
     };
   },
   computed: {
@@ -41,32 +43,25 @@ export default {
   },
   methods: {
 
-    handleCandlesUpdate(data) {
+    handleUpdate(data) {
       const defaultValues = {
-        sourceCandlesCount: {},
-        newCandles: {},
-        collectedClosePrice: {},
-        candlesMetrics: {},
-        candlesStats: {},
-        accumulatedCandlesStats: {},
-        candlesCounter: {},
-        candlesFixedArray: {}
+        sourceCounts: {},
       };
 
-      const candlesStoreData = data.reduce((acc, item) => {
+      const dataFabricStoreData = data.reduce((acc, item) => {
         if (item.type in defaultValues) {
           acc[item.type] = item.data || defaultValues[item.type];
         }
         return acc;
       }, { ...defaultValues });
 
-      Object.assign(this.candlesStore, candlesStoreData);
+      Object.assign(this.dataFabricStore, dataFabricStoreData);
 
     },
   },
   mounted() {
     webSocketService.connect();
-    webSocketService.subscribe("aggregatedCandles", this.handleCandlesUpdate);
+    webSocketService.subscribe("dataFabric", this.handleUpdate);
   },
 };
 </script>

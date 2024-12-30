@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 export const useTradesStore = defineStore('trades', {
     // Состояние (state)
     state: () => ({
+        sourceTradesCount: 0,
         count: 0,
         newTrades: {},
         tradesMetrics: {},

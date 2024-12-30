@@ -64,6 +64,7 @@ export default {
     handleTradesUpdate(data){
 
       const defaultValues = {
+        sourceTradesCount: 0,
         newTrades: [],
         tradesMetrics: [],
         tradesStats: [],

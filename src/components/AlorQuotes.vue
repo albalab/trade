@@ -83,6 +83,8 @@ export default {
 
 
       const defaultValues = {
+        sourceQuotesCount: 0,
+
         newQuotes: [],
         quotesMetrics: [],
         quotesStats: [],

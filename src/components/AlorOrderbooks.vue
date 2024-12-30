@@ -54,6 +54,8 @@ export default {
     handleOrderbooksUpdate(data){
 
       const defaultValues = {
+        sourceOrderbooksCount: 0,
+
         newOrderbooks: [],
         orderbooksMetrics: [],
         orderbooksStats: {},

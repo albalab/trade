@@ -1,13 +1,8 @@
 import { defineStore } from 'pinia';
 
-export const useQuotesStore = defineStore('quotes', {
+export const useDataFabricStore = defineStore('dataFabric', {
     state: () => ({
-        sourceQuotesCount: 0,
-        newQuotes: {},
-        sortedQuotesStats: {},
-        accumulatedQuotesStats: {},
-        quotesStats: {},
-        quotesCounter: 0,
+        sourceCounts: {},
 
         /*tradesMetrics: {},
         levelsStats: {},
