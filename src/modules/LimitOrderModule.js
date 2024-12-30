@@ -1,5 +1,66 @@
-// LimitOrderModule.js
 'use strict';
+
+export async function sendGroupLimitOrders(orders) {
+    try {
+        const response = await fetch('https://signalfabric.com/create-group-orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orders)
+        });
+
+        console.log(orders);
+
+        const data = await response.json();
+        console.log("Ответ сервера на создание группы лимитных ордеров:", data);
+        return data;
+    } catch (error) {
+        console.error("Ошибка при создании группы лимитных ордеров:", error.message);
+        throw error;
+    }
+}
+
+export async function cancelGroupOrders({ orderIds, portfolio, exchange, stop = false }) {
+    try {
+        const response = await fetch('https://signalfabric.com/cancel-group-orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                orderIds,
+                portfolio,
+                exchange,
+                stop
+            })
+        });
+        const data = await response.json();
+        console.log("Ответ сервера на отмену группы ордеров:", data);
+        return data;
+    } catch (error) {
+        console.error("Ошибка при отмене группы ордеров:", error.message);
+        throw error;
+    }
+}
+
+export async function cancelAllOrders(exchange, portfolio) {
+    const requestData = {
+        exchange: exchange,
+        portfolio: portfolio,
+        stop: false // Укажите true, если нужно учитывать стоп-заявки
+    };
+
+    try {
+        const response = await fetch('https://signalfabric.com/cancel-all-orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+        const data = await response.json();
+        console.log("Ответ сервера на отмену всех ордеров:", data);
+        return data;
+    } catch (error) {
+        console.error("Ошибка при отмене всех ордеров:", error.message);
+        throw error;
+    }
+}
 
 export async function sendLimitOrder(volume, price, ticker, exchange, side, portfolio) {
     const orderDetails = {
@@ -12,12 +73,11 @@ export async function sendLimitOrder(volume, price, ticker, exchange, side, port
             instrumentGroup: "TQBR"
         },
         user: { portfolio: portfolio },
-        timeInForce: "oneday",
-        comment: "Отправлено с фронта"
+        timeInForce: "oneday"
     };
 
     try {
-        const response = await fetch('http://localhost:8123/limit-order', {
+        const response = await fetch('https://signalfabric.com/limit-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderDetails)

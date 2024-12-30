@@ -1,7 +1,85 @@
 <template>
   <div class="panels-container">
 
-<!--    <SessionManager />-->
+    <div>
+      <input v-model="priceOrder" placeholder="price"><br>
+      <input v-model="exchange" placeholder="ticker"><br>
+      <input v-model="sideOrder" placeholder="side"><br>
+      <button @click="sendLimitOrder(1, priceOrder, exchange, 'MOEX', sideOrder, 'D88141')">
+        Создать лимитку
+      </button>
+    </div>
+
+    <button @click="cancelAllOrders()">
+      Снять все
+    </button>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr">
+
+      <div style="padding: 10px;">
+        <h3>Группа ордеров (захардкожена)</h3>
+        <ul>
+          <li v-for="(order, index) in groupOrders" :key="index">
+            {{ index + 1 }}. {{ order.side }} {{ order.quantity }} {{ order.instrument.symbol }} по {{ order.price }} (портфель: {{ order.user.portfolio }})
+          </li>
+        </ul>
+        <!-- Кнопка для отправки группы ордеров -->
+        <button @click="sendGroupLimitOrders()">Создать лимитки</button>
+      </div>
+
+<!--      <div>
+        <div v-for="item in limitOrders" :key="item?.data?.orderNumber">
+          {{item?.data?.orderNumber}}
+          <button @click="cancelOrders([item?.data?.orderNumber])">X</button>
+        </div>
+        <button @click="cancelOrders">Снять группу ордеров</button>
+      </div>-->
+
+      <div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; max-width: 200px;">
+
+          <div style="margin: 0 0 6px;" v-if="limitOrders.length">
+            <label style="position: relative; padding-left: 16px;">
+              <input
+                  style="position: absolute; left: 0; top: -1px; margin: 0; padding: 0;"
+                  type="checkbox"
+                  :checked="areAllSelected"
+                  @change="toggleAll($event)"
+              />
+              Выбрать все
+            </label>
+          </div>
+
+          <div style="cursor: pointer;"
+               @click="cancelAllOrders()"
+               v-if="limitOrders.length">
+            X Снять все
+          </div>
+        </div>
+        <div v-for="item in limitOrders" :key="item.data?.orderNumber">
+          <input
+              type="checkbox"
+              :value="item.data?.orderNumber"
+              v-model="selectedOrders"
+          />
+          {{ item?.data?.orderNumber }}
+          <button @click="cancelOrders([item.data?.orderNumber])">X</button>
+        </div>
+        <div v-if="limitOrders.length">
+          <button @click="cancelOrders(selectedOrders)">Снять лимитки</button>
+        </div>
+      </div>
+
+    </div>
+
+<!--    <div>
+      <div v-for="item in limitOrders" :key="item?.data?.orderNumber">
+        {{item?.data?.orderNumber}}
+        <button @click="cancelOrders([item?.data?.orderNumber])">X</button>
+      </div>
+    </div>-->
+
+    <!--    <SessionManager />-->
 
     <div style="">
       <div class="table table-trade">
@@ -190,16 +268,6 @@
       </div>
     </div>
 
-
-    <div style="padding: 10px;">
-      <input v-model="priceOrder" placeholder="price"><br>
-      <input v-model="tickerOrder" placeholder="ticker"><br>
-      <input v-model="sideOrder" placeholder="side"><br>
-      <button @click="sendLimitOrder(1, priceOrder, tickerOrder, 'MOEX', sideOrder, 'D88141')">
-        Отправить лимитный ордер
-      </button>
-    </div>
-
 <!--    <div style="margin: 0 0 10px;">
       <div v-for="(item, key) in {
         ...globalData.tradesCounters,
@@ -246,7 +314,13 @@ import { useQuotesStore } from '@/stores/quotesStore';
 
 //import SessionManager from './SessionManager';
 
-import { sendLimitOrder as importedSendLimitOrder } from '../modules/LimitOrderModule.js';
+import {
+  sendLimitOrder,
+  cancelAllOrders,
+  sendGroupLimitOrders,
+  cancelGroupOrders
+} from '../modules/LimitOrderModule.js';
+
 //import AlorTradesPlus from './AlorTradesPlus.vue';
 
 import AlorStatsDiagram from './AlorStatsDiagram.vue';
@@ -291,6 +365,44 @@ export default {
 
   data() {
     return {
+
+      selectedOrders: [],
+      limitOrders: [],
+
+      /*[
+          { "success": true, "data": { "message": "success", "orderNumber": "57360598695" } },
+        { "success": true, "data": { "message": "success", "orderNumber": "57360598720" } } ],*/
+      //[],
+
+      groupOrders: [
+        {
+          side: "buy",
+          quantity: 1,
+          price: 269,
+          instrument: {
+            symbol: "SBER",
+            exchange: "MOEX",
+            instrumentGroup: "TQBR",
+          },
+          user: {
+            portfolio: "D88141",
+          },
+          timeInForce: "oneday",
+        },
+        {
+          side: "buy",
+          quantity: 1,
+          price: 6950,
+          instrument: {
+            symbol: "LKOH",
+            exchange: "MOEX",
+            instrumentGroup: "TQBR",
+          },
+          user: {
+            portfolio: "D88141",
+          },
+          timeInForce: "oneday",
+        }],
 
       selectedRow: null,
 
@@ -349,7 +461,7 @@ export default {
 
       sideOrder: 'buy',
       priceOrder: null,
-      tickerOrder: '',
+      exchange: '',
 
       globalData: {},
       selectedTicker: 'SBER',
@@ -373,11 +485,16 @@ export default {
 
   computed: {
 
+    areAllSelected() {
+      return this.selectedOrders.length === this.limitOrders.length && this.limitOrders.length > 0;
+    },
+    
     summaryFields() {
       return Object.keys(this.summaryTemplate).sort();
     },
 
     sortedSummaryData() {
+
       // Преобразуем объект в массив пар [ticker, dataObject] и фильтруем 'IMOEX2'
       let entries = Object.entries(this.summaryData).filter(([ticker]) => ticker !== 'IMOEX2');
 
@@ -419,7 +536,7 @@ export default {
         });
       }
 
-      return entries;
+      return entries.splice(0,10);
     },
 
     buyFrequency() {
@@ -465,6 +582,14 @@ export default {
   },
 
   methods: {
+
+    toggleAll(event) {
+      if (event.target.checked) {
+        this.selectedOrders = this.limitOrders.map(item => item.data.orderNumber);
+      } else {
+        this.selectedOrders = [];
+      }
+    },
 
     changeSort(field) {
       if (this.currentSortField === field) {
@@ -888,7 +1013,90 @@ export default {
       this.globalData.quotesCounters = quotesCounters;
     },
 
-    sendLimitOrder: importedSendLimitOrder,
+    async sendGroupLimitOrders() {
+      try {
+
+        //summaryData[selectedTicker]?.orderbookAverageBidPrice
+        const result = await sendGroupLimitOrders(this.groupOrders);
+
+        //console.log("Группа лимитных ордеров отправлена:", result.data);
+
+        const limitOrders = [];
+
+        result.data.forEach( (order) => {
+          if(order.data?.message === 'success' && order.data?.orderNumber){
+            limitOrders.push(order);
+          }
+        });
+
+        this.limitOrders = limitOrders;
+
+      } catch (error) {
+        console.error("Ошибка при отправке группы лимитных ордеров:", error.message);
+      }
+    },
+
+    async sendLimitOrder(volume, price, ticker, exchange, side, portfolio) {
+      try {
+        await sendLimitOrder(volume, price, ticker, exchange, side, portfolio);
+        //console.log("Лимитный ордер отправлен:", result);
+      } catch (error) {
+        console.error("Ошибка при отправке лимитного ордера:", error.message);
+      }
+    },
+    async cancelAllOrders() {
+      try {
+        const exchange = 'MOEX'; // Укажите биржу
+        const portfolio = 'D88141'; // Укажите портфель
+        await cancelAllOrders(exchange, portfolio).then(() => {
+          this.limitOrders = [];
+        });
+
+        //console.log("Все ордера успешно отменены:", result);
+      } catch (error) {
+        console.error("Ошибка при отмене всех ордеров:", error.message);
+      }
+    },
+    async cancelOrders(orderIds) {
+      try {
+
+        const params = {
+              orderIds: orderIds,
+              portfolio: 'D88141', // Идентификатор портфеля
+              exchange: 'MOEX', // Биржа MOEX
+              stop: false // Является ли стоп-заявкой
+        };
+        //params.orderIds = ['57350744044', '57350744110'];
+
+        const response = await cancelGroupOrders(params);
+
+        if (response.success) {
+          // Собрать список успешно удаленных orderId из response.data
+          const ordersToRemove = response.data
+              //.filter(order => order.success) // Оставить только успешные
+              .map(order => order.orderId); // Извлечь orderId
+
+          if (ordersToRemove.length > 0) {
+            // Фильтровать limitOrders, исключая те, которые есть в ordersToRemove
+            this.limitOrders = this.limitOrders.filter(
+                order => !ordersToRemove.includes(order.data.orderNumber)
+            );
+          }
+        }
+
+
+        //console.log("Результат отмены ордеров:", response);
+
+        if(response.success){
+          if(response.data.success){
+            console.log(response.data.orderId);
+          }
+        }
+
+      } catch (error) {
+        console.error("Ошибка при отмене ордеров:", error.message);
+      }
+    },
 
     selectTicker(ticker){
       this.selectedTicker = ticker;
@@ -927,16 +1135,31 @@ export default {
 
     },
 
+    updateGroupOrders() {
+      const groupOrders = [...this.groupOrders];
+      //console.log(groupOrders);
+      groupOrders.forEach((order) => {
+        if(this.summaryData[order.instrument.symbol]?.orderbookBestBidPrice){
+          order.price = this.summaryData[order.instrument.symbol]?.orderbookBestBidPrice - 4;
+        }
+      });
+
+    },
+
   },
 
   mounted() {
     setInterval(() => {
       this.updateSummaryData();
+      this.updateGroupOrders();
     }, 1000);
 
   },
 
   watch: {
+    limitOrders() {
+      this.selectedOrders = [];
+    },
     'tradesStore.tradesStatistics.advantageousBuyDifferences': {
       immediate: true,
       handler(newData) {
