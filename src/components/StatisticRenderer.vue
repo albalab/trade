@@ -129,8 +129,8 @@ export default {
   position: relative;
   width: 100%;
   height: 30px; /* Увеличиваем высоту для размещения точек */
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
+  background-color: #313440;
+  border: 1px solid rgba(255,255,255,0.1);
   margin-top: 20px;
 }
 

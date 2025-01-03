@@ -1,90 +1,362 @@
 <template>
   <div class="panels-container">
 
-    <div style="margin: 0 0 5px;">
-      <h3>Data Fabric:</h3>
-      Source counts: {{dataFabricStore}}<br>
-    </div>
+    <WidgetGrid>
+      <template #default="{ block }">
 
-    <div style="margin: 0 0 5px;">
-      <h3>Alor channels:</h3>
-      Candles: {{candlesStore.sourceCandlesCount}}<br>
-      Trades: {{tradesStore.sourceTradesCount}}<br>
-      Orderbooks: {{orderbooksStore.sourceOrderbooksCount}}<br>
-      Quotes: {{quotesStore.sourceQuotesCount}}<br>
-    </div>
-
-    <div>
-      <h3>Manual order:</h3>
-      <input v-model="priceOrder" placeholder="price"><br>
-      <input v-model="exchange" placeholder="ticker"><br>
-      <input v-model="sideOrder" placeholder="side"><br>
-      <button @click="sendLimitOrder(1, priceOrder, exchange, 'MOEX', sideOrder, 'D88141')">
-        Создать лимитку
-      </button>
-    </div>
-
-    <button @click="cancelAllOrders()">
-      Снять все
-    </button>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr">
-
-      <div style="padding: 10px;">
-        <h3>Группа ордеров (захардкожена)</h3>
-        <ul>
-          <li v-for="(order, index) in groupOrders" :key="index">
-            {{ index + 1 }}. {{ order.side }} {{ order.quantity }} {{ order.instrument.symbol }} по {{ order.price }} (портфель: {{ order.user.portfolio }})
-          </li>
-        </ul>
-        <!-- Кнопка для отправки группы ордеров -->
-        <button @click="sendGroupLimitOrders()">Создать лимитки</button>
-      </div>
-
-<!--      <div>
-        <div v-for="item in limitOrders" :key="item?.data?.orderNumber">
-          {{item?.data?.orderNumber}}
-          <button @click="cancelOrders([item?.data?.orderNumber])">X</button>
+        <div v-if="block.type === 1"
+             :data="block">
+          {{block.name}}
+          <h3>Data Fabric:</h3>
+          Source counts: {{dataFabricStore}}<br>
         </div>
-        <button @click="cancelOrders">Снять группу ордеров</button>
-      </div>-->
 
-      <div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; max-width: 200px;">
+        <div :data="block"
+             v-if="block.type === 2">
+          <h3>Alor channels:</h3>
+          Candles: {{candlesStore.sourceCandlesCount}}<br>
+          Trades: {{tradesStore.sourceTradesCount}}<br>
+          Orderbooks: {{orderbooksStore.sourceOrderbooksCount}}<br>
+          Quotes: {{quotesStore.sourceQuotesCount}}<br>
+        </div>
 
-          <div style="margin: 0 0 6px;" v-if="limitOrders.length">
-            <label style="position: relative; padding-left: 16px;">
-              <input
-                  style="position: absolute; left: 0; top: -1px; margin: 0; padding: 0;"
-                  type="checkbox"
-                  :checked="areAllSelected"
-                  @change="toggleAll($event)"
-              />
-              Выбрать все
+        <div :data="block"
+             v-if="block.type === 3">
+
+          <h3>Manual order:</h3>
+          <input v-model="priceOrder" placeholder="price"><br>
+          <input v-model="exchange" placeholder="ticker"><br>
+          <input v-model="sideOrder" placeholder="side"><br>
+          <button class="btn"
+                  @click="sendLimitOrder(1, priceOrder, exchange, 'MOEX', sideOrder, 'D88141')">
+            Создать лимитку
+          </button>
+        </div>
+
+        <div :data="block"
+             v-if="block.type === 4">
+
+          <!-- Включение/выключение сохранения -->
+          <div style="margin-bottom: 10px;">
+            <label>
+              <input type="checkbox" v-model="isSaveEnabled" />
+              Включить сохранение в базу данных
             </label>
           </div>
 
-          <div style="cursor: pointer;"
-               @click="cancelAllOrders()"
-               v-if="limitOrders.length">
-            X Снять все
+          <!--    {{buyFrequency}}<br>
+              {{sellFrequency}}<br>-->
+
+          <div style="margin: 0 0 5px;">
+            <input type="text" v-model="profitPercent"/>
+          </div>
+
+          <!-- Топ 10 выгодных сделок (Покупки) -->
+          <AlorAdvantageousDeals
+              title="Выгодные сделки (Покупки)"
+              :deals="tradesStore?.tradesStatistics?.advantageousBuyDifferences"
+              operation="Buy"
+              @select-ticker="selectTicker"
+          />
+
+          <!-- Топ 10 выгодных сделок (Продажи) -->
+          <AlorAdvantageousDeals
+              title="Выгодные сделки (Продажи)"
+              :deals="tradesStore?.tradesStatistics?.advantageousSellDifferences"
+              operation="Sell"
+              @select-ticker="selectTicker"
+          />
+
+        </div>
+
+        <!-- Виджет -->
+        <div :data="block"
+             v-if="block.type === 5">
+
+          <div style="padding: 10px;">
+            <h3>Группа ордеров (захардкожена)</h3>
+            <ul>
+              <li v-for="(order, index) in groupOrders" :key="index">
+                {{ index + 1 }}. {{ order.side }} {{ order.quantity }} {{ order.instrument.symbol }} по {{ order.price }} (портфель: {{ order.user.portfolio }})
+              </li>
+            </ul>
+            <!-- Кнопка для отправки группы ордеров -->
+            <button class="btn"
+                    @click="sendGroupLimitOrders()">Создать лимитки</button>
           </div>
         </div>
-        <div v-for="item in limitOrders" :key="item.data?.orderNumber">
-          <input
-              type="checkbox"
-              :value="item.data?.orderNumber"
-              v-model="selectedOrders"
-          />
-          {{ item?.data?.orderNumber }}
-          <button @click="cancelOrders([item.data?.orderNumber])">X</button>
-        </div>
-        <div v-if="limitOrders.length">
-          <button @click="cancelOrders(selectedOrders)">Снять лимитки</button>
-        </div>
-      </div>
 
-    </div>
+        <!-- Виджет -->
+        <div :data="block"
+             v-if="block.type === 6">
+
+          <div>
+
+
+            <!--      <div>
+                    <div v-for="item in limitOrders" :key="item?.data?.orderNumber">
+                      {{item?.data?.orderNumber}}
+                      <button @click="cancelOrders([item?.data?.orderNumber])">X</button>
+                    </div>
+                    <button @click="cancelOrders">Снять группу ордеров</button>
+                  </div>-->
+
+            <div class="limit-orders">
+              <div class="limit-orders-head"
+                   v-if="limitOrders.length">
+                <label class="checkbox-label">
+                  <input
+                      class="checkbox"
+                      type="checkbox"
+                      :checked="areAllSelected"
+                      @change="toggleAll($event)"
+                  />
+                  Выбрать все
+                </label>
+              </div>
+              <div v-for="item in limitOrders"
+                   :key="item.data?.orderNumber"
+                   class="limit-orders-row">
+                <div class="limit-order">
+                  <label class="checkbox-label">
+                    <input
+                        class="checkbox"
+                        type="checkbox"
+                        :value="item.data?.orderNumber"
+                        v-model="selectedOrders"
+                    />
+                    {{ item?.data?.orderNumber }} {{item?.data?.symbol}}
+                  </label>
+                </div>
+                <div class="close-button">
+                  <button @click="cancelOrders([item.data?.orderNumber])">X</button>
+                </div>
+              </div>
+
+              <div v-if="limitOrders.length"
+                   class="limit-orders-buttons">
+                <!--          <button class="btn" @click="cancelAllOrders()">Снять все</button>-->
+                <button class="btn"
+                        :class="{'disabled': selectedOrders.length === 0}"
+                        @click="(selectedOrders.length > 0) ? cancelOrders(selectedOrders) : null">
+                  Снять лимитные заявки
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div :data="block"
+             v-if="block.type === 7">
+          <div>
+            <h3>Real Positions:</h3>
+            <PositionsStream />
+          </div>
+        </div>
+
+        <div :data="block"
+             v-if="block.type === 8">
+          <div class="table table-trade">
+            <div class="table-row table-head">
+              <div class="table-cell"
+                   @click="changeSort('ticker')">ticker</div>
+              <div class="table-cell">Levels Frequency</div>
+              <div class="table-cell"
+                   v-for="field in summaryFields"
+                   :key="field">
+                <span @click="changeSort(field)">{{field}}</span>
+                <span class="th-arrow" v-if="currentSortField === field">
+            {{ currentSortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+              </div>
+            </div>
+            <div class="table-row"
+                 :class="{'selected': item[0] === selectedRow}"
+                 @click="selectedRow=item[0]"
+                 v-for="item in sortedSummaryData"
+                 :key="item[0]">
+
+              <div class="table-cell">
+                {{ item[0] }}
+              </div>
+
+              <div class="table-cell">
+                <LevelsRenderer :levelsStats="tradesStore.levelsStats" :selectedTicker="item[0]"/>
+              </div>
+
+              <div class="table-cell" v-for="field in summaryFields" :key="field">
+                <span>{{ item[1][field] || '-' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div :data="block"
+             v-if="block.type === 9">
+          <div class="panel" style="height: 100px; overflow: auto;">
+
+            <h2>Signals</h2>
+
+            <AlorStatsDiagram
+                :totalItemsStats="buyFrequency"
+                :streamItemsStats="sellFrequency"
+                @select-ticker="selectTicker"
+            />
+
+            <!--        <div class="items">
+                      <div class="items-wrap"
+                           v-for="(item,ticker) in sortedBuyVolume"
+                           :key="item.id">
+                        <div class="item" style="width: 50px; cursor: pointer;">{{ticker}}</div>
+                        <div class="item">{{item?.candleClose}}</div>
+                        <div class="item" :style="{color: item?.tradeSide === 'buy' ? 'green' : 'red' }">{{item?.tradeSide}}</div>
+                        <div class="item">{{item?.tradeLastBuyVolume}}</div>
+                        <div class="item">{{item?.tradeLastSellVolume}}</div>
+                      </div>
+                    </div>-->
+          </div>
+        </div>
+
+        <div :data="block"
+             v-if="block.type === 10">
+          <div class="panel">
+            <h2>Trades</h2>
+
+
+
+            <!-- Статистика всех сделок -->
+            <!--        <AlorTradeHistoryDiagram
+                        title="Trade History Statistics (All)"
+                        :tradeData="globalData?.tradesStatistics?.tradeHistory"
+                        :buyData="globalData?.tradesStatistics?.tradeHistoryBuy"
+                        :sellData="globalData?.tradesStatistics?.tradeHistorySell"
+                    />-->
+
+
+            <!--        <input type="text" v-model="selectedTicker"/>-->
+
+            <!-- Статистика выбранного тикера -->
+            <!--        <AlorTradeHistoryDiagram
+                        title="Trade History Statistics (By Ticker)"
+                        :tradeData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistory || []"
+                        :buyData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistoryBuy || []"
+                        :sellData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistorySell || []"
+                        :showTickerInput="true"
+                    />-->
+
+            <!-- Статистика покупок -->
+            <!--        <AlorTradeHistoryDiagram
+                        title="Trade History Statistics (Buy)"
+                        type="buy"
+                        :tradeData="globalData?.tradesStatistics?.tradeHistoryBuy"
+                    />-->
+
+            <!-- Статистика продаж -->
+            <!--        <AlorTradeHistoryDiagram
+                        title="Trade History Statistics (Sell)"
+                        type="sell"
+                        :tradeData="globalData?.tradesStatistics?.tradeHistorySell"
+                    />-->
+
+
+            <AlorStatsDiagram
+                :totalItemsStats="tradesStore?.accumulatedTradesStats"
+                :streamItemsStats="tradesStore?.tradesStats"
+                @select-ticker="selectTicker"
+            />
+
+            <AlorTrades :profitPercent="profitPercent"/>
+          </div>
+
+        </div>
+
+        <div :data="block"
+             v-if="block.type === 11">
+          <div class="panel">
+
+            <h2>Orderbooks</h2>
+
+            <AlorStatsDiagram
+                :totalItemsStats="orderbooksStore?.accumulatedOrderbooksStats"
+                :streamItemsStats="orderbooksStore?.orderbooksStats"
+                @select-ticker="selectTicker"
+            />
+
+            <AlorOrderbooks />
+
+            <DataFabric />
+          </div>
+        </div>
+
+        <div :data="block"
+             v-if="block.type === 12">
+          <div class="panel">
+
+            <h2>Candles</h2>
+
+            <AlorStatsDiagram
+                :totalItemsStats="candlesStore?.accumulatedCandlesStats"
+                :streamItemsStats="candlesStore?.candlesStats"
+                @select-ticker="selectTicker"
+            />
+
+            <AlorCandles />
+          </div>
+        </div>
+
+        <div :data="block"
+             v-if="block.type === 13">
+          <div class="panel">
+
+            <h2>Quotes</h2>
+
+            <AlorStatsDiagram
+                :totalItemsStats="quotesStore?.accumulatedQuotesStats"
+                :streamItemsStats="quotesStore?.quotesStats"
+                @select-ticker="selectTicker"
+            />
+
+            <AlorQuotes
+                @update-quotes-counters="updateQuotesCounters"/>
+
+          </div>
+        </div>
+
+        <div :data="block"
+             v-if="block.type === 14">
+          <button class="btn"
+                  @click="cancelAllOrders()">
+            Снять все
+          </button>
+        </div>
+
+        <div :data="block"
+             v-if="block.type === 15">
+          <div style="padding: 10px; height: 100px; overflow: hidden;">
+            <div v-for="(item, key) in summaryData[selectedTicker]" :key="key">
+              {{key}}: {{item}}
+            </div>
+          </div>
+        </div>
+
+        <div :data="block"
+             v-if="block.type === 16">
+
+        </div>
+
+      </template>
+    </WidgetGrid>
+
+
+
+
+
+
+
+
 
 <!--    <div>
       <div v-for="item in limitOrders" :key="item?.data?.orderNumber">
@@ -94,195 +366,6 @@
     </div>-->
 
     <!--    <SessionManager />-->
-
-    <div style="">
-      <div class="table table-trade">
-        <div class="table-row table-head">
-          <div class="table-cell"
-               @click="changeSort('ticker')">ticker</div>
-          <div class="table-cell">Levels Frequency</div>
-          <div class="table-cell"
-               v-for="field in summaryFields"
-               :key="field">
-            <span @click="changeSort(field)">{{field}}</span>
-            <span class="th-arrow" v-if="currentSortField === field">
-              {{ currentSortDirection === 'asc' ? '↑' : '↓' }}
-            </span>
-          </div>
-        </div>
-        <div class="table-row"
-             :class="{'selected': item[0] === selectedRow}"
-             @click="selectedRow=item[0]"
-             v-for="item in sortedSummaryData"
-             :key="item[0]">
-
-          <div class="table-cell">
-            {{ item[0] }}
-          </div>
-
-          <div class="table-cell">
-            <LevelsRenderer :levelsStats="tradesStore.levelsStats" :selectedTicker="item[0]"/>
-          </div>
-
-
-          <div class="table-cell" v-for="field in summaryFields" :key="field">
-            <span>{{ item[1][field] || '-' }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div style="height: 200px; overflow: auto;">
-      <div v-for="signal in signals"
-           :key="signal.id">
-        {{signal}}
-      </div>
-    </div>
-
-    <div class="panels-grid">
-
-      <div class="panel" style="height: 1100px; overflow: auto;">
-
-        <h2>Signals</h2>
-
-        <AlorStatsDiagram
-            :totalItemsStats="buyFrequency"
-            :streamItemsStats="sellFrequency"
-            @select-ticker="selectTicker"
-        />
-
-        <!-- Включение/выключение сохранения -->
-        <div style="margin-bottom: 10px;">
-          <label>
-            <input type="checkbox" v-model="isSaveEnabled" />
-            Включить сохранение в базу данных
-          </label>
-        </div>
-
-        <!--    {{buyFrequency}}<br>
-            {{sellFrequency}}<br>-->
-
-        <div style="margin: 0 0 5px;">
-          <input type="text" v-model="profitPercent"/>
-        </div>
-
-        <!-- Топ 10 выгодных сделок (Покупки) -->
-        <AlorAdvantageousDeals
-            title="Выгодные сделки (Покупки)"
-            :deals="tradesStore?.tradesStatistics?.advantageousBuyDifferences"
-            operation="Buy"
-            @select-ticker="selectTicker"
-        />
-
-        <!-- Топ 10 выгодных сделок (Продажи) -->
-        <AlorAdvantageousDeals
-            title="Выгодные сделки (Продажи)"
-            :deals="tradesStore?.tradesStatistics?.advantageousSellDifferences"
-            operation="Sell"
-            @select-ticker="selectTicker"
-        />
-
-<!--        <div class="items">
-          <div class="items-wrap"
-               v-for="(item,ticker) in sortedBuyVolume"
-               :key="item.id">
-            <div class="item" style="width: 50px; cursor: pointer;">{{ticker}}</div>
-            <div class="item">{{item?.candleClose}}</div>
-            <div class="item" :style="{color: item?.tradeSide === 'buy' ? 'green' : 'red' }">{{item?.tradeSide}}</div>
-            <div class="item">{{item?.tradeLastBuyVolume}}</div>
-            <div class="item">{{item?.tradeLastSellVolume}}</div>
-          </div>
-        </div>-->
-      </div>
-
-      <div class="panel">
-        <h2>Trades</h2>
-
-
-
-        <!-- Статистика всех сделок -->
-        <!--        <AlorTradeHistoryDiagram
-                    title="Trade History Statistics (All)"
-                    :tradeData="globalData?.tradesStatistics?.tradeHistory"
-                    :buyData="globalData?.tradesStatistics?.tradeHistoryBuy"
-                    :sellData="globalData?.tradesStatistics?.tradeHistorySell"
-                />-->
-
-
-        <!--        <input type="text" v-model="selectedTicker"/>-->
-
-        <!-- Статистика выбранного тикера -->
-        <!--        <AlorTradeHistoryDiagram
-                    title="Trade History Statistics (By Ticker)"
-                    :tradeData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistory || []"
-                    :buyData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistoryBuy || []"
-                    :sellData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistorySell || []"
-                    :showTickerInput="true"
-                />-->
-
-        <!-- Статистика покупок -->
-        <!--        <AlorTradeHistoryDiagram
-                    title="Trade History Statistics (Buy)"
-                    type="buy"
-                    :tradeData="globalData?.tradesStatistics?.tradeHistoryBuy"
-                />-->
-
-        <!-- Статистика продаж -->
-        <!--        <AlorTradeHistoryDiagram
-                    title="Trade History Statistics (Sell)"
-                    type="sell"
-                    :tradeData="globalData?.tradesStatistics?.tradeHistorySell"
-                />-->
-
-
-        <AlorStatsDiagram
-            :totalItemsStats="tradesStore?.accumulatedTradesStats"
-            :streamItemsStats="tradesStore?.tradesStats"
-            @select-ticker="selectTicker"
-        />
-
-        <AlorTrades :profitPercent="profitPercent"/>
-      </div>
-      <div class="panel">
-
-        <h2>Orderbooks</h2>
-
-        <AlorStatsDiagram
-            :totalItemsStats="orderbooksStore?.accumulatedOrderbooksStats"
-            :streamItemsStats="orderbooksStore?.orderbooksStats"
-            @select-ticker="selectTicker"
-        />
-
-        <AlorOrderbooks />
-
-        <DataFabric />
-      </div>
-      <div class="panel">
-
-        <h2>Candles</h2>
-
-        <AlorStatsDiagram
-            :totalItemsStats="candlesStore?.accumulatedCandlesStats"
-            :streamItemsStats="candlesStore?.candlesStats"
-            @select-ticker="selectTicker"
-        />
-
-        <AlorCandles />
-      </div>
-      <div class="panel">
-
-        <h2>Quotes</h2>
-
-        <AlorStatsDiagram
-            :totalItemsStats="quotesStore?.accumulatedQuotesStats"
-            :streamItemsStats="quotesStore?.quotesStats"
-            @select-ticker="selectTicker"
-        />
-
-        <AlorQuotes
-            @update-quotes-counters="updateQuotesCounters"/>
-      </div>
-    </div>
 
 <!--    <div style="margin: 0 0 10px;">
       <div v-for="(item, key) in {
@@ -308,19 +391,14 @@
       </div>
     </div>-->
 
-    <input type="text" v-model="selectedTicker"/><br>
+<!--    <input type="text" v-model="selectedTicker"/><br>-->
 
-    <div style="padding: 10px;">
-      <div v-for="(item, key) in summaryData[selectedTicker]" :key="key">
-        {{key}}: {{item}}
-      </div>
-    </div>
+
 
   </div>
 </template>
 
 <script>
-
 
 import { useDataFabricStore } from '@/stores/dataFabricStore';
 import { useCandlesStore } from '@/stores/candlesStore';
@@ -340,6 +418,9 @@ import {
 
 //import AlorTradesPlus from './AlorTradesPlus.vue';
 
+import WidgetGrid from './WidgetGrid.vue';
+
+import PositionsStream from './PositionsStream.vue';
 import AlorStatsDiagram from './AlorStatsDiagram.vue';
 import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
 //import AlorTradeHistoryDiagram from './AlorTradeHistoryDiagram.vue';
@@ -365,13 +446,14 @@ export default {
   },
 
   components: {
+    PositionsStream,
     DataFabric,
     LevelsRenderer,
     AlorTrades,
     AlorOrderbooks,
     AlorQuotes,
     AlorCandles,
-
+    WidgetGrid,
 
     //SessionManager,
     //AlorTradesPlus,
@@ -386,8 +468,40 @@ export default {
   data() {
     return {
 
+      blocks: [
+        { id: 1, name: 'Стакан 1', type: 1 },
+        { id: 2, name: 'Ордера 2', type: 2 },
+        { id: 3, name: 'Лимитки 3', type: 3 },
+        { id: 4, name: 'Лимитки 4', type: 4 },
+        { id: 5, name: 'Лимитки 5', type: 5 },
+        { id: 6, name: 'Лимитки 6', type: 6 },
+        { id: 7, name: 'Лимитки 7', type: 7 },
+        { id: 8, name: 'Лимитки 8', type: 8 },
+        { id: 9, name: 'Signals', type: 9 },
+        { id: 10, name: 'Trades', type: 10 },
+        { id: 11, name: 'Orderbooks', type: 11 },
+        { id: 12, name: 'Candles', type: 12},
+        { id: 13, name: 'Quotes', type: 13 },
+        { id: 14, name: 'Виджет 14', type: 14 },
+        { id: 15, name: 'Виджет 15', type: 15 },
+        { id: 16, name: 'Виджет 16', type: 16 },
+      ],
+
       selectedOrders: [],
-      limitOrders: [],
+      limitOrders: [
+        {
+          data: {
+            symbol: "SBER",
+            orderNumber: 3214543,
+          }
+        },
+        {
+          data: {
+            symbol: "LKOH",
+            orderNumber: 3214547,
+          }
+        }
+      ],
 
       /*[
           { "success": true, "data": { "message": "success", "orderNumber": "57360598695" } },
@@ -412,9 +526,9 @@ export default {
         {
           side: "buy",
           quantity: 1,
-          price: 6950,
+          price: 105,
           instrument: {
-            symbol: "LKOH",
+            symbol: "MTLR",
             exchange: "MOEX",
             instrumentGroup: "TQBR",
           },
@@ -1160,7 +1274,7 @@ export default {
       //console.log(groupOrders);
       groupOrders.forEach((order) => {
         if(this.summaryData[order.instrument.symbol]?.orderbookBestBidPrice){
-          order.price = this.summaryData[order.instrument.symbol]?.orderbookBestBidPrice - 4;
+          order.price = this.summaryData[order.instrument.symbol]?.orderbookBestBidPrice;
         }
       });
 
@@ -1285,12 +1399,12 @@ export default {
   margin-left: 2px;
 }
 .table-trade{
-  background: white;
   border-collapse: collapse;
-  color: #444;
+  color: rgba(209, 214, 247, 0.9);
+  background: #2b2d39;
 }
 .table-trade .table-cell{
-  border: solid 1px #eee;
+  border: solid 1px rgba(255,255,255,0.1);
   padding: 2px 5px;
 }
 .table-trade .table-cell:first-child{
@@ -1301,14 +1415,16 @@ export default {
 }
 
 .table-trade .table-row:hover .table-cell{
-  background: rgba(234, 229, 255, 0.73);
+  background: rgba(234, 229, 255, 0.1);
 }
 .table-trade .table-row.selected .table-cell{
-  background: #f3e1ff;
+  background: rgba(124, 41, 186, 0.69);
 }
 .table-trade .table-row:first-child .table-cell{
   padding-top: 10px;
   padding-bottom: 5px;
+  max-width: 46px;
+  overflow: hidden;
 }
 .table-trade .table-cell{
   white-space: nowrap;
@@ -1332,19 +1448,17 @@ export default {
 }
 
 .panels-container{
-  padding: 20px;
-  background: #e5e5e5;
+
 }
 .panels-grid{
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 }
 .panel{
-  margin: 4px;
-  padding: 10px;
-  border: solid 1px #ccc;
-  border-radius: 6px;
-  background: white;
+  padding-top: 10px;
+  width: 100%;
+  /*height: 100px;*/
+  overflow: hidden;
 }
 
 .items{
@@ -1393,4 +1507,54 @@ export default {
 .select-ticker{
   cursor: pointer;
 }
+
+.limit-orders{
+  background: #2b2d39;
+  margin: 0 0 20px;
+  padding: 20px;
+  border-radius: 6px;
+}
+.limit-orders-head{
+  padding: 0 0 12px;
+  border-bottom: solid 1px #3c3f54;
+}
+.limit-orders-row:hover{
+  background: rgba(0,0,0,0.1);
+}
+.limit-orders-row{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: solid 1px #3c3f54;
+  padding: 1px 0;
+}
+.limit-orders .close-button{
+  text-align: right;
+}
+.limit-orders .close-button button{
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #d1d6f7;
+}
+
+.limit-orders-buttons{
+  padding: 10px 0 0;
+}
+
+.checkbox-label{
+  position: relative;
+  padding-left: 18px;
+}
+.checkbox-label .checkbox{
+  position: absolute;
+  left: 0;
+  top: -1px;
+  margin: 0;
+  padding: 0;
+}
+.limit-order{
+  padding-top: 3px;
+}
+
+
 </style>

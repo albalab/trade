@@ -3,6 +3,10 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 // Определяем маршруты
 const routes = [
     {
+        path: '/grid',
+        component: () => import('../components/WidgetGrid.vue')
+    },
+    {
         path: '/mergedcomponent',
         component: () => import('../components/MergedComponent.vue')
     },
