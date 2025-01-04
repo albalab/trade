@@ -145,7 +145,7 @@
     <div class="main-view"
          :class="{ 'main-view-setup': isSidebarShow }"
          :style="{
-          transform: isSidebarShow ? `scale(${zoomValue})` : null,
+          transform: `scale(${zoomValue})`, //isSidebarShow ? `scale(${zoomValue})` : null,
           marginLeft: isSidebarShow ? '200px' : '10px',
          }">
       <div class="lines-grid"
@@ -257,11 +257,14 @@ export default {
       rowHeightMax: 300,
 
       zoomMin: 0.3,
-      zoomMax: 1.0,
+      zoomMax: 1.5,
       zoomValue: 1.0,
     };
   },
   mounted() {
+
+    this.restoreZoomValue(); // Восстановление zoomValue
+
     this.restoreGridSettings();
     this.restoreState();
     this.buildBlocksArrayFromWidgets();
@@ -320,6 +323,18 @@ export default {
       // Преобразование текущего значения zoomValue в диапазон [0, 100]
       return ((this.zoomValue - this.zoomMin) / (this.zoomMax - this.zoomMin)) * 100;
     },
+    saveZoomValue() {
+      localStorage.setItem('zoomValue', this.zoomValue);
+    },
+
+    restoreZoomValue() {
+      const savedZoom = localStorage.getItem('zoomValue');
+      if (savedZoom !== null) {
+        const parsedZoom = parseFloat(savedZoom);
+        this.zoomValue = Math.min(this.zoomMax, Math.max(this.zoomMin, parsedZoom));
+      }
+    },
+
 
     resetWidgetState() {
       // Сбрасываем параметры виджетов к их исходным значениям
@@ -505,6 +520,9 @@ export default {
     },
   },
   watch: {
+    zoomValue: {
+      handler: "saveZoomValue"
+    },
     blocks: {
       handler: "saveState",
       deep: true,
