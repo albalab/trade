@@ -64,10 +64,16 @@ export default {
 
     },
   },
+
   mounted() {
     webSocketService.connect();
     webSocketService.subscribe("aggregatedCandles", this.handleCandlesUpdate);
   },
+
+  unmounted() {
+    webSocketService.close();
+  },
+
 };
 </script>
 

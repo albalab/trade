@@ -8,11 +8,14 @@ class WebSocketService {
         this.url = url;
         this.socket = null;
         this.subscribers = {};
-        this.visibilityHandler = null; // Для хранения обработчика `visibilitychange`
+        this.visibilityHandler = null;
+        this.intentionalClose = false;
     }
 
     connect() {
         if (this.socket) return;
+
+        this.intentionalClose = false;
 
         this.socket = new WebSocket(this.url);
 
@@ -54,9 +57,9 @@ class WebSocketService {
             this.socket = null;
 
             // Переподключение только если вкладка активна
-            if (document.visibilityState === "visible") {
+            if (!this.intentionalClose && document.visibilityState === "visible") {
                 this.reconnect();
-            } else {
+            } else if (!this.intentionalClose) {
                 console.log("Ожидание активации вкладки для переподключения");
             }
         };
@@ -97,7 +100,7 @@ class WebSocketService {
     attachVisibilityHandler() {
         if (this.visibilityHandler) return; // Уже добавлено
         this.visibilityHandler = () => {
-            if (document.visibilityState === "visible" && !this.socket) {
+            if (document.visibilityState === "visible" && !this.socket && !this.intentionalClose) {
                 console.log("Вкладка активна, восстанавливаем соединение");
                 this.reconnect();
             }
@@ -114,6 +117,7 @@ class WebSocketService {
 
     close() {
         if (this.socket) {
+            this.intentionalClose = true;
             this.socket.close();
             this.socket = null;
         }

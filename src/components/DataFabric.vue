@@ -1,9 +1,11 @@
 <template>
   <div>
-    <!--
-    Total Candles: {{candlesStore.candleCounter}}<br>
-    <StatisticRenderer v-if="candlesStore.newCandles" :items="candlesStore.newCandles" />
-    -->
+    Total: {{dataFabricStore.sourceCounts.sourceTotalCount}}<br>
+    Candles: {{dataFabricStore.sourceCounts.sourceCandlesCount}}<br>
+    Trades: {{dataFabricStore.sourceCounts.sourceTradesCount}}<br>
+    Orderbooks: {{dataFabricStore.sourceCounts.sourceOrderbooksCount}}<br>
+    Quotes: {{dataFabricStore.sourceCounts.sourceQuotesCount}}<br>
+
   </div>
 </template>
 

@@ -1,42 +1,29 @@
 <template>
   <div class="panels-container">
 
+    <div style="position: fixed; right: 0; top: 0; z-index: 300">
+      <label>
+        <input type="checkbox" v-model="isRunning"/> Run
+      </label>
+    </div>
+
+    <div v-if="isRunning">
+      <AlorTrades v-show="false"/>
+      <AlorCandles v-show="false"/>
+      <AlorOrderbooks v-show="false"/>
+      <AlorQuotes v-show="false"/>
+    </div>
+
     <WidgetGrid :widgetsProps="widgets">
       <template #default="{ widget }">
 
-        <div v-if="widget.type === 1"
-             :data="widget">
-
+        <div v-if="widget.type === 1" :data="widget">
           <DataFabric />
-
-          Total: {{dataFabricStore.sourceCounts.sourceTotalCount}}<br>
-          Candles: {{dataFabricStore.sourceCounts.sourceCandlesCount}}<br>
-          Trades: {{dataFabricStore.sourceCounts.sourceTradesCount}}<br>
-          Orderbooks: {{dataFabricStore.sourceCounts.sourceOrderbooksCount}}<br>
-          Quotes: {{dataFabricStore.sourceCounts.sourceQuotesCount}}<br>
-
-        </div>
-
-        <div v-if="widget.type === 2"
-             :data="widget">
-
-          Candles: {{candlesStore.sourceCandlesCount}}<br>
-          Trades: {{tradesStore.sourceTradesCount}}<br>
-          Orderbooks: {{orderbooksStore.sourceOrderbooksCount}}<br>
-          Quotes: {{quotesStore.sourceQuotesCount}}<br>
-
         </div>
 
         <div v-if="widget.type === 3"
              :data="widget">
-
-          <input v-model="priceOrder" placeholder="price"><br>
-          <input v-model="exchange" placeholder="ticker"><br>
-          <input v-model="sideOrder" placeholder="side"><br>
-          <button class="btn"
-                  @click="sendLimitOrder(1, priceOrder, exchange, 'MOEX', sideOrder, 'D88141')">
-            Создать лимитку
-          </button>
+          <CreateOrder />
         </div>
 
         <div v-if="widget.type === 4"
@@ -44,14 +31,11 @@
 
           <!-- Включение/выключение сохранения -->
           <div style="margin-bottom: 10px;">
-            <label>
-              <input type="checkbox" v-model="isSaveEnabled" />
-              Включить сохранение в базу данных
+            <label style="position: relative;">
+              <input type="checkbox" v-model="isSaveEnabled" style="position: absolute; left: 0; top: -1px;"/>
+              <span style="padding-left: 20px;">Включить сохранение в базу данных</span>
             </label>
           </div>
-
-          <!--    {{buyFrequency}}<br>
-              {{sellFrequency}}<br>-->
 
           <div style="margin: 0 0 5px;">
             <input type="text" v-model="profitPercent"/>
@@ -350,7 +334,7 @@ import { useQuotesStore } from '@/stores/quotesStore';
 //import SessionManager from './SessionManager';
 
 import {
-  sendLimitOrder,
+  //sendLimitOrder,
   cancelAllOrders,
   sendGroupLimitOrders,
   cancelGroupOrders
@@ -361,11 +345,14 @@ import {
 import WidgetGrid from './WidgetGrid.vue';
 
 import PositionsStream from '@/widgets/PositionsStream.vue';
+import CreateOrder from "@/widgets/CreateOrder.vue";
+
 import AlorStatsDiagram from './AlorStatsDiagram.vue';
 import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
 //import AlorTradeHistoryDiagram from './AlorTradeHistoryDiagram.vue';
 
 //import { useCacheStore } from '@/stores/cacheStore';
+
 import DataFabric from "@/components/DataFabric.vue";
 import AlorTrades from "@/components/AlorTrades.vue";
 import AlorOrderbooks from '@/components/AlorOrderbooks.vue';
@@ -388,6 +375,7 @@ export default {
   components: {
     PositionsStream,
     DataFabric,
+    CreateOrder,
     LevelsRenderer,
     AlorTrades,
     AlorOrderbooks,
@@ -408,12 +396,14 @@ export default {
   data() {
     return {
 
+      isRunning: false,
+
       widgets: [
         { name: 'Data Fabric', param: 0, type: 1 },
-        { name: 'Alor Statistics', param: 0, type: 2, gridColumn: 'span 2' },
-        { name: 'Manual Order', param: 0, type: 3, gridRow: 'span 2' },
-        { name: 'Top Deals', param: 0, type: 4, gridRow: 'span 3' },
-        { name: 'Orders Creator', param: 0, type: 5 },
+        //{ name: 'Alor Statistics', param: 0, type: 2, gridColumn: 'span 2' },
+        { name: 'Manual Order', param: 0, type: 3 },
+        { name: 'Top Deals', param: 0, type: 4, gridRow: 'span 3', gridColumn: 'span 2' },
+        { name: 'Orders Creator', param: 0, type: 5},
         { name: 'Limit Orders', param: 0, type: 6 },
         { name: 'Positions', param: 0, type: 7 },
         { name: 'Summary', param: 0, type: 8, gridColumn: 'span 4', gridRow: 'span 2' },
@@ -423,7 +413,7 @@ export default {
         { name: 'Candles', param: 0, type: 12, gridRow: 'span 4'},
         { name: 'Quotes', param: 0, type: 13, gridRow: 'span 4'},
         { name: 'Cancel All', param: 0, type: 14 },
-        { name: 'Виджет 15', param: 0, type: 15 },
+        { name: 'Виджет 15', param: 0, type: 15, gridRow: 'span 2' },
         { name: 'Виджет 16', param: 0, type: 16 },
       ],
 
@@ -533,9 +523,7 @@ export default {
 
       profitPercent: 0.2,
 
-      sideOrder: 'buy',
-      priceOrder: null,
-      exchange: '',
+
 
       globalData: {},
       selectedTicker: 'SBER',
@@ -1110,14 +1098,7 @@ export default {
       }
     },
 
-    async sendLimitOrder(volume, price, ticker, exchange, side, portfolio) {
-      try {
-        await sendLimitOrder(volume, price, ticker, exchange, side, portfolio);
-        //console.log("Лимитный ордер отправлен:", result);
-      } catch (error) {
-        console.error("Ошибка при отправке лимитного ордера:", error.message);
-      }
-    },
+
     async cancelAllOrders() {
       try {
         const exchange = 'MOEX'; // Укажите биржу

@@ -82,6 +82,10 @@ export default {
     webSocketService.subscribe("aggregatedOrderbooks", this.handleOrderbooksUpdate);
   },
 
+  unmounted() {
+    webSocketService.close();
+  },
+
 };
 </script>
 

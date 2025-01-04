@@ -96,6 +96,10 @@ export default {
     webSocketService.subscribe("aggregatedTrades", this.handleTradesUpdate);
   },
 
+  unmounted() {
+    webSocketService.close();
+  }
+
 };
 </script>
 

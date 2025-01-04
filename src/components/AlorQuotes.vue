@@ -115,5 +115,9 @@ export default {
     //this.connectToWebSocket();
   },
 
+  unmounted() {
+    webSocketService.close();
+  },
+
 };
 </script>
