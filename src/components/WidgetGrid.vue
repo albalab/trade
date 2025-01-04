@@ -130,7 +130,17 @@
           </div>
         </div>
       </div>
+
+      <div class="sidebar-footer">
+        <div
+            class="btn"
+            id="settingsBtn"
+            @click="toggleSettingsPane"
+        >Закрыть</div>
+      </div>
+
     </div>
+
 
     <div class="main-view"
          :class="{ 'main-view-setup': isSidebarShow }"
@@ -155,41 +165,49 @@
       <div
           class="main-grid"
           id="grid"
-          :style="gridDynamicStyles"
-      >
+          :style="gridDynamicStyles">
+
         <div
             v-for="(blockItem, index) in blocks"
             :key="blockItem.id"
             class="widget-block"
             :class="`widget-type${blockItem.type}`"
             :style="{
+              //paddingTop: !isSidebarShow ? '6px' : '30px',
               gridRow: blockItem.gridRow || null,
               gridColumn: blockItem.gridColumn || null,
             }"
             @dragenter.prevent="onDragEnter(index, $event)"
             @dragover.prevent="onDragOver($event)"
             @dragleave="onDragLeave(index, $event)"
-            @drop.prevent="onDrop(index, $event)"
-        >
+            @drop.prevent="onDrop(index, $event)">
 
+          <div style="width: 100%;">
+            <h3 class="widget-title"
+                :style="{
+                   paddingLeft: isSidebarShow ? '24px' : '12px'
+                }">
+              {{blockItem.name}}
+            </h3>
+
+            <div
+                v-if="isSidebarShow"
+                class="drag-handle"
+                draggable="true"
+                :data-block-id="blockItem.id"
+                @dragstart="onDragStart(blockItem.id, $event)"
+                @dragend="onDragEnd($event)"
+            >
+              <i class="fat fa-thin fa-arrows-up-down-left-right"></i>
+            </div>
+
+            <div class="close-block"
+                 v-if="isSidebarShow"
+                 @click="removeBlock(blockItem.id)">
+              <i class="fat fa-xmark"></i>
+            </div>
+          </div>
           <slot :widget="blockItem"></slot>
-
-          <div
-              v-if="isSidebarShow"
-              class="drag-handle"
-              draggable="true"
-              :data-block-id="blockItem.id"
-              @dragstart="onDragStart(blockItem.id, $event)"
-              @dragend="onDragEnd($event)"
-          >
-            <i class="fat fa-thin fa-arrows-up-down-left-right"></i>
-          </div>
-
-          <div class="close-block"
-               v-if="isSidebarShow"
-               @click="removeBlock(blockItem.id)">
-            <i class="fat fa-xmark"></i>
-          </div>
 
         </div>
       </div>

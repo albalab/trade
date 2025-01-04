@@ -84,35 +84,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.stats-diagram{
-  overflow: hidden;
-  height: 350px;
-}
-.progress-bar-container {
-  background: #675b7c;
-  height: 4px;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  background: #007bff;
-  height: 100%;
-}
-
-.ticker-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.highlighted {
-  color: #e646ff;
-}
-.info{
-  margin: 0 0 10px;
-}
-</style>

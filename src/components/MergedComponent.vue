@@ -7,7 +7,7 @@
         <div v-if="widget.type === 1"
              :data="widget">
 
-          <h4>Data fabric stream</h4>
+          <DataFabric />
 
           Total: {{dataFabricStore.sourceCounts.sourceTotalCount}}<br>
           Candles: {{dataFabricStore.sourceCounts.sourceCandlesCount}}<br>
@@ -20,7 +20,6 @@
         <div v-if="widget.type === 2"
              :data="widget">
 
-          <h3>{{widget.name}}</h3>
           Candles: {{candlesStore.sourceCandlesCount}}<br>
           Trades: {{tradesStore.sourceTradesCount}}<br>
           Orderbooks: {{orderbooksStore.sourceOrderbooksCount}}<br>
@@ -31,7 +30,6 @@
         <div v-if="widget.type === 3"
              :data="widget">
 
-          <h3>Manual order:</h3>
           <input v-model="priceOrder" placeholder="price"><br>
           <input v-model="exchange" placeholder="ticker"><br>
           <input v-model="sideOrder" placeholder="side"><br>
@@ -81,10 +79,10 @@
              :data="widget">
 
           <div>
-            <h3>Группа ордеров (захардкожена)</h3>
+
             <ul>
-              <li v-for="(order, index) in groupOrders" :key="index">
-                {{ index + 1 }}. {{ order.side }} {{ order.quantity }} {{ order.instrument.symbol }} по {{ order.price }} (портфель: {{ order.user.portfolio }})
+              <li v-for="(order, index) in groupOrders" :key="index" style="margin: 0 0 10px;">
+                {{ index + 1 }}. {{ order.side }} {{ order.quantity }} {{ order.instrument.symbol }} по {{ order.price }} {{ order.user.portfolio }}
               </li>
             </ul>
             <!-- Кнопка для отправки группы ордеров -->
@@ -158,11 +156,7 @@
 
         <div v-if="widget.type === 7"
              :data="widget">
-
-          <div>
-            <h3>Real Positions:</h3>
             <PositionsStream />
-          </div>
         </div>
 
         <div v-if="widget.type === 8"
@@ -206,72 +200,16 @@
         <div v-if="widget.type === 9"
              :data="widget">
 
-          <div class="panel" style="height: 100px; overflow: auto;">
-
-            <h2>Signals</h2>
-
             <AlorStatsDiagram
                 :totalItemsStats="buyFrequency"
                 :streamItemsStats="sellFrequency"
                 @select-ticker="selectTicker"
             />
 
-            <!--        <div class="items">
-                      <div class="items-wrap"
-                           v-for="(item,ticker) in sortedBuyVolume"
-                           :key="item.id">
-                        <div class="item" style="width: 50px; cursor: pointer;">{{ticker}}</div>
-                        <div class="item">{{item?.candleClose}}</div>
-                        <div class="item" :style="{color: item?.tradeSide === 'buy' ? 'green' : 'red' }">{{item?.tradeSide}}</div>
-                        <div class="item">{{item?.tradeLastBuyVolume}}</div>
-                        <div class="item">{{item?.tradeLastSellVolume}}</div>
-                      </div>
-                    </div>-->
-          </div>
         </div>
 
         <div v-if="widget.type === 10"
              :data="widget">
-
-          <div class="panel">
-            <h2>Trades</h2>
-
-
-
-            <!-- Статистика всех сделок -->
-            <!--        <AlorTradeHistoryDiagram
-                        title="Trade History Statistics (All)"
-                        :tradeData="globalData?.tradesStatistics?.tradeHistory"
-                        :buyData="globalData?.tradesStatistics?.tradeHistoryBuy"
-                        :sellData="globalData?.tradesStatistics?.tradeHistorySell"
-                    />-->
-
-
-            <!--        <input type="text" v-model="selectedTicker"/>-->
-
-            <!-- Статистика выбранного тикера -->
-            <!--        <AlorTradeHistoryDiagram
-                        title="Trade History Statistics (By Ticker)"
-                        :tradeData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistory || []"
-                        :buyData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistoryBuy || []"
-                        :sellData="globalData?.tradesStatistics?.tickerStats[selectedTicker]?.tradeHistorySell || []"
-                        :showTickerInput="true"
-                    />-->
-
-            <!-- Статистика покупок -->
-            <!--        <AlorTradeHistoryDiagram
-                        title="Trade History Statistics (Buy)"
-                        type="buy"
-                        :tradeData="globalData?.tradesStatistics?.tradeHistoryBuy"
-                    />-->
-
-            <!-- Статистика продаж -->
-            <!--        <AlorTradeHistoryDiagram
-                        title="Trade History Statistics (Sell)"
-                        type="sell"
-                        :tradeData="globalData?.tradesStatistics?.tradeHistorySell"
-                    />-->
-
 
             <AlorStatsDiagram
                 :totalItemsStats="tradesStore?.accumulatedTradesStats"
@@ -280,16 +218,11 @@
             />
 
             <AlorTrades :profitPercent="profitPercent"/>
-          </div>
 
         </div>
 
         <div v-if="widget.type === 11"
              :data="widget">
-
-          <div class="panel">
-
-            <h2>Orderbooks</h2>
 
             <AlorStatsDiagram
                 :totalItemsStats="orderbooksStore?.accumulatedOrderbooksStats"
@@ -299,8 +232,6 @@
 
             <AlorOrderbooks />
 
-            <DataFabric />
-          </div>
         </div>
 
         <div v-if="widget.type === 12"
@@ -323,10 +254,6 @@
         <div v-if="widget.type === 13"
              :data="widget">
 
-          <div class="panel">
-
-            <h2>Quotes</h2>
-
             <AlorStatsDiagram
                 :totalItemsStats="quotesStore?.accumulatedQuotesStats"
                 :streamItemsStats="quotesStore?.quotesStats"
@@ -335,7 +262,6 @@
 
             <AlorQuotes />
 
-          </div>
         </div>
 
         <div v-if="widget.type === 14"
@@ -434,7 +360,7 @@ import {
 
 import WidgetGrid from './WidgetGrid.vue';
 
-import PositionsStream from './PositionsStream.vue';
+import PositionsStream from '@/widgets/PositionsStream.vue';
 import AlorStatsDiagram from './AlorStatsDiagram.vue';
 import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
 //import AlorTradeHistoryDiagram from './AlorTradeHistoryDiagram.vue';
@@ -484,11 +410,11 @@ export default {
 
       widgets: [
         { name: 'Data Fabric', param: 0, type: 1 },
-        { name: 'Alor statistics', param: 0, type: 2, gridColumn: 'span 2' },
-        { name: 'Manual order', param: 0, type: 3, gridRow: 'span 2' },
-        { name: 'Top deals', param: 0, type: 4, gridRow: 'span 3' },
-        { name: 'Orders creator', param: 0, type: 5 },
-        { name: 'Limit orders', param: 0, type: 6 },
+        { name: 'Alor Statistics', param: 0, type: 2, gridColumn: 'span 2' },
+        { name: 'Manual Order', param: 0, type: 3, gridRow: 'span 2' },
+        { name: 'Top Deals', param: 0, type: 4, gridRow: 'span 3' },
+        { name: 'Orders Creator', param: 0, type: 5 },
+        { name: 'Limit Orders', param: 0, type: 6 },
         { name: 'Positions', param: 0, type: 7 },
         { name: 'Summary', param: 0, type: 8, gridColumn: 'span 4', gridRow: 'span 2' },
         { name: 'Signals', param: 0, type: 9, gridRow: 'span 4'},
@@ -496,7 +422,7 @@ export default {
         { name: 'Orderbooks', param: 0, type: 11, gridRow: 'span 4'},
         { name: 'Candles', param: 0, type: 12, gridRow: 'span 4'},
         { name: 'Quotes', param: 0, type: 13, gridRow: 'span 4'},
-        { name: 'Cancel all', param: 0, type: 14 },
+        { name: 'Cancel All', param: 0, type: 14 },
         { name: 'Виджет 15', param: 0, type: 15 },
         { name: 'Виджет 16', param: 0, type: 16 },
       ],
