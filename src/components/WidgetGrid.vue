@@ -165,13 +165,17 @@
             :key="blockItem.id"
             class="widget-block"
             :class="`widget-type${blockItem.type}`"
+            :style="{
+              gridRow: blockItem.gridRow || null,
+              gridColumn: blockItem.gridColumn || null,
+            }"
             @dragenter.prevent="onDragEnter(index, $event)"
             @dragover.prevent="onDragOver($event)"
             @dragleave="onDragLeave(index, $event)"
             @drop.prevent="onDrop(index, $event)"
         >
 
-            <slot :block="blockItem"></slot>
+            <slot :widget="blockItem"></slot>
 
           <div
               v-if="isSidebarShow"
@@ -200,30 +204,18 @@
 <script>
 export default {
   name: "WidgetGrid",
+
+  props: {
+    widgetsProps: Array,
+  },
+
   data() {
     return {
 
       isSidebarShow: true,
 
       // Исходный список «виртуальных» виджетов
-      widgets: [
-        { name: 'Data Fabric', param: 0, type: 1 },
-        { name: 'Alor items stats', param: 0, type: 2 },
-        { name: 'Manual order', param: 0, type: 3 },
-        { name: 'Top deals', param: 0, type: 4 },
-        { name: 'Orders creator', param: 0, type: 5 },
-        { name: 'Limit orders', param: 0, type: 6 },
-        { name: 'Positions', param: 0, type: 7 },
-        { name: 'Summary', param: 0, type: 8 },
-        { name: 'Signals', param: 0, type: 9 },
-        { name: 'Trades', param: 0, type: 10 },
-        { name: 'Orderbooks', param: 0, type: 11 },
-        { name: 'Candles', param: 0, type: 12 },
-        { name: 'Quotes', param: 0, type: 13 },
-        { name: 'Cancel all', param: 0, type: 14 },
-        { name: 'Виджет 15', param: 0, type: 15 },
-        { name: 'Виджет 16', param: 0, type: 16 },
-      ],
+      widgets: this.widgetsProps,
 
       // Массив «фактических» блоков (каждый имеет уникальный id)
       blocks: [],
@@ -381,8 +373,7 @@ export default {
         for (let i = 0; i < w.param; i++) {
           this.blocks.push({
             id: this.nextBlockId++,
-            name: w.name,
-            type: w.type
+            ...w,
           });
         }
       });
@@ -465,34 +456,3 @@ export default {
   },
 };
 </script>
-
-<style>
-
-  /* Виджет типа 2: занимает две колонки */
-  .widget-type2 {
-    grid-column: span 2;
-  }
-
-  /* Виджет типа 3: занимает две строки */
-  .widget-type3 {
-    grid-row: span 2;
-  }
-
-  .widget-type4 {
-    grid-row: span 3;
-  }
-
-  .widget-type8 {
-    grid-column: span 4;
-    grid-row: span 2;
-  }
-
-  .widget-type9,
-  .widget-type10,
-  .widget-type11,
-  .widget-type12,
-  .widget-type13 {
-    /*grid-column: span 4;*/
-    grid-row: span 4;
-  }
-</style>

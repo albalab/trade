@@ -1,27 +1,34 @@
 <template>
   <div class="panels-container">
 
-    <WidgetGrid>
-      <template #default="{ block }">
+    <WidgetGrid :widgetsProps="widgets">
+      <template #default="{ widget }">
 
-        <div v-if="block.type === 1"
-             :data="block">
-          {{block.name}}
-          <h3>Data Fabric:</h3>
-          Source counts: {{dataFabricStore}}<br>
+        <div v-if="widget.type === 1"
+             :data="widget">
+
+          <h4>Data fabric stream</h4>
+
+          Candles: {{dataFabricStore.sourceCounts.sourceCandlesCount}}<br>
+          Trades: {{dataFabricStore.sourceCounts.sourceTradesCount}}<br>
+          Orderbooks: {{dataFabricStore.sourceCounts.sourceOrderbooksCount}}<br>
+          Quotes: {{dataFabricStore.sourceCounts.sourceQuotesCount}}<br>
+
         </div>
 
-        <div v-if="block.type === 2"
-             :data="block">
-          <h3>Alor channels:</h3>
+        <div v-if="widget.type === 2"
+             :data="widget">
+
+          <h3>{{widget.name}}</h3>
           Candles: {{candlesStore.sourceCandlesCount}}<br>
           Trades: {{tradesStore.sourceTradesCount}}<br>
           Orderbooks: {{orderbooksStore.sourceOrderbooksCount}}<br>
           Quotes: {{quotesStore.sourceQuotesCount}}<br>
+
         </div>
 
-        <div v-if="block.type === 3"
-             :data="block">
+        <div v-if="widget.type === 3"
+             :data="widget">
 
           <h3>Manual order:</h3>
           <input v-model="priceOrder" placeholder="price"><br>
@@ -33,8 +40,8 @@
           </button>
         </div>
 
-        <div v-if="block.type === 4"
-             :data="block">
+        <div v-if="widget.type === 4"
+             :data="widget">
 
           <!-- Включение/выключение сохранения -->
           <div style="margin-bottom: 10px;">
@@ -69,10 +76,10 @@
 
         </div>
 
-        <div v-if="block.type === 5"
-             :data="block">
+        <div v-if="widget.type === 5"
+             :data="widget">
 
-          <div style="padding: 10px;">
+          <div>
             <h3>Группа ордеров (захардкожена)</h3>
             <ul>
               <li v-for="(order, index) in groupOrders" :key="index">
@@ -83,10 +90,11 @@
             <button class="btn"
                     @click="sendGroupLimitOrders()">Создать лимитки</button>
           </div>
+
         </div>
 
-        <div v-if="block.type === 6"
-             :data="block">
+        <div v-if="widget.type === 6"
+             :data="widget">
 
           <div>
 
@@ -147,8 +155,8 @@
 
         </div>
 
-        <div v-if="block.type === 7"
-             :data="block">
+        <div v-if="widget.type === 7"
+             :data="widget">
 
           <div>
             <h3>Real Positions:</h3>
@@ -156,8 +164,8 @@
           </div>
         </div>
 
-        <div v-if="block.type === 8"
-             :data="block">
+        <div v-if="widget.type === 8"
+             :data="widget">
 
           <div class="table table-trade">
             <div class="table-row table-head">
@@ -194,8 +202,8 @@
           </div>
         </div>
 
-        <div v-if="block.type === 9"
-             :data="block">
+        <div v-if="widget.type === 9"
+             :data="widget">
 
           <div class="panel" style="height: 100px; overflow: auto;">
 
@@ -221,8 +229,8 @@
           </div>
         </div>
 
-        <div v-if="block.type === 10"
-             :data="block">
+        <div v-if="widget.type === 10"
+             :data="widget">
 
           <div class="panel">
             <h2>Trades</h2>
@@ -275,8 +283,8 @@
 
         </div>
 
-        <div v-if="block.type === 11"
-             :data="block">
+        <div v-if="widget.type === 11"
+             :data="widget">
 
           <div class="panel">
 
@@ -294,8 +302,8 @@
           </div>
         </div>
 
-        <div v-if="block.type === 12"
-             :data="block">
+        <div v-if="widget.type === 12"
+             :data="widget">
 
           <div class="panel">
 
@@ -311,8 +319,8 @@
           </div>
         </div>
 
-        <div v-if="block.type === 13"
-             :data="block">
+        <div v-if="widget.type === 13"
+             :data="widget">
 
           <div class="panel">
 
@@ -329,8 +337,8 @@
           </div>
         </div>
 
-        <div v-if="block.type === 14"
-             :data="block">
+        <div v-if="widget.type === 14"
+             :data="widget">
 
           <button class="btn"
                   @click="cancelAllOrders()">
@@ -338,8 +346,8 @@
           </button>
         </div>
 
-        <div :data="block"
-             v-if="block.type === 15">
+        <div :data="widget"
+             v-if="widget.type === 15">
           <div style="padding: 10px; height: 100px; overflow: hidden;">
             <div v-for="(item, key) in summaryData[selectedTicker]" :key="key">
               {{key}}: {{item}}
@@ -347,8 +355,8 @@
           </div>
         </div>
 
-        <div v-if="block.type === 16"
-             :data="block">
+        <div v-if="widget.type === 16"
+             :data="widget">
 
         </div>
 
@@ -473,23 +481,23 @@ export default {
   data() {
     return {
 
-      blocks: [
-        { id: 1, name: 'Data Fabric', type: 1 },
-        { id: 2, name: 'Alor items stats', type: 2 },
-        { id: 3, name: 'Manual order', type: 3 },
-        { id: 4, name: 'Top deals', type: 4 },
-        { id: 5, name: 'Orders creator', type: 5 },
-        { id: 6, name: 'Limit orders', type: 6 },
-        { id: 7, name: 'Positiona', type: 7 },
-        { id: 8, name: 'Summary', type: 8 },
-        { id: 9, name: 'Signals', type: 9 },
-        { id: 10, name: 'Trades', type: 10 },
-        { id: 11, name: 'Orderbooks', type: 11 },
-        { id: 12, name: 'Candles', type: 12},
-        { id: 13, name: 'Quotes', type: 13 },
-        { id: 14, name: 'Cancel all', type: 14 },
-        { id: 15, name: 'Виджет 15', type: 15 },
-        { id: 16, name: 'Виджет 16', type: 16 },
+      widgets: [
+        { name: 'Data Fabric', param: 0, type: 1 },
+        { name: 'Alor statistics', param: 0, type: 2, gridColumn: 'span 2' },
+        { name: 'Manual order', param: 0, type: 3, gridRow: 'span 2' },
+        { name: 'Top deals', param: 0, type: 4, gridRow: 'span 3' },
+        { name: 'Orders creator', param: 0, type: 5 },
+        { name: 'Limit orders', param: 0, type: 6 },
+        { name: 'Positions', param: 0, type: 7 },
+        { name: 'Summary', param: 0, type: 8, gridColumn: 'span 4', gridRow: 'span 2' },
+        { name: 'Signals', param: 0, type: 9, gridRow: 'span 4'},
+        { name: 'Trades', param: 0, type: 10, gridRow: 'span 4'},
+        { name: 'Orderbooks', param: 0, type: 11, gridRow: 'span 4'},
+        { name: 'Candles', param: 0, type: 12, gridRow: 'span 4'},
+        { name: 'Quotes', param: 0, type: 13, gridRow: 'span 4'},
+        { name: 'Cancel all', param: 0, type: 14 },
+        { name: 'Виджет 15', param: 0, type: 15 },
+        { name: 'Виджет 16', param: 0, type: 16 },
       ],
 
       selectedOrders: [],
