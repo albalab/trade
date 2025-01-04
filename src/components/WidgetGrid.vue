@@ -25,7 +25,7 @@
           transform: !isSidebarShow ? `translateX(-180px)` : null
         }">
 
-      <div class="pane-hr"></div>
+      <div class="pane-hr" style="position: fixed; top: 30px; width: 100%; z-index: 100;"></div>
 
       <div style="position: relative;">
         <h2 class="pane-title">Сетка</h2>
@@ -82,7 +82,7 @@
           <i class="fat fa-arrows-rotate"></i>
         </div>
         <h2 class="pane-title">Виджеты</h2>
-        <div class="widgets-add" style="max-height: 380px; overflow-y: auto;">
+        <div class="widgets-add">
           <ol class="widgets" id="widgetList">
             <li class="widget"
                 @click="incrementParam(wIndex)"

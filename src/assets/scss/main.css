@@ -183,7 +183,6 @@ a{
     user-select: none;
     margin-bottom: 20px;
     display: block;
-    padding-top: 30px;
     /*transition: transform 0.2s cubic-bezier(0.19, 1, 0.22, 1), margin 0.2s cubic-bezier(0.19, 1, 0.22, 1);*/
     width: 180px;
     height: 100vh;
@@ -191,8 +190,10 @@ a{
     top: 0;
     bottom: 0;
     z-index: 200;
+    border-top: solid 30px #31354a;
     background: #31354a;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    overflow-y: auto;
     /*box-shadow: inset -1px 0 0 0 rgba(255,255,255,0.1);*/
 }
 .settings-pane .close{
@@ -357,7 +358,7 @@ a{
 }
 
 .widgets-add{
-    padding: 10px 0 0;
+    padding: 10px 0 100px;
     margin-bottom: 20px;
 }
 
