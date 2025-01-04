@@ -633,3 +633,73 @@ input[type=range]{
 .info{
     margin: 0 0 10px;
 }
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+    transform: scale(0.65);
+    transform-origin: left top;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-socket{
+    position: fixed;
+    right: 0;
+    top: 8px;
+    z-index: 300
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: none;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+    transition: 0.1s;
+    border-radius: 25px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 19px;
+    width: 19px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #777e8a;
+    transition: 0.1s;
+    border-radius: 50%;
+    box-shadow: none;
+}
+
+input:checked + .slider {
+    background-color: #7a42f4; /* насыщенный сиреневый */
+}
+
+input:checked + .slider:before {
+    background-color: #98ff98;
+    transform: translateX(25px);
+}
+
+.zoom-slider{
+    background: rgba(13,13,18,1);
+    padding: 8px 30px 6px;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    position: fixed;
+    z-index: 300;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: 200px;
+}

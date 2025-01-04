@@ -145,7 +145,7 @@
     <div class="main-view"
          :class="{ 'main-view-setup': isSidebarShow }"
          :style="{
-          transform: isSidebarShow ? `scale(1)` : null,
+          transform: isSidebarShow ? `scale(${zoomValue})` : null,
           marginLeft: isSidebarShow ? '200px' : '10px',
          }">
       <div class="lines-grid"
@@ -212,6 +212,20 @@
         </div>
       </div>
     </div>
+
+    <div class="zoom-slider"
+         v-if="isSidebarShow">
+      <input
+          type="range"
+          :min="0"
+          :max="100"
+          :value="getZoomSliderValue()"
+          @input="onZoomSliderInput"
+          style="margin: 0; padding: 0;"
+      />
+      <div style="text-align: center; color: #fff;">Текущее значение: {{ zoomValue.toFixed(2) }}</div>
+    </div>
+
   </div>
 </template>
 
@@ -233,7 +247,7 @@ export default {
       slider1Max: 200,
       sliderValue: 150,
       columnWidthMin: 80,
-      columnWidthMax: 300,
+      columnWidthMax: 800,
       columnsSlider: 4,
       rowsCount: 20,
       rowSliderMin: 0,
@@ -241,6 +255,10 @@ export default {
       rowSliderValue: 50,
       rowHeightMin: 80,
       rowHeightMax: 300,
+
+      zoomMin: 0.3,
+      zoomMax: 1.0,
+      zoomValue: 1.0,
     };
   },
   mounted() {
@@ -292,6 +310,16 @@ export default {
     },
   },
   methods: {
+
+    onZoomSliderInput(event) {
+      // Преобразование значения из диапазона [0, 100] в [zoomMin, zoomMax]
+      const value = parseFloat(event.target.value);
+      this.zoomValue = this.zoomMin + ((this.zoomMax - this.zoomMin) * value) / 100;
+    },
+    getZoomSliderValue() {
+      // Преобразование текущего значения zoomValue в диапазон [0, 100]
+      return ((this.zoomValue - this.zoomMin) / (this.zoomMax - this.zoomMin)) * 100;
+    },
 
     resetWidgetState() {
       // Сбрасываем параметры виджетов к их исходным значениям

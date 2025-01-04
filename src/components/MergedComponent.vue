@@ -1,11 +1,17 @@
 <template>
   <div class="panels-container">
 
-    <div style="position: fixed; right: 0; top: 0; z-index: 300">
-      <label>
-        <input type="checkbox" v-model="isRunning"/> Run
-      </label>
-    </div>
+
+<!--    <div class="toggle-socket">
+      <div class="toggle-switch">
+        <input
+            type="checkbox"
+            id="toggle"
+            v-model="isRunning"
+        />
+        <label for="toggle" class="slider"></label>
+      </div>
+    </div>-->
 
     <div v-if="isRunning">
       <AlorTrades v-show="false"/>
@@ -396,7 +402,7 @@ export default {
   data() {
     return {
 
-      isRunning: false,
+      isRunning: true,
 
       widgets: [
         { name: 'Data Fabric', param: 0, type: 1 },
