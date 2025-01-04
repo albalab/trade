@@ -9,6 +9,7 @@
 
           <h4>Data fabric stream</h4>
 
+          Total: {{dataFabricStore.sourceCounts.sourceTotalCount}}<br>
           Candles: {{dataFabricStore.sourceCounts.sourceCandlesCount}}<br>
           Trades: {{dataFabricStore.sourceCounts.sourceTradesCount}}<br>
           Orderbooks: {{dataFabricStore.sourceCounts.sourceOrderbooksCount}}<br>

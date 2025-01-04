@@ -2,14 +2,10 @@
   <div class="main-container">
 
     <div class="toolbar"
-         :style="{
-          borderWidth: isSidebarShow ? '200px' : '40px'
-         }">
-
+         :style="{ borderWidth: isSidebarShow ? '200px' : '40px' }">
       <div class="main-logo" style="padding-top: 3px; cursor: pointer;">
-        <a href="/#/mergedcomponent"><i class="fas fa-brain-circuit" style="font-size: 16px; "></i></a>
+        <a href="/#/mergedcomponent"><i class="fas fa-brain-circuit" style="font-size: 16px;"></i></a>
       </div>
-
     </div>
 
     <div
@@ -25,14 +21,21 @@
         class="settings-pane"
         id="settingsPane"
         :style="{
-        'boxShadow': !isSidebarShow ? 'none' : null,
-        'transform': !isSidebarShow ? `translateX(-180px)` : null
+          boxShadow: !isSidebarShow ? 'none' : null,
+          transform: !isSidebarShow ? `translateX(-180px)` : null
         }">
 
       <div class="pane-hr"></div>
 
-      <div>
+      <div style="position: relative;">
         <h2 class="pane-title">Сетка</h2>
+
+        <div
+            class="reset-grid"
+            @click="resetGridSettings"
+        >
+          <i class="fat fa-arrows-rotate"></i>
+        </div>
 
         <div style="padding: 4px 10px 14px;">
           <div class="main-view-ranges">
@@ -46,7 +49,6 @@
                   @input="onSliderInput"
               />
             </div>
-
             <div class="item">
               <div class="range-title">Высота ячеек: {{ currentRowHeight }}px </div>
               <input
@@ -57,7 +59,6 @@
                   @input="onRowSliderInput"
               />
             </div>
-
             <div class="item">
               <div class="range-title">Число колонок: {{ columnsSlider }}</div>
               <input
@@ -68,18 +69,20 @@
                   @input="onColumnsSliderInput"
               />
             </div>
-
           </div>
         </div>
-
         <div class="pane-hr"></div>
       </div>
 
-      <div>
+      <div style="position: relative;">
+        <div
+            class="reset-grid"
+            @click="resetWidgetState"
+        >
+          <i class="fat fa-arrows-rotate"></i>
+        </div>
         <h2 class="pane-title">Виджеты</h2>
-
-        <div class="widgets-add"
-             style="max-height: 380px; overflow-y: auto;">
+        <div class="widgets-add" style="max-height: 380px; overflow-y: auto;">
           <ol class="widgets" id="widgetList">
             <li class="widget"
                 @click="incrementParam(wIndex)"
@@ -87,7 +90,6 @@
                 :key="wIndex"
                 style="overflow: hidden;">
               <div class="name">{{ widget.name }}</div>
-
               <div style="float: right; width: 50%;" class="control-counter">
                 <div
                     class="item item-btn item-minus"
@@ -112,7 +114,6 @@
               </div>
             </li>
           </ol>
-
           <div style="padding-top: 4px;">
             <button
                 style="width: 100%;"
@@ -125,41 +126,34 @@
             </button>
           </div>
         </div>
-
       </div>
-
     </div>
 
     <div class="main-view"
          :class="{ 'main-view-setup': isSidebarShow }"
          :style="{
-          'transform': isSidebarShow ? `scale(1)` : null,
-          'marginLeft': isSidebarShow ? '200px' : '10px',
-          }">
-
+          transform: isSidebarShow ? `scale(1)` : null,
+          marginLeft: isSidebarShow ? '200px' : '10px',
+         }">
       <div class="lines-grid"
            :class="{'boost': isSidebarShow}"
            v-if="blocks.length === 0 || isSidebarShow">
-
         <div v-for="(item, i) in parseInt(columnsSlider)+1"
              :key="`v-${i}`"
              :style="{left: `${i * currentColumnWidth}px`}"
              class="lines-grid-v">
         </div>
-
         <div v-for="(item, i) in parseInt(requiredRows)+1"
              :key="`h-${i}`"
              :style="{top: `${i * currentRowHeight}px`}"
              class="lines-grid-h">
         </div>
       </div>
-
       <div
           class="main-grid"
           id="grid"
           :style="gridDynamicStyles"
       >
-
         <div
             v-for="(blockItem, index) in blocks"
             :key="blockItem.id"
@@ -174,9 +168,7 @@
             @dragleave="onDragLeave(index, $event)"
             @drop.prevent="onDrop(index, $event)"
         >
-
-            <slot :widget="blockItem"></slot>
-
+          <slot :widget="blockItem"></slot>
           <div
               v-if="isSidebarShow"
               class="drag-handle"
@@ -187,7 +179,6 @@
           >
             <i class="fat fa-thin fa-arrows-up-down-left-right"></i>
           </div>
-
           <div class="close-block"
                v-if="isSidebarShow"
                @click="removeBlock(blockItem.id)">
@@ -195,9 +186,7 @@
           </div>
         </div>
       </div>
-
     </div>
-
   </div>
 </template>
 
@@ -211,92 +200,105 @@ export default {
 
   data() {
     return {
-
       isSidebarShow: true,
-
-      // Исходный список «виртуальных» виджетов
       widgets: this.widgetsProps,
-
-      // Массив «фактических» блоков (каждый имеет уникальный id)
       blocks: [],
-      // Счётчик для генерации уникальных id
       nextBlockId: 1,
-
-      // Первый бегунок (ширина): 0..200
       slider1Min: 0,
       slider1Max: 200,
       sliderValue: 150,
       columnWidthMin: 80,
       columnWidthMax: 300,
-
-      // Второй бегунок (число колонок): 1..20
       columnsSlider: 4,
       rowsCount: 20,
-
-      // для бегунка высоты:
       rowSliderMin: 0,
       rowSliderMax: 200,
-      rowSliderValue: 50,   // начальное положение
+      rowSliderValue: 50,
       rowHeightMin: 80,
-      rowHeightMax: 300
+      rowHeightMax: 300,
     };
   },
   mounted() {
+    this.restoreGridSettings();
     this.restoreState();
-    //console.log(this.blocks)
     this.buildBlocksArrayFromWidgets();
   },
   computed: {
-
-    // Расчет минимального количества строк
     requiredRows() {
       const totalColumns = parseInt(this.columnsSlider);
       let totalBlocks = 0;
-
-      // Учитываем количество блоков с их размерами
       this.blocks.forEach((block) => {
         const blockHeight = block.type === 4 ? 3 : block.type === 3 ? 2 : 1;
         const blockWidth = block.type === 2 ? 2 : 1;
         totalBlocks += blockHeight * blockWidth;
       });
-
       let rows = Math.ceil(totalBlocks / totalColumns);
-      if(rows < 5) rows = 5;
-      return rows + 5; // С запасом можно умножить на коэффициент (например, 1.2)
+      if (rows < 5) rows = 5;
+      return rows + 5;
     },
-
-    // Простая линейная интерполяция для ширины
     currentColumnWidth() {
       const t = (this.sliderValue - this.slider1Min) / (this.slider1Max - this.slider1Min);
-      const clampedT = Math.max(0, Math.min(1, t));
       return Math.round(
-          this.columnWidthMin + (this.columnWidthMax - this.columnWidthMin) * clampedT
+          this.columnWidthMin + (this.columnWidthMax - this.columnWidthMin) * t
       );
     },
-
-    // НОВАЯ линейная интерполяция для высоты
     currentRowHeight() {
       const t = (this.rowSliderValue - this.rowSliderMin) / (this.rowSliderMax - this.rowSliderMin);
-      const clampedT = Math.max(0, Math.min(1, t));
       return Math.round(
-          this.rowHeightMin + (this.rowHeightMax - this.rowHeightMin) * clampedT
+          this.rowHeightMin + (this.rowHeightMax - this.rowHeightMin) * t
       );
     },
-
-    // Стили для #grid: число колонок, ширина колонки, высота строки
     gridDynamicStyles() {
       return {
         display: 'grid',
-        //gridGap: '5px',
         gridTemplateColumns: `repeat(${this.columnsSlider}, ${this.currentColumnWidth}px)`,
-        // Вместо жёсткого 20x200px: заменяем 20 на любое количество строк,
-        // но самое главное — высоту rows => currentRowHeight
         gridTemplateRows: `repeat(${this.requiredRows}, ${this.currentRowHeight}px)`,
         gridAutoFlow: 'row dense',
       };
-    }
+    },
   },
   methods: {
+
+    resetWidgetState() {
+      // Сбрасываем параметры виджетов к их исходным значениям
+      this.widgets = this.widgetsProps.map(widget => ({
+        ...widget,
+        param: 0, // Обнуляем количество для каждого виджета
+      }));
+
+      // Сбрасываем массив блоков и счётчик ID
+      this.blocks = [];
+      this.nextBlockId = 1;
+
+      // Сохраняем состояние
+      this.saveState();
+    },
+
+    resetGridSettings() {
+      this.sliderValue = 150;
+      this.rowSliderValue = 50;
+      this.columnsSlider = 4;
+      this.saveGridSettings();
+    },
+
+    saveGridSettings() {
+      const gridSettings = {
+        sliderValue: this.sliderValue,
+        rowSliderValue: this.rowSliderValue,
+        columnsSlider: this.columnsSlider,
+      };
+      localStorage.setItem('gridSettings', JSON.stringify(gridSettings));
+    },
+
+    restoreGridSettings() {
+      const savedGridSettings = localStorage.getItem('gridSettings');
+      if (savedGridSettings) {
+        const parsedGridSettings = JSON.parse(savedGridSettings);
+        this.sliderValue = parsedGridSettings.sliderValue || this.sliderValue;
+        this.rowSliderValue = parsedGridSettings.rowSliderValue || this.rowSliderValue;
+        this.columnsSlider = parsedGridSettings.columnsSlider || this.columnsSlider;
+      }
+    },
 
     saveState() {
       const state = {
@@ -306,10 +308,8 @@ export default {
       };
       localStorage.setItem('widgetGridState', JSON.stringify(state));
     },
-
     restoreState() {
       const savedState = localStorage.getItem('widgetGridState');
-      //console.log(savedState);
       if (savedState) {
         const parsedState = JSON.parse(savedState);
         this.widgets = parsedState.widgets || this.widgets;
@@ -371,10 +371,7 @@ export default {
       this.nextBlockId = 1;
       this.widgets.forEach((w) => {
         for (let i = 0; i < w.param; i++) {
-          this.blocks.push({
-            id: this.nextBlockId++,
-            ...w,
-          });
+          this.blocks.push({ id: this.nextBlockId++, ...w });
         }
       });
     },
@@ -391,13 +388,13 @@ export default {
 
     // Бегунки
     onSliderInput() {
-      // Колонки (ширина)
+      this.saveGridSettings();
     },
     onColumnsSliderInput() {
-      // Число колонок
+      this.saveGridSettings();
     },
     onRowSliderInput() {
-      // НОВЫЙ метод для высоты
+      this.saveGridSettings();
     },
 
     // === DRAG & DROP ===
@@ -443,16 +440,15 @@ export default {
       }
     },
   },
-
   watch: {
     blocks: {
       handler: "saveState",
-      deep: true
+      deep: true,
     },
     widgets: {
       handler: "saveState",
-      deep: true
-    }
+      deep: true,
+    },
   },
 };
 </script>
