@@ -223,7 +223,7 @@
           @input="onZoomSliderInput"
           style="margin: 0; padding: 0;"
       />
-      <div style="text-align: center; color: #fff;">Текущее значение: {{ zoomValue.toFixed(2) }}</div>
+      <div style="text-align: center; color: #fff;">{{ zoomValue.toFixed(2) }}</div>
     </div>
 
   </div>

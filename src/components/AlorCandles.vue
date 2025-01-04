@@ -1,20 +1,17 @@
 <template>
   <div>
-    Total Candles: {{candlesStore.candleCounter}}<br>
-    <StatisticRenderer v-if="candlesStore.newCandles" :items="candlesStore.newCandles" />
+
   </div>
 </template>
 
 <script>
 import { useCandlesStore } from '@/stores/candlesStore';
-import StatisticRenderer from "@/components/StatisticRenderer.vue";
+
 import { tickers, tickersSteps } from "@/tickers";
 import webSocketService from "@/services/WebSocketService";
 
 export default {
   name: "alor-candles",
-
-  components: { StatisticRenderer },
 
   setup() {
     const candlesStore = useCandlesStore();

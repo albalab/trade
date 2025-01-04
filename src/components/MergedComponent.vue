@@ -2,7 +2,7 @@
   <div class="panels-container">
 
 
-<!--    <div class="toggle-socket">
+    <div class="toggle-socket">
       <div class="toggle-switch">
         <input
             type="checkbox"
@@ -11,7 +11,7 @@
         />
         <label for="toggle" class="slider"></label>
       </div>
-    </div>-->
+    </div>
 
     <div v-if="isRunning">
       <AlorTrades v-show="false"/>
@@ -207,7 +207,7 @@
                 @select-ticker="selectTicker"
             />
 
-            <AlorTrades :profitPercent="profitPercent"/>
+<!--            <AlorTrades :profitPercent="profitPercent"/>-->
 
         </div>
 
@@ -220,16 +220,12 @@
                 @select-ticker="selectTicker"
             />
 
-            <AlorOrderbooks />
+<!--            <AlorOrderbooks />-->
 
         </div>
 
         <div v-if="widget.type === 12"
              :data="widget">
-
-          <div class="panel">
-
-            <h2>Candles</h2>
 
             <AlorStatsDiagram
                 :totalItemsStats="candlesStore?.accumulatedCandlesStats"
@@ -237,8 +233,6 @@
                 @select-ticker="selectTicker"
             />
 
-            <AlorCandles />
-          </div>
         </div>
 
         <div v-if="widget.type === 13"
@@ -250,7 +244,7 @@
                 @select-ticker="selectTicker"
             />
 
-            <AlorQuotes />
+<!--            <AlorQuotes />-->
 
         </div>
 
@@ -274,6 +268,10 @@
 
         <div v-if="widget.type === 16"
              :data="widget">
+
+          <StatisticRenderer v-if="candlesStore.newCandles" :items="candlesStore.newCandles" />
+          <StatisticRenderer v-if="tradesStore.newTrades" :items="tradesStore.newTrades" />
+          <StatisticRenderer v-if="orderbooksStore.newOrderbooks" :items="orderbooksStore.newOrderbooks" />
 
         </div>
 
@@ -365,6 +363,7 @@ import AlorOrderbooks from '@/components/AlorOrderbooks.vue';
 import AlorCandles from '@/components/AlorCandles.vue';
 import AlorQuotes from '@/components/AlorQuotes.vue';
 import LevelsRenderer from "@/components/LevelsRenderer.vue";
+import StatisticRenderer from "@/components/StatisticRenderer.vue";
 
 export default {
   name: 'MergedComponent',
@@ -379,6 +378,7 @@ export default {
   },
 
   components: {
+    StatisticRenderer,
     PositionsStream,
     DataFabric,
     CreateOrder,
@@ -402,7 +402,7 @@ export default {
   data() {
     return {
 
-      isRunning: true,
+      isRunning: false,
 
       widgets: [
         { name: 'Data Fabric', param: 0, type: 1 },
@@ -420,7 +420,7 @@ export default {
         { name: 'Quotes', param: 0, type: 13, gridRow: 'span 4'},
         { name: 'Cancel All', param: 0, type: 14 },
         { name: 'Виджет 15', param: 0, type: 15, gridRow: 'span 2' },
-        { name: 'Виджет 16', param: 0, type: 16 },
+        { name: 'Виджет 16', param: 0, type: 16, gridRow: 'span 3' },
       ],
 
       selectedOrders: [],
