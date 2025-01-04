@@ -252,15 +252,24 @@ export default {
     requiredRows() {
       const totalColumns = parseInt(this.columnsSlider);
       let totalBlocks = 0;
+
       this.blocks.forEach((block) => {
-        const blockHeight = block.type === 4 ? 3 : block.type === 3 ? 2 : 1;
-        const blockWidth = block.type === 2 ? 2 : 1;
-        totalBlocks += blockHeight * blockWidth;
+        const gridRowSpan = block.gridRow ? parseInt(block.gridRow.replace('span ', '')) : 1;
+        const gridColumnSpan = block.gridColumn ? parseInt(block.gridColumn.replace('span ', '')) : 1;
+
+        totalBlocks += gridRowSpan * gridColumnSpan;
       });
+
+      // Рассчитываем минимальное количество строк
       let rows = Math.ceil(totalBlocks / totalColumns);
-      if (rows < 5) rows = 5;
+
+      // Гарантируем, что минимум 5 строк есть
+      rows = Math.max(rows, 5);
+
+      // Добавляем дополнительные строки для запасного пространства
       return rows + 5;
     },
+
     currentColumnWidth() {
       const t = (this.sliderValue - this.slider1Min) / (this.slider1Max - this.slider1Min);
       return Math.round(

@@ -14,7 +14,7 @@
               </div>
               <div class="progress-bar-container">
                 <div
-                    class="progress-bar"
+                    class="progress-ba-fill"
                     :style="{ width: `${(count / Math.max(...Object.values(totalItemsStats))) * 100}%` }">
                 </div>
               </div>
@@ -35,7 +35,7 @@
               </div>
               <div class="progress-bar-container">
                 <div
-                    class="progress-bar"
+                    class="progress-bar-fill"
                     :style="{ width: `${(count / Math.max(...Object.values(streamItemsStats))) * 100}%` }">
                 </div>
               </div>

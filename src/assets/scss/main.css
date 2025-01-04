@@ -609,13 +609,13 @@ input[type=range]{
     height: 300px;
 }
 .progress-bar-container {
-    background: #675b7c;
+    background: #5b5d7c;
     height: 4px;
     border-radius: 5px;
     overflow: hidden;
 }
 
-.progress-bar {
+.progress-bar-fill {
     background: #007bff;
     height: 100%;
 }

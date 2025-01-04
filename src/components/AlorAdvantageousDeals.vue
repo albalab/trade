@@ -85,7 +85,6 @@ export default {
   text-decoration: underline;
 }
 .adv{
-  background: #313440;
   border: solid 1px rgba(255,255,255,0.1);
   padding: 10px;
   margin: 0 0 10px;
