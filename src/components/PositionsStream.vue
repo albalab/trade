@@ -10,7 +10,10 @@ export default {
   name: "PositionsStream",
   data() {
     return {
-      positions: {}, // Реактивный массив для позиций
+      positions: {
+        /*"SBER": { "volume": 2726.7, "currentVolume": 2726.6, "symbol": "SBER", "brokerSymbol": "MOEX:SBER", "portfolio": "D88141", "exchange": "MOEX", "avgPrice": 272.67, "qtyUnits": 10, "openUnits": 0, "lotSize": 10, "shortName": "Сбербанк", "qtyT0": 0, "qtyT1": 10, "qtyT2": 10, "qtyTFuture": 10, "qtyT0Batch": 0, "qtyT1Batch": 1, "qtyT2Batch": 1, "qtyTFutureBatch": 1, "qtyBatch": 1, "openQtyBatch": 0, "qty": 1, "open": 0, "dailyUnrealisedPl": -67.7, "unrealisedPl": -0.1, "isCurrency": false, "existing": false }
+      */
+      },
     };
   },
   methods: {

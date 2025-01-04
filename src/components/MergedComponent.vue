@@ -469,27 +469,27 @@ export default {
     return {
 
       blocks: [
-        { id: 1, name: 'Стакан 1', type: 1 },
-        { id: 2, name: 'Ордера 2', type: 2 },
-        { id: 3, name: 'Лимитки 3', type: 3 },
-        { id: 4, name: 'Лимитки 4', type: 4 },
-        { id: 5, name: 'Лимитки 5', type: 5 },
-        { id: 6, name: 'Лимитки 6', type: 6 },
-        { id: 7, name: 'Лимитки 7', type: 7 },
-        { id: 8, name: 'Лимитки 8', type: 8 },
+        { id: 1, name: 'Data Fabric', type: 1 },
+        { id: 2, name: 'Alor items stats', type: 2 },
+        { id: 3, name: 'Manual order', type: 3 },
+        { id: 4, name: 'Top deals', type: 4 },
+        { id: 5, name: 'Orders creator', type: 5 },
+        { id: 6, name: 'Limit orders', type: 6 },
+        { id: 7, name: 'Positiona', type: 7 },
+        { id: 8, name: 'Summary', type: 8 },
         { id: 9, name: 'Signals', type: 9 },
         { id: 10, name: 'Trades', type: 10 },
         { id: 11, name: 'Orderbooks', type: 11 },
         { id: 12, name: 'Candles', type: 12},
         { id: 13, name: 'Quotes', type: 13 },
-        { id: 14, name: 'Виджет 14', type: 14 },
+        { id: 14, name: 'Cancel all', type: 14 },
         { id: 15, name: 'Виджет 15', type: 15 },
         { id: 16, name: 'Виджет 16', type: 16 },
       ],
 
       selectedOrders: [],
       limitOrders: [
-        {
+        /*{
           data: {
             symbol: "SBER",
             orderNumber: 3214543,
@@ -500,7 +500,7 @@ export default {
             symbol: "LKOH",
             orderNumber: 3214547,
           }
-        }
+        }*/
       ],
 
       /*[
@@ -1392,169 +1392,3 @@ export default {
 
 }
 </script>
-
-<style>
-.table-trade .th-arrow{
-  position: absolute;
-  margin-left: 2px;
-}
-.table-trade{
-  border-collapse: collapse;
-  color: rgba(209, 214, 247, 0.9);
-  background: #2b2d39;
-}
-.table-trade .table-cell{
-  border: solid 1px rgba(255,255,255,0.1);
-  padding: 2px 5px;
-}
-.table-trade .table-cell:first-child{
-  padding-left: 20px;
-}
-.table-trade .table-cell:last-child{
-  padding-right: 20px;
-}
-
-.table-trade .table-row:hover .table-cell{
-  background: rgba(234, 229, 255, 0.1);
-}
-.table-trade .table-row.selected .table-cell{
-  background: rgba(124, 41, 186, 0.69);
-}
-.table-trade .table-row:first-child .table-cell{
-  padding-top: 10px;
-  padding-bottom: 5px;
-  max-width: 46px;
-  overflow: hidden;
-}
-.table-trade .table-cell{
-  white-space: nowrap;
-}
-.table-trade .table-head{
-  user-select: none;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.table{
-  display: table;
-}
-.table-row{
-  display: table-row;
-}
-.table-cell{
-  height: 12px;
-  display: table-cell;
-  vertical-align: middle;
-}
-
-.panels-container{
-
-}
-.panels-grid{
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-}
-.panel{
-  padding-top: 10px;
-  width: 100%;
-  /*height: 100px;*/
-  overflow: hidden;
-}
-
-.items{
-  display: table;
-}
-.items-wrap{
-  display: table-row;
-  border-bottom: solid 1px #eee;
-}
-.items .item{
-  display: table-cell;
-  line-height: 10px;
-  padding: 0 10px;
-}
-
-
-.container {
-  position: relative;
-}
-
-.row {
-  margin: 0 0 2px;
-  display: grid;
-}
-
-.block {
-  height: 10px;
-  background: #ccc;
-}
-
-.buy-bar {
-  height: 50%;
-  background-color: green;
-}
-
-.sell-bar {
-  height: 50%;
-  background-color: red;
-}
-
-.trade-cell{
-  width: 60px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.select-ticker{
-  cursor: pointer;
-}
-
-.limit-orders{
-  background: #2b2d39;
-  margin: 0 0 20px;
-  padding: 20px;
-  border-radius: 6px;
-}
-.limit-orders-head{
-  padding: 0 0 12px;
-  border-bottom: solid 1px #3c3f54;
-}
-.limit-orders-row:hover{
-  background: rgba(0,0,0,0.1);
-}
-.limit-orders-row{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border-bottom: solid 1px #3c3f54;
-  padding: 1px 0;
-}
-.limit-orders .close-button{
-  text-align: right;
-}
-.limit-orders .close-button button{
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: #d1d6f7;
-}
-
-.limit-orders-buttons{
-  padding: 10px 0 0;
-}
-
-.checkbox-label{
-  position: relative;
-  padding-left: 18px;
-}
-.checkbox-label .checkbox{
-  position: absolute;
-  left: 0;
-  top: -1px;
-  margin: 0;
-  padding: 0;
-}
-.limit-order{
-  padding-top: 3px;
-}
-
-
-</style>

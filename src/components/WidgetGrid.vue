@@ -1,50 +1,53 @@
 <template>
   <div class="main-container">
 
-    <div class="toolbar">
+    <div class="toolbar"
+         :style="{
+          borderWidth: isSidebarShow ? '200px' : '40px'
+         }">
 
-      <div
-          class="btn btn-settings"
-          id="settingsBtn"
-          @click="toggleSettingsPane"
-      >
-        Редактировать вид
-      </div>
+<!--      <div class="main-logo" style="padding-top: 3px; cursor: pointer;">
+        <a href="/#/mergedcomponent"><i class="fas fa-brain-circuit" style="font-size: 16px; "></i></a>
+      </div>-->
 
-      <div style="position: absolute; right: 20px; top: 16px;">
+    </div>
 
-<!--            Система обработки данных для трейдинга<br>-->
-
-
-            <!--    Система обработки торговых данных в реальном времени<br>
-                Система обработки рыночных данных<br>
-
-                Платформа для анализа рыночных данных<br>
-                Платформа для алгоритмической торговли<br>
-
-                Автоматизация торговли<br>-->
-
-
-      </div>
+    <div
+        class="btn-settings"
+        id="settingsBtn"
+        @click="toggleSettingsPane"
+    >
+      <i v-if="!isSidebarShow" class="fat fa-bars"></i>
+      <i v-else class="fat fa-xmark"></i>
     </div>
 
     <div
         class="settings-pane"
         id="settingsPane"
         :style="{
-        'boxShadow': !isPaneShow ? 'none' : null,
-        'transform': !isPaneShow ? `translateX(-180px)` : null
+        'boxShadow': !isSidebarShow ? 'none' : null,
+        'transform': !isSidebarShow ? `translateX(-180px)` : null
         }">
 
 <!--      <div
+          style="position: absolute; right: 0; top: 0; width: 30px; height: 30px;"
           class="close"
           id="settingsBtn"
           @click="toggleSettingsPane"
       >
-        X
+
       </div>-->
 
 
+      <!--      <div
+                class="close"
+                id="settingsBtn"
+                @click="toggleSettingsPane"
+            >
+              X
+            </div>-->
+
+      <div class="pane-hr"></div>
 
       <div>
         <h2 class="pane-title">Сетка</h2>
@@ -52,7 +55,7 @@
         <div style="padding: 4px 10px 14px;">
           <div class="main-view-ranges">
             <div class="item">
-              <div class="range-title">Шаг сетки, ширина: {{ currentColumnWidth }}px</div>
+              <div class="range-title">Ширина ячеек: {{ currentColumnWidth }}px</div>
               <input
                   type="range"
                   :min="slider1Min"
@@ -63,7 +66,7 @@
             </div>
 
             <div class="item">
-              <div class="range-title">Шаг сетки, высота: {{ currentRowHeight }}px </div>
+              <div class="range-title">Высота ячеек: {{ currentRowHeight }}px </div>
               <input
                   type="range"
                   :min="rowSliderMin"
@@ -97,6 +100,7 @@
              style="max-height: 380px; overflow-y: auto;">
           <ol class="widgets" id="widgetList">
             <li class="widget"
+                @click="incrementParam(wIndex)"
                 v-for="(widget, wIndex) in widgets"
                 :key="wIndex"
                 style="overflow: hidden;">
@@ -105,11 +109,11 @@
               <div style="float: right; width: 50%;" class="control-counter">
                 <div
                     class="item item-btn item-minus"
-                    @click="decrementParam(wIndex)"
+                    @click.stop="decrementParam(wIndex)"
                 >
-                  &larr;
+                  <i class="fat fa-chevron-left"></i>
                 </div>
-                <div class="item item-value">
+                <div class="item item-value" @click.stop>
                   <input
                       class="input"
                       :class="{'zero': widget.param == 0}"
@@ -119,9 +123,9 @@
                 </div>
                 <div
                     class="item item-btn item-plus"
-                    @click="incrementParam(wIndex)"
+                    @click.stop="incrementParam(wIndex)"
                 >
-                  &rarr;
+                  <i class="fat fa-chevron-right"></i>
                 </div>
               </div>
             </li>
@@ -131,7 +135,7 @@
             <button
                 style="width: 100%;"
                 :class="{'disable': blocks.length === 0}"
-                class="btn btn-mix"
+                class="btn btn-second btn-mix"
                 id="shuffleBtn"
                 @click="onShuffleClicked"
             >
@@ -140,11 +144,10 @@
           </div>
         </div>
 
-        <div class="pane-hr"></div>
       </div>
 
 
-      <div>
+<!--      <div>
         <div style="padding: 20px 10px 0; text-align: right;">
           <button
               class="btn"
@@ -154,20 +157,20 @@
             Ок
           </button>
         </div>
-      </div>
+      </div>-->
 
     </div>
 
     <div class="main-view"
-         :class="{ 'main-view-setup': isPaneShow }"
+         :class="{ 'main-view-setup': isSidebarShow }"
          :style="{
-          'transform': isPaneShow ? `scale(0.85)` : null,
-          'marginLeft': isPaneShow ? '200px' : '20px',
+          'transform': isSidebarShow ? `scale(1)` : null,
+          'marginLeft': isSidebarShow ? '200px' : '10px',
           }">
 
       <div class="lines-grid"
-           :class="{'boost': isPaneShow}"
-           v-if="blocks.length === 0 || isPaneShow">
+           :class="{'boost': isSidebarShow}"
+           v-if="blocks.length === 0 || isSidebarShow">
 
         <div v-for="(item, i) in parseInt(columnsSlider)+1"
              :key="`v-${i}`"
@@ -218,13 +221,15 @@
 <!--          </div>-->
           <!-- Красная «ручка» для перетаскивания -->
           <div
-              v-if="isPaneShow"
+              v-if="isSidebarShow"
               class="drag-handle"
               draggable="true"
               :data-block-id="blockItem.id"
               @dragstart="onDragStart(blockItem.id, $event)"
               @dragend="onDragEnd($event)"
-          ></div>
+          >
+            <i class="fa-thin fa-arrows-up-down-left-right"></i>
+          </div>
         </div>
       </div>
 
@@ -239,24 +244,24 @@ export default {
   data() {
     return {
 
-      isPaneShow: true,
+      isSidebarShow: true,
 
       // Исходный список «виртуальных» виджетов
       widgets: [
-        { name: 'Виджет 1', param: 0, type: 1 },
-        { name: 'Виджет 2', param: 0, type: 2 },
-        { name: 'Виджет 3', param: 0, type: 3 },
-        { name: 'Виджет 4', param: 0, type: 4 },
-        { name: 'Виджет 5', param: 0, type: 5 },
-        { name: 'Виджет 6', param: 0, type: 6 },
-        { name: 'Виджет 7', param: 0, type: 7 },
-        { name: 'Виджет 8', param: 0, type: 8 },
+        { name: 'Data Fabric', param: 0, type: 1 },
+        { name: 'Alor items stats', param: 0, type: 2 },
+        { name: 'Manual order', param: 0, type: 3 },
+        { name: 'Top deals', param: 0, type: 4 },
+        { name: 'Orders creator', param: 0, type: 5 },
+        { name: 'Limit orders', param: 0, type: 6 },
+        { name: 'Positions', param: 0, type: 7 },
+        { name: 'Summary', param: 0, type: 8 },
         { name: 'Signals', param: 0, type: 9 },
         { name: 'Trades', param: 0, type: 10 },
         { name: 'Orderbooks', param: 0, type: 11 },
         { name: 'Candles', param: 0, type: 12 },
-        { name: 'Quotes hist', param: 0, type: 13 },
-        { name: 'Виджет 14', param: 0, type: 14 },
+        { name: 'Quotes', param: 0, type: 13 },
+        { name: 'Cancel all', param: 0, type: 14 },
         { name: 'Виджет 15', param: 0, type: 15 },
         { name: 'Виджет 16', param: 0, type: 16 },
       ],
@@ -274,7 +279,7 @@ export default {
       columnWidthMax: 300,
 
       // Второй бегунок (число колонок): 1..20
-      columnsSlider: 5,
+      columnsSlider: 4,
       rowsCount: 20,
 
       // для бегунка высоты:
@@ -358,7 +363,7 @@ export default {
 
     // Кнопка «Настройки вида»
     toggleSettingsPane() {
-      this.isPaneShow = !this.isPaneShow;
+      this.isSidebarShow = !this.isSidebarShow;
     },
 
     // Уменьшить / Увеличить param

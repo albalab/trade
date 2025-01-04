@@ -1,3 +1,11 @@
+import '@/assets/scss/main.css'
+
+import '@/assets/scss/fonts/fontawesome/css/fontawesome.css'
+// import '@/assets/scss/fonts/fontawesome/css/sharp-light.css'
+//import '@/assets/scss/fonts/fontawesome/css/light.css'
+import '@/assets/scss/fonts/fontawesome/css/thin.css'
+import '@/assets/scss/fonts/fontawesome/css/solid.css'
+
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './routes';

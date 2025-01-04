@@ -91,7 +91,7 @@ export default {
   height: 350px;
 }
 .progress-bar-container {
-  background: #f0f0f0;
+  background: #675b7c;
   height: 4px;
   border-radius: 5px;
   overflow: hidden;
@@ -110,7 +110,7 @@ export default {
 }
 
 .highlighted {
-  color: #ff0bf7;
+  color: #e646ff;
 }
 .info{
   margin: 0 0 10px;
