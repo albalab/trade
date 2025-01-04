@@ -218,7 +218,7 @@ a{
     text-align: center;
 }
 .pane-title{
-    padding: 12px 10px 0;
+    padding: 12px 12px 0;
     font-size: 9px;
     text-transform: uppercase;
     color: #c3c8eb;
@@ -313,7 +313,7 @@ a{
 }
 .control-counter .item{
     height: 14px;
-    line-height: 12px;
+    line-height: 14px;
     display: block;
     float: left;
 }
@@ -357,7 +357,7 @@ a{
 }
 
 .widgets-add{
-    padding: 10px 10px 0;
+    padding: 10px 0 0;
     margin-bottom: 20px;
 }
 
@@ -366,15 +366,36 @@ a{
 }
 .widgets .widget{
     margin: 0;
-    padding: 2px 0;
+    padding: 2px 12px;
     cursor: pointer;
 }
-.widgets .widget:hover{
-    background: rgba(0,0,0,0.1);
+.widgets .widget:hover .control-counter .item{
+    color: white;
 }
+.widgets .widget:hover{
+    color: white;
+    background: rgba(162, 70 ,255, 1);
+}
+.widgets .widget:hover input{
+    color: white;
+}
+.widgets .widget:hover .widget-add-plus{
+    display: block;
+}
+.widgets .widget .fa-plus{
+    position: absolute;
+    margin-left: -8px;
+    margin-top: 4px;
+    font-size: 6px;
+    display: none;
+}
+.widgets .widget:hover .fa-plus{
+    display: block;
+}
+
 .widgets .name{
     float: left;
-    width: 70%;
+    width: 60%;
     padding-top: 1px;
     white-space: nowrap;
     overflow: hidden;

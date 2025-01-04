@@ -37,7 +37,7 @@
           <i class="fat fa-arrows-rotate"></i>
         </div>
 
-        <div style="padding: 4px 10px 14px;">
+        <div style="padding: 4px 12px 14px;">
           <div class="main-view-ranges">
             <div class="item">
               <div class="range-title">Ширина ячеек: {{ currentColumnWidth }}px</div>
@@ -89,6 +89,9 @@
                 v-for="(widget, wIndex) in widgets"
                 :key="wIndex"
                 style="overflow: hidden;">
+
+              <i class="fas fa-plus"></i>
+
               <div class="name">{{ widget.name }}</div>
               <div style="float: right; width: 50%;" class="control-counter">
                 <div
@@ -114,7 +117,7 @@
               </div>
             </li>
           </ol>
-          <div style="padding-top: 4px;">
+          <div style="padding: 4px 12px 0;">
             <button
                 style="width: 100%;"
                 :class="{'disable': blocks.length === 0}"
@@ -168,7 +171,9 @@
             @dragleave="onDragLeave(index, $event)"
             @drop.prevent="onDrop(index, $event)"
         >
+
           <slot :widget="blockItem"></slot>
+
           <div
               v-if="isSidebarShow"
               class="drag-handle"
@@ -179,11 +184,13 @@
           >
             <i class="fat fa-thin fa-arrows-up-down-left-right"></i>
           </div>
+
           <div class="close-block"
                v-if="isSidebarShow"
                @click="removeBlock(blockItem.id)">
             <i class="fat fa-xmark"></i>
           </div>
+
         </div>
       </div>
     </div>
@@ -328,7 +335,9 @@ export default {
       // Удаляем все символы, кроме цифр
       const numericValue = inputValue.replace(/\D/g, '');
       // Обновляем значение `param` для виджета
-      this.widgets[index].param = numericValue ? parseInt(numericValue, 10) : 0;
+      let p = numericValue ? parseInt(numericValue, 10) : 0;
+      if(p > 100) p = 100;
+      this.widgets[index].param = p;
 
       // При необходимости вызываем метод для обновления интерфейса
       this.buildBlocksArrayFromWidgets();
