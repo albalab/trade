@@ -6,9 +6,9 @@
           borderWidth: isSidebarShow ? '200px' : '40px'
          }">
 
-<!--      <div class="main-logo" style="padding-top: 3px; cursor: pointer;">
+      <div class="main-logo" style="padding-top: 3px; cursor: pointer;">
         <a href="/#/mergedcomponent"><i class="fas fa-brain-circuit" style="font-size: 16px; "></i></a>
-      </div>-->
+      </div>
 
     </div>
 
@@ -28,24 +28,6 @@
         'boxShadow': !isSidebarShow ? 'none' : null,
         'transform': !isSidebarShow ? `translateX(-180px)` : null
         }">
-
-<!--      <div
-          style="position: absolute; right: 0; top: 0; width: 30px; height: 30px;"
-          class="close"
-          id="settingsBtn"
-          @click="toggleSettingsPane"
-      >
-
-      </div>-->
-
-
-      <!--      <div
-                class="close"
-                id="settingsBtn"
-                @click="toggleSettingsPane"
-            >
-              X
-            </div>-->
 
       <div class="pane-hr"></div>
 
@@ -146,19 +128,6 @@
 
       </div>
 
-
-<!--      <div>
-        <div style="padding: 20px 10px 0; text-align: right;">
-          <button
-              class="btn"
-              id="settingsBtn"
-              @click="toggleSettingsPane"
-          >
-            Ок
-          </button>
-        </div>
-      </div>-->
-
     </div>
 
     <div class="main-view"
@@ -190,36 +159,20 @@
           id="grid"
           :style="gridDynamicStyles"
       >
-        <!-- Отрисовываем каждый блок из массива blocks -->
+
         <div
             v-for="(blockItem, index) in blocks"
             :key="blockItem.id"
             class="widget-block"
-            :class="[
-              blockItem.type === 1 ? 'widget-type1' : '',
-              blockItem.type === 2 ? 'widget-type2' : '',
-              blockItem.type === 3 ? 'widget-type3' : '',
-              blockItem.type === 4 ? 'widget-type4' : '',
-              blockItem.type === 5 ? 'widget-type5' : '',
-              blockItem.type === 6 ? 'widget-type6' : '',
-              blockItem.type === 7 ? 'widget-type7' : '',
-              blockItem.type === 8 ? 'widget-type8' : '',
-              blockItem.type === 9 ? 'widget-type9' : '',
-              blockItem.type === 10 ? 'widget-type10' : '',
-              blockItem.type === 11 ? 'widget-type11' : '',
-              blockItem.type === 12 ? 'widget-type12' : '',
-              blockItem.type === 13 ? 'widget-type13' : '',
-            ]"
+            :class="`widget-type${blockItem.type}`"
             @dragenter.prevent="onDragEnter(index, $event)"
             @dragover.prevent="onDragOver($event)"
             @dragleave="onDragLeave(index, $event)"
             @drop.prevent="onDrop(index, $event)"
         >
-<!--          <div class="widget-block-inner">-->
+
             <slot :block="blockItem"></slot>
-<!--            {{ blockItem.name }}-->
-<!--          </div>-->
-          <!-- Красная «ручка» для перетаскивания -->
+
           <div
               v-if="isSidebarShow"
               class="drag-handle"
@@ -228,7 +181,13 @@
               @dragstart="onDragStart(blockItem.id, $event)"
               @dragend="onDragEnd($event)"
           >
-            <i class="fa-thin fa-arrows-up-down-left-right"></i>
+            <i class="fat fa-thin fa-arrows-up-down-left-right"></i>
+          </div>
+
+          <div class="close-block"
+               v-if="isSidebarShow"
+               @click="removeBlock(blockItem.id)">
+            <i class="fat fa-xmark"></i>
           </div>
         </div>
       </div>
@@ -291,6 +250,8 @@ export default {
     };
   },
   mounted() {
+    this.restoreState();
+    //console.log(this.blocks)
     this.buildBlocksArrayFromWidgets();
   },
   computed: {
@@ -345,6 +306,26 @@ export default {
   },
   methods: {
 
+    saveState() {
+      const state = {
+        widgets: this.widgets,
+        blocks: this.blocks,
+        nextBlockId: this.nextBlockId,
+      };
+      localStorage.setItem('widgetGridState', JSON.stringify(state));
+    },
+
+    restoreState() {
+      const savedState = localStorage.getItem('widgetGridState');
+      //console.log(savedState);
+      if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        this.widgets = parsedState.widgets || this.widgets;
+        this.blocks = parsedState.blocks || this.blocks;
+        this.nextBlockId = parsedState.nextBlockId || this.nextBlockId;
+      }
+    },
+
     selectInput(event) {
       // Программно выделяем текст в поле ввода
       event.target.select();
@@ -364,6 +345,18 @@ export default {
     // Кнопка «Настройки вида»
     toggleSettingsPane() {
       this.isSidebarShow = !this.isSidebarShow;
+    },
+
+    removeBlock(blockId) {
+      const blockIndex = this.blocks.findIndex(block => block.id === blockId);
+      if (blockIndex !== -1) {
+        const block = this.blocks[blockIndex];
+        const widgetIndex = this.widgets.findIndex(widget => widget.name === block.name);
+        if (widgetIndex !== -1 && this.widgets[widgetIndex].param > 0) {
+          this.widgets[widgetIndex].param--;
+        }
+        this.blocks.splice(blockIndex, 1);
+      }
     },
 
     // Уменьшить / Увеличить param
@@ -458,7 +451,18 @@ export default {
         this.blocks.splice(insertIndex, 0, draggedBlock);
       }
     },
-  }
+  },
+
+  watch: {
+    blocks: {
+      handler: "saveState",
+      deep: true
+    },
+    widgets: {
+      handler: "saveState",
+      deep: true
+    }
+  },
 };
 </script>
 

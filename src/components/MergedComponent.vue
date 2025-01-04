@@ -11,8 +11,8 @@
           Source counts: {{dataFabricStore}}<br>
         </div>
 
-        <div :data="block"
-             v-if="block.type === 2">
+        <div v-if="block.type === 2"
+             :data="block">
           <h3>Alor channels:</h3>
           Candles: {{candlesStore.sourceCandlesCount}}<br>
           Trades: {{tradesStore.sourceTradesCount}}<br>
@@ -20,8 +20,8 @@
           Quotes: {{quotesStore.sourceQuotesCount}}<br>
         </div>
 
-        <div :data="block"
-             v-if="block.type === 3">
+        <div v-if="block.type === 3"
+             :data="block">
 
           <h3>Manual order:</h3>
           <input v-model="priceOrder" placeholder="price"><br>
@@ -33,8 +33,8 @@
           </button>
         </div>
 
-        <div :data="block"
-             v-if="block.type === 4">
+        <div v-if="block.type === 4"
+             :data="block">
 
           <!-- Включение/выключение сохранения -->
           <div style="margin-bottom: 10px;">
@@ -69,9 +69,8 @@
 
         </div>
 
-        <!-- Виджет -->
-        <div :data="block"
-             v-if="block.type === 5">
+        <div v-if="block.type === 5"
+             :data="block">
 
           <div style="padding: 10px;">
             <h3>Группа ордеров (захардкожена)</h3>
@@ -86,9 +85,8 @@
           </div>
         </div>
 
-        <!-- Виджет -->
-        <div :data="block"
-             v-if="block.type === 6">
+        <div v-if="block.type === 6"
+             :data="block">
 
           <div>
 
@@ -149,16 +147,18 @@
 
         </div>
 
-        <div :data="block"
-             v-if="block.type === 7">
+        <div v-if="block.type === 7"
+             :data="block">
+
           <div>
             <h3>Real Positions:</h3>
             <PositionsStream />
           </div>
         </div>
 
-        <div :data="block"
-             v-if="block.type === 8">
+        <div v-if="block.type === 8"
+             :data="block">
+
           <div class="table table-trade">
             <div class="table-row table-head">
               <div class="table-cell"
@@ -194,8 +194,9 @@
           </div>
         </div>
 
-        <div :data="block"
-             v-if="block.type === 9">
+        <div v-if="block.type === 9"
+             :data="block">
+
           <div class="panel" style="height: 100px; overflow: auto;">
 
             <h2>Signals</h2>
@@ -220,8 +221,9 @@
           </div>
         </div>
 
-        <div :data="block"
-             v-if="block.type === 10">
+        <div v-if="block.type === 10"
+             :data="block">
+
           <div class="panel">
             <h2>Trades</h2>
 
@@ -273,8 +275,9 @@
 
         </div>
 
-        <div :data="block"
-             v-if="block.type === 11">
+        <div v-if="block.type === 11"
+             :data="block">
+
           <div class="panel">
 
             <h2>Orderbooks</h2>
@@ -291,8 +294,9 @@
           </div>
         </div>
 
-        <div :data="block"
-             v-if="block.type === 12">
+        <div v-if="block.type === 12"
+             :data="block">
+
           <div class="panel">
 
             <h2>Candles</h2>
@@ -307,8 +311,9 @@
           </div>
         </div>
 
-        <div :data="block"
-             v-if="block.type === 13">
+        <div v-if="block.type === 13"
+             :data="block">
+
           <div class="panel">
 
             <h2>Quotes</h2>
@@ -319,14 +324,14 @@
                 @select-ticker="selectTicker"
             />
 
-            <AlorQuotes
-                @update-quotes-counters="updateQuotesCounters"/>
+            <AlorQuotes />
 
           </div>
         </div>
 
-        <div :data="block"
-             v-if="block.type === 14">
+        <div v-if="block.type === 14"
+             :data="block">
+
           <button class="btn"
                   @click="cancelAllOrders()">
             Снять все
@@ -342,8 +347,8 @@
           </div>
         </div>
 
-        <div :data="block"
-             v-if="block.type === 16">
+        <div v-if="block.type === 16"
+             :data="block">
 
         </div>
 
@@ -1143,9 +1148,9 @@ export default {
 
 
 
-    updateQuotesCounters(quotesCounters) {
+    /*updateQuotesCounters(quotesCounters) {
       this.globalData.quotesCounters = quotesCounters;
-    },
+    },*/
 
     async sendGroupLimitOrders() {
       try {
