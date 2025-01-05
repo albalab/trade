@@ -1,7 +1,6 @@
 <template>
   <div class="panels-container">
 
-
     <div class="toggle-socket">
       <div class="toggle-switch">
         <input
@@ -27,66 +26,21 @@
           <DataFabric />
         </div>
 
-        <div v-if="widget.type === 3"
-             :data="widget">
+        <div v-if="widget.type === 3" :data="widget">
           <CreateOrder />
         </div>
 
-        <div v-if="widget.type === 4"
-             :data="widget">
-
-          <!-- Включение/выключение сохранения -->
-          <div style="margin-bottom: 10px;">
-            <label style="position: relative;">
-              <input type="checkbox" v-model="isSaveEnabled" style="position: absolute; left: 0; top: -1px;"/>
-              <span style="padding-left: 20px;">Включить сохранение в базу данных</span>
-            </label>
-          </div>
-
-          <div style="margin: 0 0 5px;">
-            <input type="text" v-model="profitPercent"/>
-          </div>
-
-          <!-- Топ 10 выгодных сделок (Покупки) -->
-          <AlorAdvantageousDeals
-              title="Выгодные сделки (Покупки)"
-              :deals="tradesStore?.tradesStatistics?.advantageousBuyDifferences"
-              operation="Buy"
-              @select-ticker="selectTicker"
-          />
-
-          <!-- Топ 10 выгодных сделок (Продажи) -->
-          <AlorAdvantageousDeals
-              title="Выгодные сделки (Продажи)"
-              :deals="tradesStore?.tradesStatistics?.advantageousSellDifferences"
-              operation="Sell"
-              @select-ticker="selectTicker"
-          />
-
+        <div v-if="widget.type === 4" :data="widget">
+          <TopDeals />
         </div>
 
-        <div v-if="widget.type === 5"
-             :data="widget">
-
-          <div>
-
-            <ul>
-              <li v-for="(order, index) in groupOrders" :key="index" style="margin: 0 0 10px;">
-                {{ index + 1 }}. {{ order.side }} {{ order.quantity }} {{ order.instrument.symbol }} по {{ order.price }} {{ order.user.portfolio }}
-              </li>
-            </ul>
-            <!-- Кнопка для отправки группы ордеров -->
-            <button class="btn"
-                    @click="sendGroupLimitOrders()">Создать лимитки</button>
-          </div>
-
+        <div v-if="widget.type === 5" :data="widget">
+          <CreateGroupOrders />
         </div>
 
-        <div v-if="widget.type === 6"
-             :data="widget">
+        <div v-if="widget.type === 6" :data="widget">
 
           <div>
-
 
             <!--      <div>
                     <div v-for="item in limitOrders" :key="item?.data?.orderNumber">
@@ -144,13 +98,11 @@
 
         </div>
 
-        <div v-if="widget.type === 7"
-             :data="widget">
+        <div v-if="widget.type === 7" :data="widget">
             <PositionsStream />
         </div>
 
-        <div v-if="widget.type === 8"
-             :data="widget">
+        <div v-if="widget.type === 8" :data="widget">
 
           <div class="table table-trade">
             <div class="table-row table-head">
@@ -187,78 +139,51 @@
           </div>
         </div>
 
-        <div v-if="widget.type === 9"
-             :data="widget">
-
+        <div v-if="widget.type === 9" :data="widget">
             <AlorStatsDiagram
                 :totalItemsStats="buyFrequency"
                 :streamItemsStats="sellFrequency"
                 @select-ticker="selectTicker"
             />
-
         </div>
 
-        <div v-if="widget.type === 10"
-             :data="widget">
-
+        <div v-if="widget.type === 10" :data="widget">
             <AlorStatsDiagram
                 :totalItemsStats="tradesStore?.accumulatedTradesStats"
                 :streamItemsStats="tradesStore?.tradesStats"
                 @select-ticker="selectTicker"
             />
-
-<!--            <AlorTrades :profitPercent="profitPercent"/>-->
-
         </div>
-
-        <div v-if="widget.type === 11"
-             :data="widget">
-
+        <div v-if="widget.type === 11" :data="widget">
             <AlorStatsDiagram
                 :totalItemsStats="orderbooksStore?.accumulatedOrderbooksStats"
                 :streamItemsStats="orderbooksStore?.orderbooksStats"
                 @select-ticker="selectTicker"
             />
-
-<!--            <AlorOrderbooks />-->
-
         </div>
-
-        <div v-if="widget.type === 12"
-             :data="widget">
-
+        <div v-if="widget.type === 12" :data="widget">
             <AlorStatsDiagram
                 :totalItemsStats="candlesStore?.accumulatedCandlesStats"
                 :streamItemsStats="candlesStore?.candlesStats"
                 @select-ticker="selectTicker"
             />
-
         </div>
-
-        <div v-if="widget.type === 13"
-             :data="widget">
-
+        <div v-if="widget.type === 13" :data="widget">
             <AlorStatsDiagram
                 :totalItemsStats="quotesStore?.accumulatedQuotesStats"
                 :streamItemsStats="quotesStore?.quotesStats"
                 @select-ticker="selectTicker"
             />
-
-<!--            <AlorQuotes />-->
-
         </div>
 
-        <div v-if="widget.type === 14"
-             :data="widget">
-
+        <div v-if="widget.type === 14" :data="widget">
           <button class="btn"
                   @click="cancelAllOrders()">
             Снять все
           </button>
         </div>
 
-        <div :data="widget"
-             v-if="widget.type === 15">
+        <div v-if="widget.type === 15" :data="widget">
           <div style="padding: 10px; height: 100px; overflow: hidden;">
             <div v-for="(item, key) in summaryData[selectedTicker]" :key="key">
               {{key}}: {{item}}
@@ -266,13 +191,10 @@
           </div>
         </div>
 
-        <div v-if="widget.type === 16"
-             :data="widget">
-
+        <div v-if="widget.type === 16" :data="widget">
           <StatisticRenderer v-if="candlesStore.newCandles" :items="candlesStore.newCandles" />
           <StatisticRenderer v-if="tradesStore.newTrades" :items="tradesStore.newTrades" />
           <StatisticRenderer v-if="orderbooksStore.newOrderbooks" :items="orderbooksStore.newOrderbooks" />
-
         </div>
 
       </template>
@@ -340,7 +262,7 @@ import { useQuotesStore } from '@/stores/quotesStore';
 import {
   //sendLimitOrder,
   cancelAllOrders,
-  sendGroupLimitOrders,
+  //sendGroupLimitOrders,
   cancelGroupOrders
 } from '../modules/LimitOrderModule.js';
 
@@ -348,11 +270,13 @@ import {
 
 import WidgetGrid from './WidgetGrid.vue';
 
+import CreateGroupOrders from '@/widgets/CreateGroupOrders.vue';
 import PositionsStream from '@/widgets/PositionsStream.vue';
 import CreateOrder from "@/widgets/CreateOrder.vue";
+import TopDeals from "@/widgets/TopDeals.vue";
 
 import AlorStatsDiagram from './AlorStatsDiagram.vue';
-import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
+//import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
 //import AlorTradeHistoryDiagram from './AlorTradeHistoryDiagram.vue';
 
 //import { useCacheStore } from '@/stores/cacheStore';
@@ -378,6 +302,8 @@ export default {
   },
 
   components: {
+    CreateGroupOrders,
+    TopDeals,
     StatisticRenderer,
     PositionsStream,
     DataFabric,
@@ -395,7 +321,7 @@ export default {
     //AlorCandlesPlus,
     //AlorQuotesPlus,
     AlorStatsDiagram,
-    AlorAdvantageousDeals,
+    //AlorAdvantageousDeals,
     //AlorTradeHistoryDiagram,
   },
 
@@ -444,35 +370,7 @@ export default {
         { "success": true, "data": { "message": "success", "orderNumber": "57360598720" } } ],*/
       //[],
 
-      groupOrders: [
-        {
-          side: "buy",
-          quantity: 1,
-          price: 269,
-          instrument: {
-            symbol: "SBER",
-            exchange: "MOEX",
-            instrumentGroup: "TQBR",
-          },
-          user: {
-            portfolio: "D88141",
-          },
-          timeInForce: "oneday",
-        },
-        {
-          side: "buy",
-          quantity: 1,
-          price: 105,
-          instrument: {
-            symbol: "MTLR",
-            exchange: "MOEX",
-            instrumentGroup: "TQBR",
-          },
-          user: {
-            portfolio: "D88141",
-          },
-          timeInForce: "oneday",
-        }],
+
 
       selectedRow: null,
 
@@ -1081,28 +979,6 @@ export default {
       this.globalData.quotesCounters = quotesCounters;
     },*/
 
-    async sendGroupLimitOrders() {
-      try {
-
-        //summaryData[selectedTicker]?.orderbookAverageBidPrice
-        const result = await sendGroupLimitOrders(this.groupOrders);
-
-        //console.log("Группа лимитных ордеров отправлена:", result.data);
-
-        const limitOrders = [];
-
-        result.data.forEach( (order) => {
-          if(order.data?.message === 'success' && order.data?.orderNumber){
-            limitOrders.push(order);
-          }
-        });
-
-        this.limitOrders = limitOrders;
-
-      } catch (error) {
-        console.error("Ошибка при отправке группы лимитных ордеров:", error.message);
-      }
-    },
 
 
     async cancelAllOrders() {
@@ -1196,23 +1072,11 @@ export default {
 
     },
 
-    updateGroupOrders() {
-      const groupOrders = [...this.groupOrders];
-      //console.log(groupOrders);
-      groupOrders.forEach((order) => {
-        if(this.summaryData[order.instrument.symbol]?.orderbookBestBidPrice){
-          order.price = this.summaryData[order.instrument.symbol]?.orderbookBestBidPrice;
-        }
-      });
-
-    },
-
   },
 
   mounted() {
     setInterval(() => {
       this.updateSummaryData();
-      this.updateGroupOrders();
     }, 1000);
 
   },

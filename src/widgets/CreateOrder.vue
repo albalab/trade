@@ -1,11 +1,13 @@
 <template>
-  <input v-model="priceOrder" placeholder="price"><br>
-  <input v-model="exchange" placeholder="ticker"><br>
-  <input v-model="sideOrder" placeholder="side"><br>
-  <button class="btn"
-          @click="sendLimitOrder(1, priceOrder, exchange, 'MOEX', sideOrder, 'D88141')">
-  Создать лимитку
-  </button>
+  <div>
+    <input v-model="priceOrder" placeholder="price"><br>
+    <input v-model="exchange" placeholder="ticker"><br>
+    <input v-model="sideOrder" placeholder="side"><br>
+    <button class="btn"
+            @click="sendLimitOrder(1, priceOrder, exchange, 'MOEX', sideOrder, 'D88141')">
+    Создать лимитку
+    </button>
+  </div>
 </template>
 
 <script>
