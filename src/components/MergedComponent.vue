@@ -39,63 +39,7 @@
         </div>
 
         <div v-if="widget.type === 6" :data="widget">
-
-          <div>
-
-            <!--      <div>
-                    <div v-for="item in limitOrders" :key="item?.data?.orderNumber">
-                      {{item?.data?.orderNumber}}
-                      <button @click="cancelOrders([item?.data?.orderNumber])">X</button>
-                    </div>
-                    <button @click="cancelOrders">Снять группу ордеров</button>
-                  </div>-->
-
-            <div class="limit-orders">
-              <div class="limit-orders-head"
-                   v-if="limitOrders.length">
-                <label class="checkbox-label">
-                  <input
-                      class="checkbox"
-                      type="checkbox"
-                      :checked="areAllSelected"
-                      @change="toggleAll($event)"
-                  />
-                  Выбрать все
-                </label>
-              </div>
-              <div v-for="item in limitOrders"
-                   :key="item.data?.orderNumber"
-                   class="limit-orders-row">
-                <div class="limit-order">
-                  <label class="checkbox-label">
-                    <input
-                        class="checkbox"
-                        type="checkbox"
-                        :value="item.data?.orderNumber"
-                        v-model="selectedOrders"
-                    />
-                    {{ item?.data?.orderNumber }} {{item?.data?.symbol}}
-                  </label>
-                </div>
-                <div class="close-button">
-                  <button @click="cancelOrders([item.data?.orderNumber])">X</button>
-                </div>
-              </div>
-
-              <div v-if="limitOrders.length"
-                   class="limit-orders-buttons">
-                <!--          <button class="btn" @click="cancelAllOrders()">Снять все</button>-->
-                <button class="btn"
-                        :class="{'disabled': selectedOrders.length === 0}"
-                        @click="(selectedOrders.length > 0) ? cancelOrders(selectedOrders) : null">
-                  Снять лимитные заявки
-                </button>
-              </div>
-
-            </div>
-
-          </div>
-
+          <LimitOrders />
         </div>
 
         <div v-if="widget.type === 7" :data="widget">
@@ -197,6 +141,15 @@
           <StatisticRenderer v-if="orderbooksStore.newOrderbooks" :items="orderbooksStore.newOrderbooks" />
         </div>
 
+        <div v-if="widget.type === 17" :data="widget">
+          <CardioTemplate :waveChunk="newChunk" />
+
+          <div style="padding-top: 10px;">
+            <button class="btn" @click="simulateNewData">Следующий чанк</button>
+          </div>
+
+        </div>
+
       </template>
     </WidgetGrid>
 
@@ -263,13 +216,15 @@ import {
   //sendLimitOrder,
   cancelAllOrders,
   //sendGroupLimitOrders,
-  cancelGroupOrders
+  //cancelGroupOrders
 } from '../modules/LimitOrderModule.js';
 
 //import AlorTradesPlus from './AlorTradesPlus.vue';
 
 import WidgetGrid from './WidgetGrid.vue';
 
+import CardioTemplate from '@/widgets/CardioTemplate.vue';
+import LimitOrders from '@/widgets/LimitOrders.vue';
 import CreateGroupOrders from '@/widgets/CreateGroupOrders.vue';
 import PositionsStream from '@/widgets/PositionsStream.vue';
 import CreateOrder from "@/widgets/CreateOrder.vue";
@@ -302,6 +257,7 @@ export default {
   },
 
   components: {
+    CardioTemplate,
     CreateGroupOrders,
     TopDeals,
     StatisticRenderer,
@@ -314,6 +270,7 @@ export default {
     AlorQuotes,
     AlorCandles,
     WidgetGrid,
+    LimitOrders,
 
     //SessionManager,
     //AlorTradesPlus,
@@ -328,7 +285,43 @@ export default {
   data() {
     return {
 
-      isRunning: false,
+      // Пример тестового набора (имитация одного цикла ЭКГ)
+      newChunk: [
+          // — P-волна (небольшое положительное колебание) —
+          0,      // изолиния
+      0.02,
+      0.05,   // пик P
+      0.03,
+      0.0,    // возврат к изолинии
+
+      // — короткий интервал P–Q —
+      0.0,
+      0.0,
+
+    // — QRS-комплекс —
+    -0.05,  // небольшое отрицательное колебание (Q)
+        0.8,    // крупный положительный пик (R)
+        -0.2,   // лёгкий уход ниже изолинии (S)
+        0.0,    // возвращаемся к изолинии
+
+        // — T-волна —
+        0.1,
+        0.15,   // пик T
+        0.1,
+        0.05,
+        0.0,     // возврат к изолинии
+
+        0,      // изолиния
+        0.02,
+        0.05,   // пик P
+        0.03,
+        0.0,    // возврат к изолинии
+
+  ],
+
+      //newChunk: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, -0.2, -0.4, -0.6, -0.8, -1, -0.9, -0.8],
+
+      isRunning: true,
 
       widgets: [
         { name: 'Data Fabric', param: 0, type: 1 },
@@ -347,23 +340,9 @@ export default {
         { name: 'Cancel All', param: 0, type: 14 },
         { name: 'Виджет 15', param: 0, type: 15, gridRow: 'span 2' },
         { name: 'Виджет 16', param: 0, type: 16, gridRow: 'span 3' },
+        { name: 'Шаблон кардио', param: 0, type: 17, gridColumn: 'span 1', gridRow: 'span 2' },
       ],
 
-      selectedOrders: [],
-      limitOrders: [
-        /*{
-          data: {
-            symbol: "SBER",
-            orderNumber: 3214543,
-          }
-        },
-        {
-          data: {
-            symbol: "LKOH",
-            orderNumber: 3214547,
-          }
-        }*/
-      ],
 
       /*[
           { "success": true, "data": { "message": "success", "orderNumber": "57360598695" } },
@@ -451,10 +430,7 @@ export default {
 
   computed: {
 
-    areAllSelected() {
-      return this.selectedOrders.length === this.limitOrders.length && this.limitOrders.length > 0;
-    },
-    
+
     summaryFields() {
       return Object.keys(this.summaryTemplate).sort();
     },
@@ -549,12 +525,9 @@ export default {
 
   methods: {
 
-    toggleAll(event) {
-      if (event.target.checked) {
-        this.selectedOrders = this.limitOrders.map(item => item.data.orderNumber);
-      } else {
-        this.selectedOrders = [];
-      }
+    simulateNewData() {
+      const randomChunk = Array.from({ length: 20 }, () => (Math.random() - 0.5) * 1.5);
+      this.newChunk = randomChunk;
     },
 
     changeSort(field) {
@@ -994,46 +967,7 @@ export default {
         console.error("Ошибка при отмене всех ордеров:", error.message);
       }
     },
-    async cancelOrders(orderIds) {
-      try {
 
-        const params = {
-              orderIds: orderIds,
-              portfolio: 'D88141', // Идентификатор портфеля
-              exchange: 'MOEX', // Биржа MOEX
-              stop: false // Является ли стоп-заявкой
-        };
-        //params.orderIds = ['57350744044', '57350744110'];
-
-        const response = await cancelGroupOrders(params);
-
-        if (response.success) {
-          // Собрать список успешно удаленных orderId из response.data
-          const ordersToRemove = response.data
-              //.filter(order => order.success) // Оставить только успешные
-              .map(order => order.orderId); // Извлечь orderId
-
-          if (ordersToRemove.length > 0) {
-            // Фильтровать limitOrders, исключая те, которые есть в ordersToRemove
-            this.limitOrders = this.limitOrders.filter(
-                order => !ordersToRemove.includes(order.data.orderNumber)
-            );
-          }
-        }
-
-
-        //console.log("Результат отмены ордеров:", response);
-
-        if(response.success){
-          if(response.data.success){
-            console.log(response.data.orderId);
-          }
-        }
-
-      } catch (error) {
-        console.error("Ошибка при отмене ордеров:", error.message);
-      }
-    },
 
     selectTicker(ticker){
       this.selectedTicker = ticker;
@@ -1079,12 +1013,12 @@ export default {
       this.updateSummaryData();
     }, 1000);
 
+    setInterval(() => {
+      this.simulateNewData();
+    }, 1000);
   },
 
   watch: {
-    limitOrders() {
-      this.selectedOrders = [];
-    },
     'tradesStore.tradesStatistics.advantageousBuyDifferences': {
       immediate: true,
       handler(newData) {

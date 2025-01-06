@@ -73,7 +73,7 @@ a{
 }
 .btn{
     display: inline-block;
-    background: #936ad0;
+    background: #824dd1;
     border: none;
     color: rgba(255,255,255,0.8);
     padding: 5px 10px;
@@ -112,6 +112,7 @@ a{
     border-radius: 4px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     padding: 30px 16px 0;
+    overflow: hidden;
     /*transition: margin 0.1s ease-out;*/
 }
 .widget-block-inner{
@@ -571,10 +572,7 @@ input[type=range]{
 }
 
 .limit-orders{
-    background: #2b2d39;
-    margin: 0 0 20px;
-    padding: 20px;
-    border-radius: 6px;
+
 }
 .limit-orders-head{
     padding: 0 0 12px;

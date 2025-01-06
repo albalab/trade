@@ -15,12 +15,14 @@
 <script>
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { sendGroupLimitOrders } from "@/modules/LimitOrderModule";
+import { useLimitOrdersStore } from '@/stores/limitOrdersStore';
 
 export default {
 
   setup() {
+    const limitOrdersStore = useLimitOrdersStore();
     const orderbooksStore = useOrderbooksStore();
-    return { orderbooksStore }
+    return { orderbooksStore, limitOrdersStore }
   },
 
   data () { return {
@@ -65,9 +67,9 @@ export default {
       const groupOrders = [...this.groupOrders];
       //console.log(groupOrders);
       groupOrders.forEach((order) => {
-        //console.log(order);
-        if(this.orderbooksStore[order.instrument.symbol]?.orderbookBestBidPrice){
-          order.price = this.orderbooksStore[order.instrument.symbol]?.orderbookBestBidPrice;
+        if(!this.orderbooksStore.orderbooksMetrics) return;
+        if(this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice){
+          order.price = this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice;
         }
       });
 
@@ -90,7 +92,7 @@ export default {
           }
         });
 
-        this.limitOrders = limitOrders;
+        this.limitOrdersStore.limitOrders = limitOrders;
 
       } catch (error) {
         console.error("Ошибка при отправке группы лимитных ордеров:", error.message);
