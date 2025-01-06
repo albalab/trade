@@ -73,9 +73,9 @@ a{
 }
 .btn{
     display: inline-block;
-    background: rgba(175, 100, 240, 1);
+    background: #936ad0;
     border: none;
-    color: white;
+    color: rgba(255,255,255,0.8);
     padding: 5px 10px;
     border-radius: 3px;
     margin: 0 4px 4px 0;
@@ -84,7 +84,7 @@ a{
     text-transform: uppercase;
 }
 .btn:hover{
-    background: rgba(150, 50, 240, 1);
+    filter: brightness(110%);
 }
 
 .btn-second{
@@ -109,7 +109,7 @@ a{
     text-align: left;
     position: relative;
     margin: 2px;
-    border-radius: 2px;
+    border-radius: 4px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     padding: 30px 16px 0;
     /*transition: margin 0.1s ease-out;*/
@@ -131,11 +131,21 @@ a{
     text-align: right;
     padding-right: 10px;
     box-sizing: border-box;
-    background: #31364b;
+    background: #3a3f55;
     border-top: solid 1px rgba(255,255,255,0.1);
 }
 
-
+.close-sidebar-zoom{
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+}
 .close-block{
     font-size: 14px;
     width: 24px;
@@ -205,9 +215,9 @@ a{
     top: 0;
     bottom: 0;
     z-index: 200;
-    border-top: solid 30px #31354a;
-    background: #31354a;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border-top: solid 30px transparent;
+    background: #3a3f55;
+    overflow: hidden;
     overflow-y: auto;
     /*box-shadow: inset -1px 0 0 0 rgba(255,255,255,0.1);*/
 }
@@ -263,15 +273,16 @@ a{
     font-size: 18px;
     margin: 0;
     position: fixed;
-    left: 12px;
+    left: 0;
     top: 0;
+    padding: 0 12px;
     z-index: 300;
     cursor: pointer;
     user-select: none;
     line-height: 30px;
     text-transform: uppercase;
     font-weight: 600;
-    background: none;
+    background: #3a3f55;
     color: rgba(207, 151, 255, 1);
 }
 /*.btn-settings .arrow{
@@ -292,7 +303,11 @@ a{
     box-sizing: border-box;
 }
 .main-logo{
+    padding-left: 10px;
     line-height: 30px;
+}
+.main-logo a{
+    color: #9A5FF0;
 }
 
 .lines-grid{
@@ -431,13 +446,14 @@ a{
     width: 100%;
     top: 0;
     border-bottom: solid 1px rgba(255,255,255,0.1);
+    opacity: 0.5;
 }
 .btn-mix.disable{
     background: #2a2d3f;
     color: #3f4561;
 }
 input[type=range]{
-    filter: hue-rotate(50deg);
+    filter: hue-rotate(50deg) saturate(75%);
     width: 125%;
     transform: scale(0.8);
     transform-origin: left;
@@ -616,7 +632,7 @@ input[type=range]{
 }
 
 .progress-bar-fill {
-    background: #007bff;
+    background: #0078D4;
     height: 100%;
 }
 
@@ -692,10 +708,10 @@ input:checked + .slider:before {
 }
 
 .zoom-slider{
-    background: rgba(13,13,18,1);
-    padding: 8px 30px 6px;
+    background: #1a1a1a;
+    padding: 8px 24px 6px;
     border-radius: 6px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     position: fixed;
     z-index: 300;
     bottom: 20px;

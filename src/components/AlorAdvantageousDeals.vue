@@ -79,7 +79,7 @@ export default {
 }
 .select-ticker {
   cursor: pointer;
-  color: #007bff;
+  color: #0078D4;
 }
 .select-ticker:hover {
   text-decoration: underline;
