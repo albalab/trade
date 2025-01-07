@@ -2,9 +2,9 @@
   <div class="cardiogram-container">
 
     <div class="controls">
-      <button @click="setStyle(1)" class="btn">Trail</button>
-      <button @click="setStyle(2)" class="btn">Eraser</button>
-      <button @click="setStyle(3)" class="btn">Fade Trail</button>
+      <button @click="setStyle(1)" class="btn btn-second">Trail</button>
+      <button @click="setStyle(2)" class="btn btn-second">Eraser</button>
+      <button @click="setStyle(3)" class="btn btn-second">Fade Trail</button>
 
       <div class="inputs">
         <label>
@@ -62,7 +62,7 @@ export default {
       baseline: 50,
       speed: 3,
       pointRadius: 1,
-      trail: 'rgba(0, 0, 0, 0.25)',
+      trail: 'rgba(0, 0, 0, 0.15)',
       drawStyle: 1,
       eraserDistance: 4,
       eraserWidth: 4,
@@ -188,7 +188,7 @@ export default {
         // Накладываем слой затемнения один раз при поступлении нового потока данных
         this.ctx.save();
         this.ctx.globalCompositeOperation = 'source-over';
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
         this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
         this.ctx.restore();
         this.newDataAvailable = false; // Сбрасываем флаг после применения эффекта

@@ -44,117 +44,119 @@
           transform: !isSidebarShow ? `translateX(-180px)` : null
         }">
 
-      <div class="pane-hr" style="position: fixed; top: 30px; width: 100%; z-index: 100;"></div>
+      <div class="settings-pane-scroll">
+        <div class="pane-hr pane-hr-top"></div>
 
-      <div style="position: relative;">
-        <h2 class="pane-title">Сетка</h2>
+        <div style="position: relative;">
+          <h2 class="pane-title">Сетка</h2>
 
-        <div
-            class="reset-grid"
-            @click="resetGridSettings"
-        >
-          <i class="fat fa-arrows-rotate"></i>
-        </div>
-
-        <div style="padding: 4px 12px 14px;">
-          <div class="main-view-ranges">
-            <div class="item">
-              <div class="range-title">Ширина ячеек: {{ currentColumnWidth }}px</div>
-              <input
-                  type="range"
-                  :min="slider1Min"
-                  :max="slider1Max"
-                  v-model="sliderValue"
-                  @input="onSliderInput"
-              />
-            </div>
-            <div class="item">
-              <div class="range-title">Высота ячеек: {{ currentRowHeight }}px </div>
-              <input
-                  type="range"
-                  :min="rowSliderMin"
-                  :max="rowSliderMax"
-                  v-model="rowSliderValue"
-                  @input="onRowSliderInput"
-              />
-            </div>
-            <div class="item">
-              <div class="range-title">Число колонок: {{ columnsCount }}</div>
-              <input
-                  type="range"
-                  min="1"
-                  max="20"
-                  v-model="columnsCount"
-                  @input="onColumnsSliderInput"
-              />
-            </div>
+          <div
+              class="reset-grid"
+              @click="resetGridSettings"
+          >
+            <i class="fat fa-arrows-rotate"></i>
           </div>
-        </div>
-        <div class="pane-hr"></div>
-      </div>
 
-      <div style="position: relative;">
-        <div
-            class="reset-grid"
-            @click="resetWidgetState"
-        >
-          <i class="fat fa-arrows-rotate"></i>
-        </div>
-        <h2 class="pane-title">Виджеты</h2>
-        <div class="widgets-add">
-          <ol class="widgets" id="widgetList">
-            <li class="widget"
-                @click="incrementParam(wIndex)"
-                v-for="(widget, wIndex) in widgets"
-                :key="wIndex"
-                style="overflow: hidden;">
-
-              <i class="fas fa-plus"></i>
-
-              <div class="name">{{ widget.name }}</div>
-              <div style="float: right; width: 50%;" class="control-counter">
-                <div
-                    class="item item-btn item-minus"
-                    @click.stop="decrementParam(wIndex)"
-                >
-                  <i class="fat fa-chevron-left"></i>
-                </div>
-                <div class="item item-value" @click.stop>
-                  <input
-                      class="input"
-                      :class="{'zero': widget.param == 0}"
-                      v-model="widget.param"
-                      @focus="selectInput($event)"
-                      @input="onInputNumber($event, wIndex)"/>
-                </div>
-                <div
-                    class="item item-btn item-plus"
-                    @click.stop="incrementParam(wIndex)"
-                >
-                  <i class="fat fa-chevron-right"></i>
-                </div>
+          <div style="padding: 4px 12px 14px;">
+            <div class="main-view-ranges">
+              <div class="item">
+                <div class="range-title">Ширина ячеек: {{ currentColumnWidth }}px</div>
+                <input
+                    type="range"
+                    :min="slider1Min"
+                    :max="slider1Max"
+                    v-model="sliderValue"
+                    @input="onSliderInput"
+                />
               </div>
-            </li>
-          </ol>
-          <div style="padding: 4px 12px 0;">
-            <button
-                style="width: 100%;"
-                :class="{'disable': blocks.length === 0}"
-                class="btn btn-second btn-mix"
-                id="shuffleBtn"
-                @click="onShuffleClicked"
-            >
-              Перестроить
-            </button>
+              <div class="item">
+                <div class="range-title">Высота ячеек: {{ currentRowHeight }}px </div>
+                <input
+                    type="range"
+                    :min="rowSliderMin"
+                    :max="rowSliderMax"
+                    v-model="rowSliderValue"
+                    @input="onRowSliderInput"
+                />
+              </div>
+              <div class="item">
+                <div class="range-title">Число колонок: {{ columnsCount }}</div>
+                <input
+                    type="range"
+                    min="1"
+                    max="20"
+                    v-model="columnsCount"
+                    @input="onColumnsSliderInput"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="pane-hr"></div>
+        </div>
+
+        <div style="position: relative;">
+          <div
+              class="reset-grid"
+              @click="resetWidgetState"
+          >
+            <i class="fat fa-arrows-rotate"></i>
+          </div>
+          <h2 class="pane-title">Виджеты</h2>
+          <div class="widgets-add">
+            <ol class="widgets" id="widgetList">
+              <li class="widget"
+                  @click="incrementParam(wIndex)"
+                  v-for="(widget, wIndex) in widgets"
+                  :key="wIndex"
+                  style="overflow: hidden;">
+
+                <i class="fas fa-plus"></i>
+
+                <div class="name">{{ widget.name }}</div>
+                <div style="float: right; width: 50%;" class="control-counter">
+                  <div
+                      class="item item-btn item-minus"
+                      @click.stop="decrementParam(wIndex)"
+                  >
+                    <i class="fat fa-chevron-left"></i>
+                  </div>
+                  <div class="item item-value" @click.stop>
+                    <input
+                        class="input"
+                        :class="{'zero': widget.param == 0}"
+                        v-model="widget.param"
+                        @focus="selectInput($event)"
+                        @input="onInputNumber($event, wIndex)"/>
+                  </div>
+                  <div
+                      class="item item-btn item-plus"
+                      @click.stop="incrementParam(wIndex)"
+                  >
+                    <i class="fat fa-chevron-right"></i>
+                  </div>
+                </div>
+              </li>
+            </ol>
+            <div style="padding: 4px 12px 0;">
+              <button
+                  style="width: 100%;"
+                  :class="{'disable': blocks.length === 0}"
+                  class="btn btn-second btn-mix"
+                  id="shuffleBtn"
+                  @click="onShuffleClicked"
+              >
+                Перестроить
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="sidebar-footer">
+        <div class="sidebar-footer">
         <div
             class="btn"
             @click="toggleSettingsPane"
         >Закрыть</div>
+      </div>
       </div>
 
     </div>

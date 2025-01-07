@@ -145,7 +145,7 @@
           <CardioTemplate :waveChunk="newChunk" />
 
           <div style="padding-top: 10px;">
-            <button class="btn" @click="simulateNewData">Следующий чанк</button>
+            <button class="btn btn-second" @click="simulateNewData">Следующий чанк</button>
           </div>
 
         </div>
