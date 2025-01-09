@@ -6,9 +6,12 @@
         {{ index + 1 }}. {{ order.side }} {{ order.quantity }} {{ order.instrument.symbol }} по {{ order.price }} {{ order.user.portfolio }}
       </li>
     </ul>
-    <!-- Кнопка для отправки группы ордеров -->
+
     <button class="btn"
-            @click="sendGroupLimitOrders()">Создать лимитки</button>
+            @click="sendGroupLimitOrders()">
+      Создать лимитки
+    </button>
+
   </div>
 </template>
 
@@ -70,7 +73,7 @@ export default {
       groupOrders.forEach((order) => {
         if(!this.orderbooksStore.orderbooksMetrics) return;
         if(this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice){
-          order.price = this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice;
+          order.price = this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice - 4;
         }
       });
 
@@ -94,6 +97,8 @@ export default {
                 exchange: originalOrder.instrument.exchange,
                 portfolio: originalOrder.user.portfolio,
                 timeInForce: originalOrder.timeInForce,
+                volume: originalOrder.quantity * originalOrder.price,
+                qty: originalOrder.quantity,
               },
             };
           }

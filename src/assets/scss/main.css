@@ -166,7 +166,7 @@ a{
     height: 20px;
     position: absolute;
     right: 0;
-    top: 0;
+    top: 0px;
     line-height: 20px;
     text-align: center;
 }
@@ -601,19 +601,29 @@ input[type=range]{
 
 }
 .limit-orders-head{
-    padding: 0 0 12px;
     border-bottom: solid 1px #3c3f54;
 }
-.limit-orders-row:hover{
-    background: rgba(0,0,0,0.1);
+
+.limit-orders-row,
+.checkbox-label,
+.limit-orders input,
+.limit-orders div,
+.limit-orders strong,
+.limit-orders span{
+    cursor: pointer;
 }
 .limit-orders-row{
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 15fr 1fr;
     border-bottom: solid 1px #3c3f54;
-    padding: 1px 0;
+    padding: 0 0 2px;
+}
+/*.limit-orders-head:hover,*/
+.limit-orders-row:hover{
+    background: rgba(116, 95, 189, 1);
 }
 .limit-orders .close-button{
+    padding-top: 3px;
     text-align: right;
 }
 .limit-orders .close-button button{
@@ -627,19 +637,34 @@ input[type=range]{
     padding: 10px 0 0;
 }
 
+.limit-order-row{
+    display: grid;
+    grid-template-columns: 20px 1fr 1fr 1fr;
+    width: 100%;
+}
+
 .checkbox-label{
-    position: relative;
-    padding-left: 18px;
+    display: block;
+}
+.checkbox-label input{
+
 }
 .checkbox-label .checkbox{
     position: absolute;
-    left: 0;
-    top: -1px;
+    left: 2px;
+    top: 3px;
     margin: 0;
     padding: 0;
+    opacity: 0.7;
+    transform: scale(0.75);
+}
+.checkbox-label .checkbox:checked{
+    opacity: 0.8;
 }
 .limit-order{
-    padding-top: 3px;
+    position: relative;
+    padding-top: 4px;
+    user-select: none;
 }
 
 

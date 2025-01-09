@@ -1,11 +1,21 @@
 <template>
   <div>
-    <div v-for="p in ordersStore.activePositions" :key="p.guid">
-      {{p.symbol}} <strong>{{p.volume.toFixed(2)}}</strong>
-      <span style="margin-left: 10px;">{{p.qtyUnits}}</span>
-      <strong v-if="this.orderbooksStore.orderbooksMetrics[p.symbol]" style="margin-left: 10px;">
-          {{((this.orderbooksStore.orderbooksMetrics[p.symbol]?.orderbookBestAskPrice * p.qtyUnits) - p.volume).toFixed(2)}}
-      </strong><!--{{p.qtyUnits}}, {{p.avgPrice}}<br>-->
+
+<!--    <button class="btn" @click="fetchPositions">
+      Загрузить позиции
+    </button>-->
+
+    <div v-for="p in ordersStore.activePositions" :key="p.guid" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr">
+      <span>{{p.symbol}} </span>
+      <strong>{{p.volume.toFixed(2)}} руб</strong>
+      <span style="margin-left: 10px;">{{p.qtyUnits}} шт</span>
+
+      <span v-if="this.orderbooksStore.orderbooksMetrics">
+        <strong v-if="this.orderbooksStore.orderbooksMetrics[p.symbol]" style="margin-left: 10px;">
+            {{((this.orderbooksStore.orderbooksMetrics[p.symbol]?.orderbookBestAskPrice * p.qtyUnits) - p.volume).toFixed(2)}} руб
+        </strong><!--{{p.qtyUnits}}, {{p.avgPrice}}<br>-->
+      </span>
+
     </div>
   </div>
 </template>
@@ -13,6 +23,9 @@
 <script>
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useOrdersStore } from '@/stores/ordersStore';
+
+import { getPositions } from "@/modules/LimitOrderModule";
+//import { getOrders } from '../modules/LimitOrderModule.js';
 
 export default {
 
@@ -30,6 +43,31 @@ export default {
     };
   },
   methods: {
+
+    async fetchPositions() {
+      try {
+        const positions = await getPositions('MOEX', 'D88141', 'Simple', false);
+
+        console.log(positions);
+
+        // Преобразуем полученные позиции и обновляем activePositions
+        const activePositions = {};
+
+        positions.forEach((position) => {
+          // Исключаем валюту (например, RUB) и пустые позиции
+          if (position.symbol !== 'RUB' && position.currentVolume !== 0) {
+            activePositions[position.symbol] = position;
+          }
+        });
+
+        // Обновляем activePositions
+        this.ordersStore.activePositions = activePositions;
+        //this.processPositions(positions);
+      } catch (error) {
+        console.error('Ошибка при загрузке позиций:', error.message);
+      }
+    },
+
     connectToWebSocket() {
       const socket = new WebSocket("wss://signalfabric.com/positions/");
 
@@ -83,8 +121,11 @@ export default {
         console.log("WebSocket connection closed");
       };
     },
+
+
   },
   mounted() {
+    this.fetchPositions();
     this.connectToWebSocket();
   },
 };

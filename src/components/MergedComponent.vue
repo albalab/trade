@@ -13,7 +13,7 @@
     </div>
 
     <div v-if="isRunning">
-<!--      <DataFabric v-show="false"/>-->
+      <DataFabric v-show="false"/>
       <AlorTrades v-show="false"/>
       <AlorCandles v-show="false"/>
       <AlorOrderbooks v-show="false"/>
@@ -332,24 +332,34 @@ export default {
       isRunning: true,
 
       widgets: [
+        { name: 'Create orders', param: 0, type: 5},
+        { name: 'Active orders', param: 0, type: 6 },
+        { name: 'Positions', param: 0, type: 7 },
+
+        { name: 'Summary', param: 0, type: 8, gridColumn: 'span 4', gridRow: 'span 2' },
+
+        { name: 'Aggregated events', param: 0, type: 18, gridColumn: 'span 1', gridRow: 'span 2' },
+        { name: 'Timelines items', param: 0, type: 16, gridRow: 'span 2' },
+
+        { name: 'Template cardio', param: 0, type: 17, gridColumn: 'span 1', gridRow: 'span 2' },
+
         { name: 'Data Fabric', param: 0, type: 1 },
         //{ name: 'Alor Statistics', param: 0, type: 2, gridColumn: 'span 2' },
-        { name: 'Manual Order', param: 0, type: 3 },
-        { name: 'Top Deals', param: 0, type: 4, gridRow: 'span 3', gridColumn: 'span 2' },
-        { name: 'Orders Creator', param: 0, type: 5},
-        { name: 'Limit Orders', param: 0, type: 6 },
-        { name: 'Positions', param: 0, type: 7 },
-        { name: 'Summary', param: 0, type: 8, gridColumn: 'span 4', gridRow: 'span 2' },
+        { name: 'Manual order', param: 0, type: 3 },
+        { name: 'Top deals', param: 0, type: 4, gridRow: 'span 3', gridColumn: 'span 2' },
+
+
+
+
         { name: 'Signals', param: 0, type: 9, gridRow: 'span 4'},
         { name: 'Trades', param: 0, type: 10, gridRow: 'span 2'},
         { name: 'Orderbooks', param: 0, type: 11, gridRow: 'span 2'},
         { name: 'Candles', param: 0, type: 12, gridRow: 'span 2'},
         { name: 'Quotes', param: 0, type: 13, gridRow: 'span 2'},
-        { name: 'Cancel All', param: 0, type: 14 },
+        { name: 'Cancel all', param: 0, type: 14 },
         { name: 'Виджет 15', param: 0, type: 15, gridRow: 'span 2' },
         { name: 'Timelines items', param: 0, type: 16, gridRow: 'span 3' },
-        { name: 'Шаблон кардио', param: 0, type: 17, gridColumn: 'span 1', gridRow: 'span 2' },
-        { name: 'Aggregated events', param: 0, type: 18, gridColumn: 'span 1', gridRow: 'span 2' },
+
       ],
 
 

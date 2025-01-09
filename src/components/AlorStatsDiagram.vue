@@ -9,7 +9,7 @@
         </div>-->
         <div class="stats-diagram">
           <div v-for="(count, ticker) in totalItemsStats" :key="ticker" class="row">
-            <div class="cell" style="display: grid; grid-template-columns: 2fr 1fr 3fr;">
+            <div class="cell" style="display: grid; grid-template-columns: 2fr 2fr 3fr;">
               <div class="ticker"
                    @click="$emit('select-ticker', ticker)">{{ ticker }}</div>
               <div class="ticker-info">

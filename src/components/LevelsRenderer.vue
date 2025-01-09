@@ -11,7 +11,7 @@
         >
           <div v-if="showLevel(item, index)" style="height: 100%;">
             <div style="background: rgba(255,255,255,0.2); position: relative; height: 100%;">
-              <div style="position: absolute; bottom: 0; background: #5390fa; width: 100%;" :style="{height: `${(item.sum/item.counterLevel)}%`}"></div>
+              <div style="position: absolute; bottom: 0; background: #75a9ff; width: 100%;" :style="{height: `${(item.sum/item.counterLevel)}%`}"></div>
             </div>
           </div>
         </div>

@@ -9,19 +9,24 @@
             <button @click="cancelOrders">Снять группу ордеров</button>
           </div>-->
 
+<!--    <button class="btn" @click="fetchOrders">
+      Загрузить заявки
+    </button>-->
+
     <div class="limit-orders">
       <div class="limit-orders-head"
            v-if="ordersStore.limitOrders.length"
            style="position: relative; min-height: 10px;">
-<!--        <label class="checkbox-label">
+        <label class="checkbox-label">
           <input
+              style="top: 4px; position: absolute;"
               class="checkbox"
               type="checkbox"
               :checked="areAllSelected"
               @change="toggleAll($event)"
           />
-          Выбрать все
-        </label>-->
+          <div style="padding: 4px 0 4px 20px;">Выбрать все</div>
+        </label>
         <div @click="cancelAllOrders()"
              class="close-order">
           <i class="fat fa-xmark"></i>
@@ -34,13 +39,31 @@
       >
         <div class="limit-order">
           <label class="checkbox-label">
-            <input
-                class="checkbox"
-                type="checkbox"
-                :value="item.data?.orderNumber"
-                v-model="selectedOrders"
-            />
-            {{ item?.data?.symbol }} {{item?.data?.quantity}} {{ item?.data?.orderNumber }}
+
+            <div class="limit-order-row">
+
+              <div>
+                <input
+                    class="checkbox"
+                    type="checkbox"
+                    :value="item.data?.orderNumber"
+                    v-model="selectedOrders"
+                />
+              </div>
+
+              <div>
+                {{ item?.data?.symbol }}
+              </div>
+
+              <div style="white-space: nowrap;">
+                {{item.data.volume}} руб
+              </div>
+
+              <div style="padding: 0 20px; white-space: nowrap;">
+                {{item.data.qty}} шт
+              </div>
+            </div>
+
           </label>
         </div>
         <div class="close-button">
@@ -63,7 +86,7 @@
 </template>
 
 <script>
-import { cancelGroupOrders } from "@/modules/LimitOrderModule";
+import {cancelGroupOrders, getOrders } from "@/modules/LimitOrderModule";
 import { useOrdersStore } from "@/stores/ordersStore";
 
 import {
@@ -88,6 +111,46 @@ export default {
   },
 
   methods: {
+
+    processOrders(orders) {
+      orders.forEach((order) => {
+        const { id, status } = order;
+
+        if (status === "working") {
+          const existingOrder = this.ordersStore.limitOrders.find(
+              (existing) => existing.data.id === id
+          );
+
+          if (!existingOrder) {
+            // Добавляем поле orderNumber, если его нет
+            const enrichedOrder = {
+              ...order,
+              orderNumber: order.id, // Используем id как orderNumber
+            };
+
+            this.ordersStore.limitOrders.push({ data: enrichedOrder });
+          }
+        } else if (status === "canceled" || status === "filled") {
+          this.ordersStore.limitOrders = this.ordersStore.limitOrders.filter(
+              (existing) => existing.data.id !== id
+          );
+        }
+      });
+    },
+
+    async fetchOrders() {
+      try {
+        const orders = await getOrders('MOEX', 'D88141', 'Simple');
+
+        console.log(orders.filter(order => order.status === 'working'));
+        //console.log('Полученные заявки:', orders.filter(order => order.type === 'filled'));
+
+        this.processOrders(orders);
+
+      } catch (error) {
+        console.error('Ошибка при загрузке заявок:', error.message);
+      }
+    },
 
     async cancelAllOrders() {
       try {
@@ -133,7 +196,7 @@ export default {
                     (order) => order.data.id !== id
                 );
               }
-            }, 100);
+            }, 0);
           }
         } catch (error) {
           console.error("Error parsing WebSocket message:", error);
@@ -190,6 +253,7 @@ export default {
   },
 
   mounted() {
+    this.fetchOrders();
     this.connectToWebSocket();
   },
 
