@@ -5,7 +5,8 @@
     Trades: {{dataFabricStore.sourceCounts.sourceTradesCount}}<br>
     Orderbooks: {{dataFabricStore.sourceCounts.sourceOrderbooksCount}}<br>
     Quotes: {{dataFabricStore.sourceCounts.sourceQuotesCount}}<br>
-
+    - Aggregated events<br>
+    - Chunk events<br>
   </div>
 </template>
 
@@ -48,6 +49,8 @@ export default {
     handleUpdate(data) {
       const defaultValues = {
         sourceCounts: {},
+        aggregatedEvents: {},
+        chunkEvents: {},
       };
 
       const dataFabricStoreData = data.reduce((acc, item) => {

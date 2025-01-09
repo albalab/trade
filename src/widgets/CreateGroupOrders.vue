@@ -15,14 +15,14 @@
 <script>
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { sendGroupLimitOrders } from "@/modules/LimitOrderModule";
-import { useLimitOrdersStore } from '@/stores/limitOrdersStore';
+import { useOrdersStore } from '@/stores/ordersStore';
 
 export default {
 
   setup() {
-    const limitOrdersStore = useLimitOrdersStore();
+    const ordersStore = useOrdersStore();
     const orderbooksStore = useOrderbooksStore();
-    return { orderbooksStore, limitOrdersStore }
+    return { orderbooksStore, ordersStore }
   },
 
   data () { return {
@@ -63,6 +63,7 @@ export default {
   }},
 
   methods: {
+
     updateGroupOrders() {
       const groupOrders = [...this.groupOrders];
       //console.log(groupOrders);
@@ -76,28 +77,54 @@ export default {
     },
 
     async sendGroupLimitOrders() {
-
       try {
-
-        //summaryData[selectedTicker]?.orderbookAverageBidPrice
         const result = await sendGroupLimitOrders(this.groupOrders);
 
-        //console.log("Группа лимитных ордеров отправлена:", result.data);
+        const newOrders = result.data.map((order, index) => {
+          if (order.data?.message === "success" && order.data?.orderNumber) {
+            const originalOrder = this.groupOrders[index];
+            return {
+              data: {
+                id: order.data.orderNumber,
+                orderNumber: order.data.orderNumber,
+                side: originalOrder.side,
+                quantity: originalOrder.quantity,
+                price: originalOrder.price,
+                symbol: originalOrder.instrument.symbol,
+                exchange: originalOrder.instrument.exchange,
+                portfolio: originalOrder.user.portfolio,
+                timeInForce: originalOrder.timeInForce,
+              },
+            };
+          }
+          return null;
+        }).filter(Boolean);
 
-        const limitOrders = [];
+        // Объединяем старые и новые ордера
+        const existingOrders = [...this.ordersStore.limitOrders];
+        const updatedOrders = [...existingOrders];
 
-        result.data.forEach( (order) => {
-          if(order.data?.message === 'success' && order.data?.orderNumber){
-            limitOrders.push(order);
+        newOrders.forEach((newOrder) => {
+          const existingIndex = updatedOrders.findIndex(
+              (order) => order.data.id === newOrder.data.id
+          );
+
+          if (existingIndex > -1) {
+            // Если ордер уже существует, обновляем его
+            updatedOrders[existingIndex] = newOrder;
+          } else {
+            // Если ордера нет, добавляем его
+            updatedOrders.push(newOrder);
           }
         });
 
-        this.limitOrdersStore.limitOrders = limitOrders;
+        this.ordersStore.limitOrders = updatedOrders;
 
       } catch (error) {
         console.error("Ошибка при отправке группы лимитных ордеров:", error.message);
       }
     },
+
   },
 
   mounted() {

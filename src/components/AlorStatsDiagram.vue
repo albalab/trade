@@ -1,20 +1,23 @@
 <template>
   <div class="stats-diagram">
     <div style="display: grid; grid-template-columns: 1fr 1fr;">
+
       <div>
-        <h3>All</h3>
+<!--        <h3>All</h3>
         <div class="info">
           Items:  {{ Object.keys(totalItemsStats).length }}
-        </div>
+        </div>-->
         <div class="stats-diagram">
           <div v-for="(count, ticker) in totalItemsStats" :key="ticker" class="row">
-            <div class="cell">
+            <div class="cell" style="display: grid; grid-template-columns: 2fr 1fr 3fr;">
+              <div class="ticker"
+                   @click="$emit('select-ticker', ticker)">{{ ticker }}</div>
               <div class="ticker-info">
-                <span class="ticker" @click="$emit('select-ticker', ticker)">{{ ticker }}</span> {{ count }}
+                {{ count }}
               </div>
               <div class="progress-bar-container">
                 <div
-                    class="progress-ba-fill"
+                    class="progress-bar-fill"
                     :style="{ width: `${(count / Math.max(...Object.values(totalItemsStats))) * 100}%` }">
                 </div>
               </div>
@@ -22,16 +25,19 @@
           </div>
         </div>
       </div>
+
       <div>
-        <h3>Stream</h3>
+<!--        <h3>Stream</h3>
         <div class="info">
           Items:   {{ Object.keys(streamItemsStats).length }}
-        </div>
+        </div>-->
         <div class="stats-diagram">
           <div v-for="(count, ticker) in streamItemsStats" :key="ticker" class="row">
-            <div class="cell" :class="{ 'highlighted': isHighlighted(ticker) }">
+            <div class="cell" style="display: grid; grid-template-columns: 2fr 1fr 3fr;">
+              <div class="ticker"
+                   @click="$emit('select-ticker', ticker)">{{ ticker }}</div>
               <div class="ticker-info">
-                <span class="ticker" @click="$emit('select-ticker', ticker)">{{ ticker }}</span> {{ count }}
+                 {{ count }}
               </div>
               <div class="progress-bar-container">
                 <div
@@ -43,6 +49,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -74,13 +81,13 @@ export default {
     }
   },
   methods: {
-    isHighlighted(ticker) {
-      const streamRank = this.top10streamItemsStats.indexOf(ticker);
-      const totalRank = this.sortedtotalItemsStats.indexOf(ticker);
+    /*isHighlighted(ticker) {
+      //const streamRank = this.top10streamItemsStats.indexOf(ticker);
+      //const totalRank = this.sortedtotalItemsStats.indexOf(ticker);
 
       // Подсветить, если тикер из топ-10 `streamItemsStats` поднялся выше
-      return streamRank !== -1 && (totalRank === -1 || streamRank < totalRank);
-    }
+      //return streamRank !== -1 && (totalRank === -1 || streamRank < totalRank);
+    }*/
   }
 };
 </script>

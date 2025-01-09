@@ -49,7 +49,7 @@ export default {
     },
     autoRepeat: {
       type: Boolean,
-      default: true
+      default: false
     }
   },
 
@@ -60,9 +60,10 @@ export default {
       pointSpacing: 10,
       amplitude: 50,
       baseline: 50,
-      speed: 3,
+      speed: 2,
       pointRadius: 1,
       trail: 'rgba(0, 0, 0, 0.15)',
+      historyTrail: 'rgba(0, 0, 0, 0.5)',
       drawStyle: 1,
       eraserDistance: 4,
       eraserWidth: 4,
@@ -188,7 +189,7 @@ export default {
         // Накладываем слой затемнения один раз при поступлении нового потока данных
         this.ctx.save();
         this.ctx.globalCompositeOperation = 'source-over';
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        this.ctx.fillStyle = this.historyTrail;
         this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
         this.ctx.restore();
         this.newDataAvailable = false; // Сбрасываем флаг после применения эффекта

@@ -10,8 +10,8 @@
             style="margin: 0 0 0 1px; height: 100%; width: 2px;"
         >
           <div v-if="showLevel(item, index)" style="height: 100%;">
-            <div style="background: #eee; position: relative; height: 100%;">
-              <div style="position: absolute; bottom: 0; background: blue; width: 100%;" :style="{height: `${(item.sum/item.counterLevel)}%`}"></div>
+            <div style="background: rgba(255,255,255,0.2); position: relative; height: 100%;">
+              <div style="position: absolute; bottom: 0; background: #5390fa; width: 100%;" :style="{height: `${(item.sum/item.counterLevel)}%`}"></div>
             </div>
           </div>
         </div>

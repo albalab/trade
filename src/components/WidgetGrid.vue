@@ -202,7 +202,7 @@
             @dragleave="onDragLeave(index, $event)"
             @drop.prevent="onDrop(index, $event)">
 
-          <div style="width: 100%;">
+          <div style="width: 100%; overflow: hidden;">
             <h3 class="widget-title"
                 :style="{
                    paddingLeft: isSidebarShow ? '24px' : '12px'

@@ -13,6 +13,7 @@
     </div>
 
     <div v-if="isRunning">
+<!--      <DataFabric v-show="false"/>-->
       <AlorTrades v-show="false"/>
       <AlorCandles v-show="false"/>
       <AlorOrderbooks v-show="false"/>
@@ -39,11 +40,11 @@
         </div>
 
         <div v-if="widget.type === 6" :data="widget">
-          <LimitOrders />
+          <ActiveOrders />
         </div>
 
         <div v-if="widget.type === 7" :data="widget">
-            <PositionsStream />
+            <ActivePositions />
         </div>
 
         <div v-if="widget.type === 8" :data="widget">
@@ -93,29 +94,29 @@
 
         <div v-if="widget.type === 10" :data="widget">
             <AlorStatsDiagram
-                :totalItemsStats="tradesStore?.accumulatedTradesStats"
-                :streamItemsStats="tradesStore?.tradesStats"
+                :totalItemsStats="limitedAccumulatedTradesStats"
+                :streamItemsStats="limitedAccumulatedTradesStats2"
                 @select-ticker="selectTicker"
             />
         </div>
         <div v-if="widget.type === 11" :data="widget">
             <AlorStatsDiagram
-                :totalItemsStats="orderbooksStore?.accumulatedOrderbooksStats"
-                :streamItemsStats="orderbooksStore?.orderbooksStats"
+                :totalItemsStats="limitedAccumulatedOrderbooksStats"
+                :streamItemsStats="limitedAccumulatedOrderbooksStats2"
                 @select-ticker="selectTicker"
             />
         </div>
         <div v-if="widget.type === 12" :data="widget">
             <AlorStatsDiagram
-                :totalItemsStats="candlesStore?.accumulatedCandlesStats"
-                :streamItemsStats="candlesStore?.candlesStats"
+                :totalItemsStats="limitedAccumulatedCandlesStats"
+                :streamItemsStats="limitedAccumulatedCandlesStats2"
                 @select-ticker="selectTicker"
             />
         </div>
         <div v-if="widget.type === 13" :data="widget">
             <AlorStatsDiagram
-                :totalItemsStats="quotesStore?.accumulatedQuotesStats"
-                :streamItemsStats="quotesStore?.quotesStats"
+                :totalItemsStats="limitedAccumulatedQuotesStats"
+                :streamItemsStats="limitedAccumulatedQuotesStats2"
                 @select-ticker="selectTicker"
             />
         </div>
@@ -150,6 +151,13 @@
 
         </div>
 
+        <div v-if="widget.type === 18" :data="widget">
+          <AlorStatsDiagram
+              :totalItemsStats="dataFabricStore.aggregatedEvents"
+              :streamItemsStats="dataFabricStore.chunkEvents"
+              @select-ticker="selectTicker"
+          />
+        </div>
       </template>
     </WidgetGrid>
 
@@ -224,9 +232,9 @@ import {
 import WidgetGrid from './WidgetGrid.vue';
 
 import CardioTemplate from '@/widgets/CardioTemplate.vue';
-import LimitOrders from '@/widgets/LimitOrders.vue';
+import ActiveOrders from '@/widgets/ActiveOrders.vue';
 import CreateGroupOrders from '@/widgets/CreateGroupOrders.vue';
-import PositionsStream from '@/widgets/PositionsStream.vue';
+import ActivePositions from '@/widgets/ActivePositions.vue';
 import CreateOrder from "@/widgets/CreateOrder.vue";
 import TopDeals from "@/widgets/TopDeals.vue";
 
@@ -261,7 +269,7 @@ export default {
     CreateGroupOrders,
     TopDeals,
     StatisticRenderer,
-    PositionsStream,
+    ActivePositions,
     DataFabric,
     CreateOrder,
     LevelsRenderer,
@@ -270,7 +278,7 @@ export default {
     AlorQuotes,
     AlorCandles,
     WidgetGrid,
-    LimitOrders,
+    ActiveOrders,
 
     //SessionManager,
     //AlorTradesPlus,
@@ -333,14 +341,15 @@ export default {
         { name: 'Positions', param: 0, type: 7 },
         { name: 'Summary', param: 0, type: 8, gridColumn: 'span 4', gridRow: 'span 2' },
         { name: 'Signals', param: 0, type: 9, gridRow: 'span 4'},
-        { name: 'Trades', param: 0, type: 10, gridRow: 'span 4'},
-        { name: 'Orderbooks', param: 0, type: 11, gridRow: 'span 4'},
-        { name: 'Candles', param: 0, type: 12, gridRow: 'span 4'},
-        { name: 'Quotes', param: 0, type: 13, gridRow: 'span 4'},
+        { name: 'Trades', param: 0, type: 10, gridRow: 'span 2'},
+        { name: 'Orderbooks', param: 0, type: 11, gridRow: 'span 2'},
+        { name: 'Candles', param: 0, type: 12, gridRow: 'span 2'},
+        { name: 'Quotes', param: 0, type: 13, gridRow: 'span 2'},
         { name: 'Cancel All', param: 0, type: 14 },
         { name: 'Виджет 15', param: 0, type: 15, gridRow: 'span 2' },
-        { name: 'Виджет 16', param: 0, type: 16, gridRow: 'span 3' },
+        { name: 'Timelines items', param: 0, type: 16, gridRow: 'span 3' },
         { name: 'Шаблон кардио', param: 0, type: 17, gridColumn: 'span 1', gridRow: 'span 2' },
+        { name: 'Aggregated events', param: 0, type: 18, gridColumn: 'span 1', gridRow: 'span 2' },
       ],
 
 
@@ -430,6 +439,41 @@ export default {
 
   computed: {
 
+    limitedAccumulatedTradesStats() {
+      const stats = this.tradesStore?.accumulatedTradesStats || {};
+      return Object.fromEntries(Object.entries(stats).slice(0, 10));
+    },
+    limitedAccumulatedTradesStats2() {
+      const stats = this.tradesStore?.tradesStats || {};
+      return Object.fromEntries(Object.entries(stats).slice(0, 10));
+    },
+
+    limitedAccumulatedOrderbooksStats() {
+      const stats = this.orderbooksStore?.accumulatedOrderbooksStats || {};
+      return Object.fromEntries(Object.entries(stats).slice(0, 10));
+    },
+    limitedAccumulatedOrderbooksStats2() {
+      const stats = this.orderbooksStore?.orderbooksStats || {};
+      return Object.fromEntries(Object.entries(stats).slice(0, 10));
+    },
+
+    limitedAccumulatedQuotesStats() {
+      const stats = this.quotesStore?.accumulatedQuotesStats || {};
+      return Object.fromEntries(Object.entries(stats).slice(0, 10));
+    },
+    limitedAccumulatedQuotesStats2() {
+      const stats = this.quotesStore?.quotesStats || {};
+      return Object.fromEntries(Object.entries(stats).slice(0, 10));
+    },
+
+    limitedAccumulatedCandlesStats() {
+      const stats = this.candlesStore?.accumulatedCandlesStats || {};
+      return Object.fromEntries(Object.entries(stats).slice(0, 10));
+    },
+    limitedAccumulatedCandlesStats2() {
+      const stats = this.candlesStore?.candlesStats || {};
+      return Object.fromEntries(Object.entries(stats).slice(0, 10));
+    },
 
     summaryFields() {
       return Object.keys(this.summaryTemplate).sort();
@@ -1015,7 +1059,7 @@ export default {
 
     setInterval(() => {
       this.simulateNewData();
-    }, 1000);
+    }, 2000);
   },
 
   watch: {
@@ -1032,10 +1076,11 @@ export default {
       }
     },
 
-    summaryData: {
+    /*summaryData: {
       deep: true,
       immediate: true,
       handler(newData) {
+
         if (!newData || Object.keys(newData).length === 0) {
           // Если данных нет, ничего не делаем
           return;
@@ -1064,7 +1109,7 @@ export default {
 
         //console.log('Updated summaryDataHistory:', this.summaryDataHistory);
       }
-    },
+    },*/
 
     globalData: {
       deep: true,
