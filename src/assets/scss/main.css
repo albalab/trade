@@ -330,6 +330,7 @@ a{
 .main-logo{
     padding-left: 10px;
 }
+
 .main-logo a{
     color: #9A5FF0;
 }
@@ -645,6 +646,7 @@ input[type=range]{
 
 .checkbox-label{
     display: block;
+    position: relative;
 }
 .checkbox-label input{
 

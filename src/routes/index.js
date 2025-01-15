@@ -3,8 +3,16 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 // Определяем маршруты
 const routes = [
     {
+        path: '/gridbot',
+        component: () => import('../widgets/GridBotTemplate.vue')
+    },
+    {
         path: '/grid',
         component: () => import('../components/WidgetGrid.vue')
+    },
+    {
+        path: '/intervals',
+        component: () => import('../widgets/IntervalsTemplate.vue')
     },
     {
         path: '/mergedcomponent',

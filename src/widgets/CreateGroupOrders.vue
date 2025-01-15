@@ -3,7 +3,9 @@
 
     <ul>
       <li v-for="(order, index) in groupOrders" :key="index" style="margin: 0 0 10px;">
-        {{ index + 1 }}. {{ order.side }} {{ order.quantity }} {{ order.instrument.symbol }} по {{ order.price }} {{ order.user.portfolio }}
+        <div v-if="order.price">
+          {{ index + 1 }}. {{ order.side }} {{ order.quantity }} {{ order.instrument.symbol }} по {{ order.price }} {{ order.user.portfolio }}
+        </div>
       </li>
     </ul>
 
@@ -11,6 +13,17 @@
             @click="sendGroupLimitOrders()">
       Создать лимитки
     </button>
+
+    <div style="padding-top: 6px;">
+      <label class="checkbox-label" style="display: inline-block; padding-left: 21px; padding-top: 1px;">
+        <input v-model="isTimerRunning" @change="toggleTimer" class="checkbox" type="checkbox" style="top: 0;"/>
+        Автомат с интервалом
+      </label>
+
+      <span style=" padding-left: 8px;">
+        <input v-model="count" style="width: 20px;"/> сек
+      </span>
+    </div>
 
   </div>
 </template>
@@ -30,11 +43,15 @@ export default {
 
   data () { return {
 
+    defaultCount: 7,
+    count: 7,
+    isTimerRunning: false,
+
     groupOrders: [
       {
         side: "buy",
         quantity: 1,
-        price: 269,
+        price: null,
         instrument: {
           symbol: "SBER",
           exchange: "MOEX",
@@ -48,7 +65,7 @@ export default {
       {
         side: "buy",
         quantity: 1,
-        price: 105,
+        price: null,
         instrument: {
           symbol: "MTLR",
           exchange: "MOEX",
@@ -73,7 +90,7 @@ export default {
       groupOrders.forEach((order) => {
         if(!this.orderbooksStore.orderbooksMetrics) return;
         if(this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice){
-          order.price = this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice - 4;
+          order.price = this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice - 1;
         }
       });
 
@@ -130,12 +147,50 @@ export default {
       }
     },
 
+    startTimer() {
+      const updateTimer = () => {
+        if (!this.isTimerRunning) {
+          clearTimeout(this.timerId); // Остановить таймер, если флаг false
+          return;
+        }
+
+        this.count = this.count > 0 ? this.count - 1 : this.defaultCount;
+        if (this.count === 0) {
+          this.sendGroupLimitOrders();
+        }
+
+        // Планируем следующий вызов через 1 секунду
+        this.timerId = setTimeout(updateTimer, 1000);
+      };
+
+      // Запускаем таймер, если флаг true
+      if (this.isTimerRunning) {
+        updateTimer();
+      }
+    },
+
+    toggleTimer() {
+      if (this.isTimerRunning) {
+        // Если таймер включён, запускаем его с задержкой 5 секунд
+        setTimeout(() => {
+          if (this.isTimerRunning) this.startTimer();
+        }, 1000);
+      } else {
+        // Если таймер выключен, останавливаем его
+        clearTimeout(this.timerId);
+        this.timerId = null;
+      }
+    }
+
   },
 
   mounted() {
     setInterval(() => {
       this.updateGroupOrders();
     }, 1000);
+
+
+
   }
 }
 </script>

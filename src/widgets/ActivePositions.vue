@@ -5,7 +5,7 @@
       Загрузить позиции
     </button>-->
 
-    <div v-for="p in ordersStore.activePositions" :key="p.guid" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr">
+    <div v-for="p in ordersStore.activePositions" :key="p.guid" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; white-space: nowrap;">
       <span>{{p.symbol}} </span>
       <strong>{{p.volume.toFixed(2)}} руб</strong>
       <span style="margin-left: 10px;">{{p.qtyUnits}} шт</span>

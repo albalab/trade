@@ -1,10 +1,10 @@
 <template>
   <div>
-    Total: {{dataFabricStore.sourceCounts.sourceTotalCount}}<br>
-    Candles: {{dataFabricStore.sourceCounts.sourceCandlesCount}}<br>
-    Trades: {{dataFabricStore.sourceCounts.sourceTradesCount}}<br>
-    Orderbooks: {{dataFabricStore.sourceCounts.sourceOrderbooksCount}}<br>
-    Quotes: {{dataFabricStore.sourceCounts.sourceQuotesCount}}<br>
+    - Total: {{dataFabricStore.sourceCounts.sourceTotalCount}}<br>
+    - Candles: {{dataFabricStore.sourceCounts.sourceCandlesCount}}<br>
+    - Trades: {{dataFabricStore.sourceCounts.sourceTradesCount}}<br>
+    - Orderbooks: {{dataFabricStore.sourceCounts.sourceOrderbooksCount}}<br>
+    - Quotes: {{dataFabricStore.sourceCounts.sourceQuotesCount}}<br>
     - Aggregated events<br>
     - Chunk events<br>
   </div>

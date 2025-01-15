@@ -145,10 +145,28 @@
         <div v-if="widget.type === 17" :data="widget">
           <CardioTemplate :waveChunk="newChunk" />
 
-          <div style="padding-top: 10px;">
+<!--          <div style="padding-top: 10px;">
             <button class="btn btn-second" @click="simulateNewData">Следующий чанк</button>
-          </div>
+          </div>-->
 
+        </div>
+
+        <div v-if="widget.type === 19" :data="widget">
+          <CardioTemplateWide :waveChunk="newChunkWide" />
+
+<!--          <div style="padding-top: 10px;">
+            <button class="btn btn-second" @click="simulateNewData">Следующий чанк</button>
+          </div>-->
+
+        </div>
+
+
+        <div v-if="widget.type === 20" :data="widget">
+          <span v-if="cachedSBER">real: {{cachedSBER}}</span> &nbsp;
+          <span v-if="cachedSBER">normalized: {{normalizeValue(cachedSBER).toFixed(2)}}</span> &nbsp;
+          <span v-if="minValue">min: {{minValue}}</span> &nbsp;
+          <span v-if="maxValue">max: {{maxValue}}</span> &nbsp;
+          <IntervalsTemplate :externalMetric="normalizeValue(cachedSBER)" />
         </div>
 
         <div v-if="widget.type === 18" :data="widget">
@@ -231,7 +249,9 @@ import {
 
 import WidgetGrid from './WidgetGrid.vue';
 
+import CardioTemplateWide from '@/widgets/CardioTemplateWide.vue';
 import CardioTemplate from '@/widgets/CardioTemplate.vue';
+import IntervalsTemplate from '@/widgets/IntervalsTemplate.vue';
 import ActiveOrders from '@/widgets/ActiveOrders.vue';
 import CreateGroupOrders from '@/widgets/CreateGroupOrders.vue';
 import ActivePositions from '@/widgets/ActivePositions.vue';
@@ -265,7 +285,9 @@ export default {
   },
 
   components: {
+    IntervalsTemplate,
     CardioTemplate,
+    CardioTemplateWide,
     CreateGroupOrders,
     TopDeals,
     StatisticRenderer,
@@ -292,6 +314,19 @@ export default {
 
   data() {
     return {
+
+      minValue: null,
+      maxValue: null,
+
+      cachedSBERMax: null,
+      cachedSBER: null,
+
+      parentMetric: 0.5,
+
+      graphData: [], // Массив данных для графика
+      timers: [2, 3, 5, 7, 11], // Интервалы таймеров в секундах
+
+      newChunkWide: [],
 
       // Пример тестового набора (имитация одного цикла ЭКГ)
       newChunk: [
@@ -342,6 +377,8 @@ export default {
         { name: 'Timelines items', param: 0, type: 16, gridRow: 'span 2' },
 
         { name: 'Template cardio', param: 0, type: 17, gridColumn: 'span 1', gridRow: 'span 2' },
+        { name: 'Template cardio wide', param: 0, type: 19, gridColumn: 'span 3', gridRow: 'span 2' },
+        { name: 'Intervals template', param: 0, type: 20, gridColumn: 'span 1', gridRow: 'span 1' },
 
         { name: 'Data Fabric', param: 0, type: 1 },
         //{ name: 'Alor Statistics', param: 0, type: 2, gridColumn: 'span 2' },
@@ -381,11 +418,11 @@ export default {
         tradeVolumeAbsoluteRubChunkSum: 449.74,
         tradePrice: 224.87,
         tradeSide: 'buy',
-        orderbookSpread: 0.010000000000019327,
+        //orderbookSpread: 0.010000000000019327,
         orderbookVolumeImbalance: -1406,
         //quoteMidPrice: 224.85000000000002,
         //quoteTicker: 'SBER',
-        quoteLastPrice: 224.83,
+        //quoteLastPrice: 224.83,
         candleClose: 224.84,
         candleVolume: 72,
         candleDirection: 'down',
@@ -578,6 +615,63 @@ export default {
   },
 
   methods: {
+    normalizeValue(newValue) {
+      // Инициализация minValue и maxValue при первом вызове
+      if (this.minValue === null || this.maxValue === null) {
+        this.minValue = newValue;
+        this.maxValue = newValue;
+      }
+
+      // Обновляем минимум и максимум
+      if (newValue < this.minValue) this.minValue = newValue;
+      if (newValue > this.maxValue) this.maxValue = newValue;
+
+      // Нормируем значение
+      const normalized = (newValue - this.minValue) / (this.maxValue - this.minValue);
+      return normalized;
+    },
+
+    addMetric(timer, metric) {
+      const now = Date.now();
+
+      // Добавляем новое значение метрики в массив данных
+      this.graphData.push({ timer, timestamp: now, metric });
+
+      // Ограничиваем массив данными только за последние 30 секунд
+      const cutoffTime = now - 30000; // 30 секунд
+      while (this.graphData.length > 0 && this.graphData[0].timestamp < cutoffTime) {
+        this.graphData.shift();
+      }
+    },
+    handleNewData(newMetric) {
+      // Обновляем график для всех таймеров
+      const timers = [2, 3, 5, 7, 11]; // Интервалы таймеров
+      timers.forEach((timer) => {
+        this.addMetric(timer, newMetric);
+      });
+    },
+
+    generateData(timer) {
+      const now = Date.now();
+      const metric = Math.random(); // Генерация случайной метрики
+      this.graphData.push({ timer, timestamp: now, metric });
+
+      // Ограничиваем данные заданным интервалом (например, 30 секунд)
+      const cutoffTime = now - 30000; // 30 секунд назад
+      while (this.graphData.length > 0 && this.graphData[0].timestamp < cutoffTime) {
+        this.graphData.shift();
+      }
+    },
+    startTimers() {
+      this.timers.forEach((timer) => {
+        setInterval(() => this.generateData(timer), timer * 1000); // Создаём интервал для каждого таймера
+      });
+    },
+
+    simulateNewDataWide() {
+      const randomChunk = Array.from({ length: 90 }, () => (Math.random() - 0.5) * 1.5);
+      this.newChunkWide = randomChunk;
+    },
 
     simulateNewData() {
       const randomChunk = Array.from({ length: 20 }, () => (Math.random() - 0.5) * 1.5);
@@ -1063,16 +1157,42 @@ export default {
   },
 
   mounted() {
+
     setInterval(() => {
       this.updateSummaryData();
     }, 1000);
 
+    this.simulateNewData();
     setInterval(() => {
       this.simulateNewData();
     }, 2000);
+
+    this.simulateNewDataWide();
+    setInterval(() => {
+      this.simulateNewDataWide();
+    }, 7800);
+
+    // Симуляция автоматического обновления данных
+    setInterval(() => {
+
+      const newMetric = Math.random(); // Здесь обновляется значение метрики
+
+      this.handleNewData(newMetric);
+    }, 1000); // Новые данные приходят каждые 1 секунду
   },
 
   watch: {
+    'dataFabricStore.chunkEvents.SBER': {
+      immediate: true,
+      handler(newData) {
+        if(newData) {
+          this.cachedSBER = newData;
+          if(this.cachedSBER > this.cachedSBERMax) this.cachedSBERMax = this.cachedSBER;
+        }
+
+        //console.log(newData);
+      }
+    },
     'tradesStore.tradesStatistics.advantageousBuyDifferences': {
       immediate: true,
       handler(newData) {

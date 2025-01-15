@@ -81,6 +81,18 @@
           Снять
         </button>
       </div>
+
+      <div style="padding-top: 6px;">
+        <label class="checkbox-label" style="display: inline-block; padding-left: 21px; padding-top: 1px;">
+          <input v-model="isTimerRunning" @change="toggleTimer" class="checkbox" type="checkbox" style="top: 0;"/>
+          Автомат с интервалом
+        </label>
+
+        <span style=" padding-left: 8px;">
+        <input v-model="count" style="width: 20px;"/> сек
+      </span>
+      </div>
+
     </div>
   </div>
 </template>
@@ -106,6 +118,10 @@ export default {
 
   data() {
     return {
+      defaultCount: 11,
+      count: 11,
+      isTimerRunning: false,
+
       selectedOrders: [],
     };
   },
@@ -157,7 +173,7 @@ export default {
         const exchange = 'MOEX'; // Укажите биржу
         const portfolio = 'D88141'; // Укажите портфель
         await cancelAllOrders(exchange, portfolio).then(() => {
-          this.limitOrders = [];
+          this.ordersStore.limitOrders = [];
         });
 
         //console.log("Все ордера успешно отменены:", result);
@@ -250,11 +266,52 @@ export default {
         console.error("Ошибка при отмене ордеров:", error.message);
       }
     },
+
+
+    startTimer() {
+      const updateTimer = () => {
+        if (!this.isTimerRunning) {
+          clearTimeout(this.timerId); // Остановить таймер, если флаг false
+          return;
+        }
+
+        this.count = this.count > 0 ? this.count - 1 : this.defaultCount;
+        if (this.count === 0) {
+          this.cancelAllOrders();
+        }
+
+        // Планируем следующий вызов через 1 секунду
+        this.timerId = setTimeout(updateTimer, 1000);
+      };
+
+      // Запускаем таймер, если флаг true
+      if (this.isTimerRunning) {
+        updateTimer();
+      }
+    },
+
+    toggleTimer() {
+      if (this.isTimerRunning) {
+        // Если таймер включён, запускаем его с задержкой 5 секунд
+        setTimeout(() => {
+          if (this.isTimerRunning) this.startTimer();
+        }, 1000);
+      } else {
+        // Если таймер выключен, останавливаем его
+        clearTimeout(this.timerId);
+        this.timerId = null;
+      }
+    },
+
   },
 
   mounted() {
     this.fetchOrders();
     this.connectToWebSocket();
+
+    setTimeout(() => {
+      //this.startTimer();
+    }, 5000);
   },
 
   computed: {
