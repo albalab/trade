@@ -3,8 +3,16 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 // Определяем маршруты
 const routes = [
     {
-        path: '/gridbot',
-        component: () => import('../widgets/GridBotTemplate.vue')
+        path: '/markov',
+        component: () => import('../widgets/MarkovStockSimulation.vue')
+    },
+    {
+        path: '/meshbot',
+        component: () => import('../widgets/MeshBot/MeshBot.vue')
+    },
+    {
+        path: '/meshbottemplate',
+        component: () => import('../widgets/MeshBot/MeshBotTemplate.vue')
     },
     {
         path: '/grid',

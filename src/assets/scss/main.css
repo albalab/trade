@@ -767,3 +767,79 @@ input:checked + .slider:before {
     margin: 0 auto;
     width: 200px;
 }
+
+.mesh-bot {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.mesh-bot .section {
+    background: #242737;
+    border: 1px solid #404562;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+
+.section-settings .name{
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 50px;
+    box-sizing: border-box;
+}
+.section-settings label{
+    position: relative;
+    display: block;
+    padding: 4px 0 6px 0;
+}
+.section-settings input{
+    position: absolute;
+    left: 0;
+}
+.section-settings input[type=number]{
+    width: 40px;
+}
+.mesh-bot .log {
+    background: #242737;
+    height: 120px;
+    overflow-y: auto;
+    border: 1px solid #404562;
+    margin-top: 10px;
+}
+
+.mesh-bot .tabs {
+    display: flex;
+    background-color: #333;
+    border-bottom: 2px solid #404562;
+}
+
+.mesh-bot .tab {
+    flex: 1;
+    padding: 10px 20px;
+    text-align: center;
+    cursor: pointer;
+    background-color: #242737;
+    color: white;
+    border: none;
+    outline: none;
+    transition: background-color 0.3s;
+}
+
+.mesh-bot .tab:hover {
+    background-color: #404562;
+}
+
+.mesh-bot .tab.active {
+    background-color: #1d202b;
+    font-weight: bold;
+    border-bottom: 2px solid #4caf50;
+}
+
+.mesh-bot .tab-content {
+    padding: 20px;
+    background-color: #242737;
+    border: 1px solid #404562;
+    margin-top: 10px;
+}
