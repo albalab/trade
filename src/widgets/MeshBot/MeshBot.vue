@@ -2,20 +2,13 @@
   <div class="mesh-bot">
 
     <div>
-      <!-- Вкладки -->
-      <div class="tabs">
-        <button
-            v-for="(tab, index) in tabs"
-            :key="index"
-            class="tab"
-            :class="{ active: activeTab === index }"
-            @click="activeTab = index"
-        >
-          {{ tab.name }}
-        </button>
-      </div>
 
-      <!-- Контент активного таба -->
+      <TabsComponent
+          :tabs="tabs"
+          :activeTab="activeTab"
+          @tab-click="activeTab = $event"
+      />
+
       <div v-if="activeTab === 0" class="tab-content">
 
         <div class="section-settings">
@@ -105,71 +98,28 @@
       </div>
 
       <div v-if="activeTab === 2" class="orders">
-        <!-- Таблица ордеров -->
-        <h2>Ордера / Сделки</h2>
-        <table>
-          <thead>
-          <tr>
-            <th>Buy Orders</th>
-            <th>Sell Orders</th>
-            <th>Open Trades</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td>
-              <div v-for="bo in state.buyLevels" :key="bo.price">
-                @{{ bo.price.toFixed(2) }} x {{ bo.volume }}
-              </div>
-            </td>
-            <td>
-              <div v-for="so in state.sellOrders" :key="so.price">
-                @{{ so.price.toFixed(2) }} x {{ so.volume }}
-              </div>
-            </td>
-            <td>
-              <div v-for="(ot, idx) in state.openTrades" :key="idx">
-                BUY@{{ ot.buyPrice.toFixed(2) }}, TP@{{ ot.takeProfit.toFixed(2) }},
-                vol={{ ot.volume }}
-              </div>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+        <OrdersComponent
+            :buyLevels="state.buyLevels"
+            :sellOrders="state.sellOrders"
+            :openTrades="state.openTrades"
+        />
+
       </div>
 
       <div v-if="activeTab === 3" class="history">
-        <!-- История закрытых сделок -->
-        <h2>Закрытые сделки</h2>
-        <table>
-          <thead>
-          <tr>
-            <th>BuyPrice</th>
-            <th>SellPrice</th>
-            <th>Volume</th>
-            <th>Profit</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="(ct, cidx) in state.closedTrades" :key="cidx">
-            <td>{{ ct.buyPrice.toFixed(2) }}</td>
-            <td>{{ ct.sellPrice.toFixed(2) }}</td>
-            <td>{{ ct.volume }}</td>
-            <td>{{ ct.profit.toFixed(2) }}</td>
-          </tr>
-          </tbody>
-        </table>
-        <strong>Суммарная прибыль:</strong> {{ state.totalProfit.toFixed(2) }}
+        <HistoryComponent
+            :closedTrades="state.closedTrades"
+            :totalProfit="state.totalProfit"
+        />
       </div>
 
       <div v-if="activeTab === 4" class="log">
-        <div>
-          Осталось лимиток для восстановления: {{ state.remainingRestoreCount }}
-        </div>
-        <div class="log" ref="logBox">
-          <pre>{{ logText }}</pre>
-        </div>
+        <LogComponent
+            :logText="logText"
+            :remainingRestoreCount="state.remainingRestoreCount"
+        />
       </div>
+
     </div>
 
   </div>
@@ -177,6 +127,11 @@
 
 
 <script>
+import LogComponent from "@/widgets/MeshBot/components/LogComponent.vue";
+import TabsComponent from "@/widgets/MeshBot/components/TabsComponent.vue";
+import OrdersComponent from "@/widgets/MeshBot/components/OrdersComponent.vue";
+import HistoryComponent from "@/widgets/MeshBot/components/HistoryComponent.vue";
+
 import { markRaw, toRaw } from "vue";
 import { Chart, registerables } from "chart.js";
 import webSocketService from "@/services/WebSocketService";
@@ -184,6 +139,13 @@ Chart.register(...registerables);
 
 export default {
   name: "MeshBotTemplate",
+
+  components: {
+    LogComponent,
+    TabsComponent,
+    OrdersComponent,
+    HistoryComponent,
+  },
 
   data() { return {
 
@@ -309,7 +271,6 @@ export default {
       this.state.linesData.splice(idx, 1);
     }
   },
-
 
   updateChart() {
     if (!this.chartInstance) return;

@@ -1,11 +1,11 @@
 <template>
-  <div class="closed-trades-table">
+  <div class="history">
     <h2>Закрытые сделки</h2>
     <table>
       <thead>
       <tr>
-        <th>BuyPrice</th>
-        <th>SellPrice</th>
+        <th>Buy Price</th>
+        <th>Sell Price</th>
         <th>Volume</th>
         <th>Profit</th>
       </tr>
@@ -25,7 +25,7 @@
 
 <script>
 export default {
-  name: "ClosedTradesTable",
+  name: "HistoryComponent",
   props: {
     closedTrades: {
       type: Array,
@@ -40,31 +40,22 @@ export default {
 </script>
 
 <style scoped>
-.closed-trades-table {
-  padding: 20px;
-  background-color: #242737;
-  border: 1px solid #404562;
-  margin-top: 10px;
+.history {
+  padding: 16px;
 }
-
-.closed-trades-table table {
+table {
   width: 100%;
   border-collapse: collapse;
 }
-
-.closed-trades-table th,
-.closed-trades-table td {
+thead {
+  background-color: #f5f5f5;
+}
+th, td {
+  border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
-  border: 1px solid #404562;
 }
-
-.closed-trades-table th {
-  background-color: #333;
-  color: white;
-}
-
-.closed-trades-table td {
-  color: #ddd;
+th {
+  font-weight: bold;
 }
 </style>
