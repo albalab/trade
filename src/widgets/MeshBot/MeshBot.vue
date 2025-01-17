@@ -9,7 +9,16 @@
           @tab-click="activeTab = $event"
       />
 
-      <div v-if="activeTab === 0" class="tab-content">
+      <div v-show="activeTab === 0" class="chart">
+        <strong>Текущая цена:</strong> {{ currentPriceStr }}
+        <canvas ref="chartCanvas" width="600" height="300"></canvas>
+        <div>
+          <button class="btn" @click="startSimulation">Старт</button>
+          <button class="btn" @click="stopSimulation">Стоп</button>
+        </div>
+      </div>
+
+      <div v-show="activeTab === 1" class="tab-content">
 
         <div class="section-settings">
           <label>
@@ -87,36 +96,26 @@
 
       </div>
 
-      <div v-if="activeTab === 1" class="chart">
-        <!-- График -->
-        <div>
-          <button class="btn" @click="startSimulation">Старт</button>
-          <button class="btn" @click="stopSimulation">Стоп</button>
-        </div>
-        <strong>Текущая цена:</strong> {{ currentPriceStr }}
-        <canvas ref="chartCanvas" width="600" height="300"></canvas>
-      </div>
-
-      <div v-if="activeTab === 2" class="orders">
+      <div v-show="activeTab === 2">
         <OrdersComponent
-            :buyLevels="state.buyLevels"
-            :sellOrders="state.sellOrders"
-            :openTrades="state.openTrades"
+            :buyLevels="meshStore.buyLevels"
+            :sellOrders="meshStore.sellOrders"
+            :openTrades="meshStore.openTrades"
         />
 
       </div>
 
-      <div v-if="activeTab === 3" class="history">
+      <div v-show="activeTab === 3">
         <HistoryComponent
-            :closedTrades="state.closedTrades"
-            :totalProfit="state.totalProfit"
+            :closedTrades="meshStore.closedTrades"
+            :totalProfit="meshStore.totalProfit"
         />
       </div>
 
-      <div v-if="activeTab === 4" class="log">
+      <div v-show="activeTab === 4">
         <LogComponent
             :logText="logText"
-            :remainingRestoreCount="state.remainingRestoreCount"
+            :remainingRestoreCount="meshStore.remainingRestoreCount"
         />
       </div>
 
@@ -127,6 +126,8 @@
 
 
 <script>
+import { useMeshStore } from "@/stores/meshStore";
+
 import LogComponent from "@/widgets/MeshBot/components/LogComponent.vue";
 import TabsComponent from "@/widgets/MeshBot/components/TabsComponent.vue";
 import OrdersComponent from "@/widgets/MeshBot/components/OrdersComponent.vue";
@@ -134,7 +135,7 @@ import HistoryComponent from "@/widgets/MeshBot/components/HistoryComponent.vue"
 
 import { markRaw, toRaw } from "vue";
 import { Chart, registerables } from "chart.js";
-import webSocketService from "@/services/WebSocketService";
+
 Chart.register(...registerables);
 
 export default {
@@ -168,7 +169,7 @@ export default {
       maxOpenTrades: 10,
     },
 
-    state:{
+    /*meshStore:{
       remainingRestoreCount: 0,
       currentPrice: 100,
       simulationId: null,
@@ -186,13 +187,13 @@ export default {
       // Точки входа/выхода для графика
       buyPoints: [],
       sellPoints: [],
-    },
+    },*/
 
     activeTab: 0,
 
     tabs: [
-      { name: "Настройки" },
       { name: "График" },
+      { name: "Настройки" },
       { name: "Ордера / Сделки" },
       { name: "История сделок" },
       { name: "Лог" },
@@ -212,52 +213,52 @@ export default {
   methods: {
 
     checkSellOrders() {
-    for (let j = 0; j < this.state.sellOrders.length; j++) {
-      const so = this.state.sellOrders[j];
-      if (this.state.currentPrice >= so.price) {
+    for (let j = 0; j < this.meshStore.sellOrders.length; j++) {
+      const so = this.meshStore.sellOrders[j];
+      if (this.meshStore.currentPrice >= so.price) {
         this.log(`EXEC SELL @${so.price.toFixed(2)}, vol=${so.volume}`);
-        this.state.sellOrders.splice(j, 1);
+        this.meshStore.sellOrders.splice(j, 1);
         j--;
         this.removeLine("SELL_" + so.price);
 
-        this.state.sellPoints.push({ x: this.state.timeIndex, y: so.price });
+        this.meshStore.sellPoints.push({ x: this.meshStore.timeIndex, y: so.price });
 
-        const idx = this.state.openTrades.findIndex(
+        const idx = this.meshStore.openTrades.findIndex(
             t => t.buyPrice === so.linkBuy
         );
         if (idx >= 0) {
-          const tr = this.state.openTrades[idx];
+          const tr = this.meshStore.openTrades[idx];
           // Считаем профит классической формулой (цена продажи - цена покупки)*volume
           const profit = (so.price - tr.buyPrice) * tr.volume;
-          this.state.totalProfit += profit;
-          this.state.closedTrades.push({
+          this.meshStore.totalProfit += profit;
+          this.meshStore.closedTrades.push({
             buyPrice: tr.buyPrice,
             sellPrice: so.price,
             volume: tr.volume,
             profit,
           });
-          this.state.openTrades.splice(idx, 1);
+          this.meshStore.openTrades.splice(idx, 1);
 
           // Восстановление лимитки (если включено)
-          if (this.config.enableRestore && this.state.remainingRestoreCount > 0) {
+          if (this.config.enableRestore && this.meshStore.remainingRestoreCount > 0) {
             if (this.isPositionLimitReached()) {
               this.log("Превышен лимит позиций и лимиток. Восстановление отменено.");
               return;
             }
-            this.state.buyLevels.push({
+            this.meshStore.buyLevels.push({
               price: tr.buyPrice,
               volume: this.config.volume,
             });
-            this.state.linesData.push({
+            this.meshStore.linesData.push({
               id: "BUY_" + tr.buyPrice,
               price: tr.buyPrice,
               color: "green",
             });
-            this.state.remainingRestoreCount--;
+            this.meshStore.remainingRestoreCount--;
             this.log(
                 `Restored BUY limit @${tr.buyPrice.toFixed(
                     2
-                )}. Remaining: ${this.state.remainingRestoreCount}`
+                )}. Remaining: ${this.meshStore.remainingRestoreCount}`
             );
           }
         }
@@ -266,9 +267,9 @@ export default {
   },
 
   removeLine(id) {
-    const idx = this.state.linesData.findIndex(l => l.id === id);
+    const idx = this.meshStore.linesData.findIndex(l => l.id === id);
     if (idx >= 0) {
-      this.state.linesData.splice(idx, 1);
+      this.meshStore.linesData.splice(idx, 1);
     }
   },
 
@@ -276,7 +277,7 @@ export default {
     if (!this.chartInstance) return;
 
     // 1. Берём «сырые» данные цены.
-    const rawPriceData = toRaw(this.state.priceData);
+    const rawPriceData = toRaw(this.meshStore.priceData);
     this.chartInstance.data.datasets[0].data = rawPriceData;
 
     // 2. Получаем диапазон y (минимум и максимум).
@@ -299,12 +300,12 @@ export default {
     const verticalTrades = [];
 
     // Отображение линий с разными цветами
-    const rawLines = toRaw(this.state.linesData);
+    const rawLines = toRaw(this.meshStore.linesData);
     const linesPoints = [];
     for (const line of rawLines) {
       linesPoints.push({ x: 0, y: line.price, customColor: line.color });
       linesPoints.push({
-        x: this.state.timeIndex + 5,
+        x: this.meshStore.timeIndex + 5,
         y: line.price,
         customColor: line.color,
       });
@@ -322,7 +323,7 @@ export default {
     };
 
     // Пробегаемся по buyPoints
-    for (const bp of toRaw(this.state.buyPoints)) {
+    for (const bp of toRaw(this.meshStore.buyPoints)) {
       verticalTrades.push({
         x: bp.x,
         y: yMin,
@@ -337,7 +338,7 @@ export default {
     }
 
     // Пробегаемся по sellPoints
-    for (const sp of toRaw(this.state.sellPoints)) {
+    for (const sp of toRaw(this.meshStore.sellPoints)) {
       verticalTrades.push({
         x: sp.x,
         y: yMin,
@@ -379,20 +380,20 @@ export default {
     this.log("Смещаем сетку в соответствии с текущей ценой...");
 
     const oldPriceStart = this.config.priceStart;
-    this.config.priceStart = this.state.currentPrice;
+    this.config.priceStart = this.meshStore.currentPrice;
 
     // Если включено смещение TP, смещаем TP у открытых сделок
     if (this.config.enableTpShift) {
       const shiftValue = this.config.priceStart - oldPriceStart;
-      for (const ot of this.state.openTrades) {
+      for (const ot of this.meshStore.openTrades) {
         // Не меняем ot.buyPrice
         ot.takeProfit += shiftValue;
       }
     }
 
     // 1) Перестраиваем BUY-ордера вокруг новой priceStart
-    this.state.buyLevels = [];
-    this.state.linesData = this.state.linesData.filter(line => !line.id.startsWith("BUY_"));
+    this.meshStore.buyLevels = [];
+    this.meshStore.linesData = this.meshStore.linesData.filter(line => !line.id.startsWith("BUY_"));
 
     for (let i = 1; i <= this.config.levelsCount; i++) {
       if (this.isPositionLimitReached()) {
@@ -400,11 +401,11 @@ export default {
         break;
       }
       const levelPrice = this.config.priceStart - i * this.config.gridStep;
-      this.state.buyLevels.push({
+      this.meshStore.buyLevels.push({
         price: levelPrice,
         volume: this.config.volume,
       });
-      this.state.linesData.push({
+      this.meshStore.linesData.push({
         id: "BUY_" + levelPrice,
         price: levelPrice,
         color: "green",
@@ -412,17 +413,17 @@ export default {
     }
 
     // 2) Пересоздаём SELL-ордера для (уже) открытых сделок
-    this.state.linesData = this.state.linesData.filter(line => !line.id.startsWith("SELL_"));
-    this.state.sellOrders = [];
+    this.meshStore.linesData = this.meshStore.linesData.filter(line => !line.id.startsWith("SELL_"));
+    this.meshStore.sellOrders = [];
 
-    for (const ot of this.state.openTrades) {
+    for (const ot of this.meshStore.openTrades) {
       const so = {
         price: ot.takeProfit,
         volume: ot.volume,
         linkBuy: ot.buyPrice,
       };
-      this.state.sellOrders.push(so);
-      this.state.linesData.push({
+      this.meshStore.sellOrders.push(so);
+      this.meshStore.linesData.push({
         id: "SELL_" + so.price,
         price: so.price,
         color: "red",
@@ -442,18 +443,21 @@ export default {
   },
 
   isPositionLimitReached() {
-    return this.state.openTrades.length + this.state.buyLevels.length >= this.config.maxOpenTrades;
+    return this.meshStore.openTrades.length + this.meshStore.buyLevels.length >= this.config.maxOpenTrades;
   },
 
   startSimulation() {
-    if (this.state.simulationId) {
+    if (this.meshStore.simulationId) {
       this.log("Симуляция уже идёт!");
       return;
     }
     this.log("=== START ===");
-    this.resetState();
 
-    this.state.simulationId = setInterval(this.simulate, this.config.interval);
+    //if (!this.meshStore.priceData.length) {
+      //this.resetState(); // Только если данных ещё нет
+    //}
+
+    this.meshStore.simulationId = setInterval(this.simulate, this.config.interval);
 
     if (this.config.enableGridShift) {
       this.shiftGrid();
@@ -461,12 +465,12 @@ export default {
   },
 
   stopSimulation() {
-    if (!this.state.simulationId) {
+    if (!this.meshStore.simulationId) {
       this.log("Симуляция не запущена!");
       return;
     }
-    clearInterval(this.state.simulationId);
-    this.state.simulationId = null;
+    clearInterval(this.meshStore.simulationId);
+    this.meshStore.simulationId = null;
 
     if (this.gridShiftTimer) {
       clearTimeout(this.gridShiftTimer);
@@ -486,23 +490,23 @@ export default {
       volatility: this.config.volatility,
       interval: this.config.interval,
     }));
-    this.state.remainingRestoreCount = this.config.restoreCount;
-    this.resetState();
+    this.meshStore.remainingRestoreCount = this.config.restoreCount;
+    //this.resetState();
   },
 
   initBuyOrders() {
-    this.state.buyLevels = []; // Сброс существующих уровней
+    this.meshStore.buyLevels = []; // Сброс существующих уровней
     for (let i = 1; i <= this.config.levelsCount; i++) {
       if (this.isPositionLimitReached()) {
         this.log("Превышен лимит позиций и лимиток. Новые лимитки не будут выставлены.");
         break;
       }
       const levelPrice = this.config.priceStart - i * this.config.gridStep;
-      this.state.buyLevels.push({
+      this.meshStore.buyLevels.push({
         price: levelPrice,
         volume: this.config.volume,
       });
-      this.state.linesData.push({
+      this.meshStore.linesData.push({
         id: "BUY_" + levelPrice,
         price: levelPrice,
         color: "green",
@@ -511,12 +515,12 @@ export default {
   },
 
   simulate() {
-    this.state.timeIndex++;
+    this.meshStore.timeIndex++;
     const delta = Math.random() * (this.config.volatility * 2) - this.config.volatility;
-    this.state.currentPrice += delta;
-    if (this.state.currentPrice < 0) this.state.currentPrice = 0.1;
+    this.meshStore.currentPrice += delta;
+    if (this.meshStore.currentPrice < 0) this.meshStore.currentPrice = 0.1;
 
-    this.state.priceData.push({ x: this.state.timeIndex, y: this.state.currentPrice });
+    this.meshStore.priceData.push({ x: this.meshStore.timeIndex, y: this.meshStore.currentPrice });
 
     this.checkBuyOrders();
     this.checkSellOrders();
@@ -525,36 +529,36 @@ export default {
   },
 
   checkBuyOrders() {
-    for (let i = 0; i < this.state.buyLevels.length; i++) {
-      const bo = this.state.buyLevels[i];
-      if (this.state.currentPrice <= bo.price) {
-        if (this.state.openTrades.length >= this.config.maxOpenTrades) {
+    for (let i = 0; i < this.meshStore.buyLevels.length; i++) {
+      const bo = this.meshStore.buyLevels[i];
+      if (this.meshStore.currentPrice <= bo.price) {
+        if (this.meshStore.openTrades.length >= this.config.maxOpenTrades) {
           this.log(`Лимит открытых позиций достигнут: ${this.config.maxOpenTrades}`);
           return; // Останавливаем добавление новых сделок
         }
 
         this.log(`EXEC BUY @${bo.price.toFixed(2)}, vol=${bo.volume}`);
-        this.state.buyLevels.splice(i, 1);
+        this.meshStore.buyLevels.splice(i, 1);
         i--;
         this.removeLine("BUY_" + bo.price);
 
-        this.state.buyPoints.push({ x: this.state.timeIndex, y: bo.price });
+        this.meshStore.buyPoints.push({ x: this.meshStore.timeIndex, y: bo.price });
 
         const trade = {
           buyPrice: bo.price,
           volume: bo.volume,
           takeProfit: bo.price + this.config.takeProfitDistance,
         };
-        this.state.openTrades.push(trade);
+        this.meshStore.openTrades.push(trade);
 
         const so = {
           price: trade.takeProfit,
           volume: trade.volume,
           linkBuy: trade.buyPrice,
         };
-        this.state.sellOrders.push(so);
+        this.meshStore.sellOrders.push(so);
 
-        this.state.linesData.push({
+        this.meshStore.linesData.push({
           id: "SELL_" + so.price,
           price: so.price,
           color: "red",
@@ -564,28 +568,30 @@ export default {
   },
 
   resetState() {
-      this.state.currentPrice = this.config.priceStart;
-      this.state.timeIndex = 0;
 
-      this.state.buyLevels = [];
-      this.state.sellOrders = [];
-      this.state.openTrades = [];
-      this.state.closedTrades = [];
-      this.state.totalProfit = 0;
+      console.log("Сброс состояния вызван!");
 
-      this.state.priceData = [];
-      this.state.linesData = [];
-      this.state.buyPoints = [];
-      this.state.sellPoints = [];
+      this.meshStore.currentPrice = this.config.priceStart;
+      this.meshStore.timeIndex = 0;
+
+      this.meshStore.buyLevels = [];
+      this.meshStore.sellOrders = [];
+      this.meshStore.openTrades = [];
+      this.meshStore.closedTrades = [];
+      this.meshStore.totalProfit = 0;
+
+      this.meshStore.priceData = [];
+      this.meshStore.linesData = [];
+      this.meshStore.buyPoints = [];
+      this.meshStore.sellPoints = [];
 
       this.initBuyOrders();
-      this.state.priceData.push({ x: 0, y: this.state.currentPrice });
+      this.meshStore.priceData.push({ x: 0, y: this.meshStore.currentPrice });
       this.updateChart();
     },
 
     initChartInstance() {
 
-      if(!this.$refs.chartCanvas) return;
       if (!this.$refs.chartCanvas) {
         console.error("Canvas not found. Chart initialization skipped.");
         return;
@@ -674,10 +680,16 @@ export default {
         this.chartInstance.destroy();
         this.chartInstance = null;
       }
-    }
+    },
   },
 
   setup() {
+
+    const meshStore = useMeshStore(); // Инициализация хранилища
+
+    return {
+      meshStore
+    }
     // ========== РЕАКТИВНЫЕ ДАННЫЕ ==========
 
 
@@ -706,37 +718,43 @@ export default {
 
   mounted() {
     this.initChartInstance();
-    this.resetState();
+    //this.resetState();
   },
   unmounted() {
     this.destroyChartInstance();
-    webSocketService.close();
   },
 
   watch: {
     activeTab(newTab) {
-      if (newTab === 1) {
-        // Если переключились на вкладку "График"
+      if (newTab === 0) {
         this.$nextTick(() => {
           if (!this.chartInstance) {
             this.initChartInstance();
+          }
+          if (this.chartInstance && this.meshStore.priceData.length > 0) {
             this.updateChart();
           }
         });
-      } else {
-        // Уничтожаем график при уходе с вкладки
+      } else if (newTab !== 0 && this.chartInstance) {
         this.destroyChartInstance();
       }
     },
+    config: {
+      handler() {
+        this.applySettings();
+      },
+      deep: true,
+    },
   },
+
 
   computed: {
     currentPriceStr () {
-      return this.state.currentPrice.toFixed(2);
+      return this.meshStore.currentPrice.toFixed(2);
     },
 
     remainingBuyLimits() {
-      return Math.max(this.config.maxOpenTrades - this.state.openTrades.length, 0);
+      return Math.max(this.config.maxOpenTrades - this.meshStore.openTrades.length, 0);
     },
 
   },

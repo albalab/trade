@@ -1,5 +1,5 @@
 <template>
-  <div class="log-container">
+  <div class="log">
     <div>
       Осталось лимиток для восстановления: {{ remainingRestoreCount }}
     </div>
@@ -39,18 +39,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.log-container {
-  padding: 16px;
-}
-.log-box {
-  max-height: 400px;
-  overflow-y: auto;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  padding: 8px;
-  white-space: pre-wrap;
-  font-family: monospace;
-}
-</style>

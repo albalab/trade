@@ -1,6 +1,5 @@
 <template>
   <div class="history">
-    <h2>Закрытые сделки</h2>
     <table>
       <thead>
       <tr>
@@ -38,24 +37,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.history {
-  padding: 16px;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-thead {
-  background-color: #f5f5f5;
-}
-th, td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-th {
-  font-weight: bold;
-}
-</style>
