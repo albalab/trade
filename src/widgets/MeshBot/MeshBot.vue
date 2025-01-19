@@ -1,6 +1,73 @@
 <template>
   <div class="mesh-bot">
 
+    <div class="section-settings">
+
+      <div class="settings-grid">
+        <div class="settings-block">
+          Риск
+          <label>
+            <input type="number" v-model.number="simulationStore.maxOpenTrades" />
+            <span class="name">Ограничение открытых позиций (осталось {{ remainingBuyLimits }})</span>
+          </label>
+
+          <label>
+            <input type="number" v-model.number="simulationStore.volume" />
+            <span class="name">Объём позиций</span>
+          </label>
+
+        </div>
+
+        <div class="settings-block">
+
+          Сетка
+          <label>
+            <input type="number" v-model.number="simulationStore.levelsCount" />
+            <span class="name">Число лимиток в пакете, шт</span>
+          </label>
+
+          <label>
+            <input type="number" v-model.number="simulationStore.gridStep" step="0.1" />
+            <span class="name">Шаг сетки, пункты</span>
+          </label>
+
+          <label>
+            <input type="number" v-model.number="simulationStore.takeProfitDistance" step="0.1" />
+            <span class="name">Тейк-профит, пункты</span>
+          </label>
+
+        </div>
+
+        <div class="settings-block">
+          Улучшение сетки
+          <label>
+            <input type="checkbox" v-model="simulationStore.enableRestore" />
+            <span class="name">Включить восстановление лимиток</span>
+          </label>
+          <label>
+            <input type="number" v-model.number="simulationStore.restoreCount" min="1"/>
+            <span class="name">Количество восстанавливаемых лимиток</span>
+          </label>
+
+          <label>
+            <input type="checkbox" v-model="simulationStore.enableGridShift" />
+            <span class="name">Включить смещение сетки</span>
+          </label>
+
+          <!--        <label>
+                    <input type="number" v-model.number="simulationStore.gridShiftInterval" min="1000" />
+                    <span class="name">Интервал смещения сетки (ms)</span>
+                  </label>-->
+
+          <label>
+            <input type="checkbox" v-model="simulationStore.enableTpShift" />
+            <span class="name">Включить смещение тейк-профитов</span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
     <div>
 
       <TabsComponent
@@ -9,114 +76,104 @@
           @tab-click="activeTab = $event"
       />
 
-      <div v-show="activeTab === 0" class="chart">
-        <strong>Текущая цена:</strong> {{ currentPriceStr }}
-        <canvas ref="chartCanvas" width="600" height="300"></canvas>
-        <div>
-          <button class="btn" @click="startSimulation">Старт</button>
-          <button class="btn" @click="stopSimulation">Стоп</button>
-        </div>
-      </div>
+      <div v-show="activeTab === 0">
 
-      <div v-show="activeTab === 1" class="tab-content">
+        <div class="meshbot-simulator">
 
-        <div class="section-settings">
-          <label>
-            <input type="number" v-model.number="config.maxOpenTrades" />
-            <span class="name">Ограничение открытых позиций (осталось {{ remainingBuyLimits }})</span>
-          </label>
+          <div class="settings-items">
+            <div class="item">
+              Стартовая цена:
+              <input type="number" v-model.number="simulationStore.initialPrice" step="1"/>
+              <p>Текущая цена (нормированная, шаг 1): {{ simulationStore.currentPrice }}</p>
 
-          <div>
-            <label>
-              <input type="number" v-model.number="config.priceStart" step="0.1" />
-              <span class="name">Начальная цена</span>
-            </label>
+<!--              <div>
+                <span class="name">Минимальный шаг цены</span>
+                <input type="number" v-model.number="simulationStore.priceStep" step="0.01" />
+              </div>-->
 
-            <label>
-              <input type="number" v-model.number="config.gridStep" step="0.1" />
-              <span class="name">Шаг сетки, пункты</span>
-            </label>
+              <div>
+                <span class="name">Множитель волатильности (>1)</span>
+                <input type="number" v-model.number="simulationStore.priceStepMultiplier" step="0.1" min="1" />
+              </div>
 
-            <label>
-              <input type="number" v-model.number="config.takeProfitDistance" step="0.1" />
-              <span class="name">Тейк-профит, пункты</span>
-            </label>
+            </div>
 
+            <div class="item">
+              <span class="name">Волатильность</span>
+              <input type="number" v-model.number="simulationStore.volatility" step="0.1" />
+            </div>
 
-            <label>
-              <input type="number" v-model.number="config.levelsCount" />
-              <span class="name">Число лимиток, шт</span>
-            </label>
-            <label>
-              <input type="number" v-model.number="config.volume" />
-              <span class="name">Объём позиций</span>
-            </label>
+            <div class="item">
+              <span class="name">Период тиков (ms)</span>
+              <input type="number" v-model.number="simulationStore.interval" />
+            </div>
           </div>
 
+          <div class="mesh-simulation-buttons" style="position: relative;">
+            <button class="btn" @click="!inProgress ? startSimulation() : stopSimulation()">
+              <i class="fal"
+                 :class="{'fa-pause': inProgress,  'fa-play': !inProgress}"></i>
+            </button>
+            <button class="btn" @click="resetState()">
+              <i class="fal fa-repeat"></i>
+            </button>
 
-          <label>
-            <input type="number" v-model.number="config.volatility" step="0.1" />
-            <span class="name">Волатильность</span>
-          </label>
+            <div style="position: absolute; right: 10px; top: 20px;">
+              <strong>Прибыль:</strong> {{ simulationStore.totalProfit.toFixed(2) }}
+            </div>
 
-          <label>
-            <input type="number" v-model.number="config.interval" />
-            <span class="name">Интервал (ms)</span>
-          </label>
+          </div>
 
-          <label>
-            <input type="checkbox" v-model="config.enableRestore" />
-            <span class="name">Включить восстановление лимиток</span>
-          </label>
-          <label>
-            <input type="number" v-model.number="config.restoreCount" min="1" />
-            <span class="name">Количество восстанавливаемых лимиток</span>
-          </label>
-
-          <label>
-            <input type="checkbox" v-model="config.enableGridShift" />
-            <span class="name">Включить смещение сетки</span>
-          </label>
-
-          <!--        <label>
-                    <input type="number" v-model.number="config.gridShiftInterval" min="1000" />
-                    <span class="name">Интервал смещения сетки (ms)</span>
-                  </label>-->
-
-          <label>
-            <input type="checkbox" v-model="config.enableTpShift" />
-            <span class="name">Включить смещение тейк-профитов</span>
-          </label>
+          <div class="chart">
+            <canvas ref="chartCanvas" width="600" height="300"></canvas>
+          </div>
 
         </div>
 
-        <div style="padding-top: 12px;">
-          <button class="btn" @click="applySettings">Применить</button>
+        <TabsComponent
+            :tabs="tabs2"
+            :activeTab="activeTab2"
+            @tab-click="activeTab2 = $event"
+        />
+
+        <div style="height: 500px; padding-top: 20px; overflow-y: auto;">
+          <div v-show="activeTab2 === 0">
+            <OrdersComponent
+                :buyLevels="simulationStore.buyLevels"
+                :sellOrders="simulationStore.sellOrders"
+                :openTrades="simulationStore.openTrades"
+            />
+          </div>
+          <div v-show="activeTab2 === 1">
+            <HistoryComponent
+                :closedTrades="simulationStore.closedTrades"
+                :totalProfit="simulationStore.totalProfit"
+            />
+          </div>
+          <div v-show="activeTab2 === 2">
+            <LogComponent
+                :logText="logText"
+                :remainingRestoreCount="simulationStore.remainingRestoreCount"
+            />
+          </div>
         </div>
 
+      </div>
+
+      <div v-show="activeTab === 1">
+        Торговля
       </div>
 
       <div v-show="activeTab === 2">
-        <OrdersComponent
-            :buyLevels="meshStore.buyLevels"
-            :sellOrders="meshStore.sellOrders"
-            :openTrades="meshStore.openTrades"
-        />
 
       </div>
 
       <div v-show="activeTab === 3">
-        <HistoryComponent
-            :closedTrades="meshStore.closedTrades"
-            :totalProfit="meshStore.totalProfit"
-        />
+
       </div>
 
       <div v-show="activeTab === 4">
-        <LogComponent
-            :logText="logText"
-            :remainingRestoreCount="meshStore.remainingRestoreCount"
-        />
+
       </div>
 
     </div>
@@ -126,7 +183,8 @@
 
 
 <script>
-import { useMeshStore } from "@/stores/meshStore";
+import { useSimulationStore } from "@/stores/simulationStore";
+import { useMeshStore } from "@/stores/simulationStore";
 
 import LogComponent from "@/widgets/MeshBot/components/LogComponent.vue";
 import TabsComponent from "@/widgets/MeshBot/components/TabsComponent.vue";
@@ -138,6 +196,9 @@ import { Chart, registerables } from "chart.js";
 
 Chart.register(...registerables);
 
+import zoomPlugin from 'chartjs-plugin-zoom';
+Chart.register(zoomPlugin);
+
 export default {
   name: "MeshBotTemplate",
 
@@ -148,117 +209,151 @@ export default {
     HistoryComponent,
   },
 
-  data() { return {
+  data() {
+    return {
 
-    config:{
-      priceStart: 100,
-      gridStep: 2,
-      levelsCount: 3,
-      volume: 10,
-      takeProfitDistance: 1,
-      volatility: 1,
-      interval: 10,
-      enableRestore: true,
-      restoreCount: 300,
-      enableGridShift: true, // Включение смещения сетки
-      //gridShiftInterval: 5000, // Интервал смещения сетки
-      gridShiftIntervals: [2000, 3000, 7000],
 
-      // Новый флаг, чтобы смещать / не смещать TP у открытых сделок
-      enableTpShift: false,
-      maxOpenTrades: 10,
-    },
+      inProgress: false,
 
-    /*meshStore:{
-      remainingRestoreCount: 0,
-      currentPrice: 100,
-      simulationId: null,
-      timeIndex: 0,
+      /*config:{
+        priceStep: 1,
+        priceStepMultiplier: 10,
 
-      buyLevels: [],
-      sellOrders: [],
-      openTrades: [],
-      closedTrades: [],
-      totalProfit: 0,
+        gridStep: 20,
+        takeProfitDistance: 20,
 
-      priceData: [],
-      linesData: [],
+        levelsCount: 3,
+        volume: 10,
 
-      // Точки входа/выхода для графика
-      buyPoints: [],
-      sellPoints: [],
-    },*/
+        volatility: 1,
+        interval: 10,
+        enableRestore: true,
+        restoreCount: 300,
+        enableGridShift: true, // Включение смещения сетки
+        //gridShiftInterval: 5000, // Интервал смещения сетки
+        gridShiftIntervals: [2000, 3000, 7000],
 
-    activeTab: 0,
+        // Новый флаг, чтобы смещать / не смещать TP у открытых сделок
+        enableTpShift: false,
+        maxOpenTrades: 10,
+      },*/
 
-    tabs: [
-      { name: "График" },
-      { name: "Настройки" },
-      { name: "Ордера / Сделки" },
-      { name: "История сделок" },
-      { name: "Лог" },
-    ],
+      /*simulationStore:{
+        remainingRestoreCount: 0,
+        currentPrice: 100,
+        simulationId: null,
+        timeIndex: 0,
 
-    logText: "",
+        buyLevels: [],
+        sellOrders: [],
+        openTrades: [],
+        closedTrades: [],
+        totalProfit: 0,
 
-    //chartCanvas: null,
-    logBox: null,
+        priceData: [],
+        linesData: [],
 
-    chartInstance: null,
+        // Точки входа/выхода для графика
+        buyPoints: [],
+        sellPoints: [],
+      },*/
 
-    gridShiftTimer: null,
+      activeTab: 0,
+      tabs: [
+        { name: "Симуляция сетки" },
+        { name: "Реальная торговля" },
 
-  }},
+      ],
+
+      activeTab2: 0,
+      tabs2: [
+        { name: "Позиции" },
+        { name: "История сделок" },
+        { name: "Лог" },
+      ],
+
+      logText: "",
+
+      //chartCanvas: null,
+      logBox: null,
+
+      chartInstance: null,
+
+      gridShiftTimer: null,
+
+    }
+  },
 
   methods: {
 
+    roundToStep(value, step) {
+      return Math.floor(value / step + 0.5) * step;
+    },
+
+    updateChartSize() {
+      if (this.chartInstance) {
+        const canvas = this.$refs.chartCanvas;
+        if (canvas) {
+          canvas.width = canvas.parentElement.offsetWidth;
+          canvas.height = canvas.parentElement.offsetHeight;
+          this.chartInstance.resize();
+        }
+      }
+    },
+
     checkSellOrders() {
-    for (let j = 0; j < this.meshStore.sellOrders.length; j++) {
-      const so = this.meshStore.sellOrders[j];
-      if (this.meshStore.currentPrice >= so.price) {
+    for (let j = 0; j < this.simulationStore.sellOrders.length; j++) {
+      const so = this.simulationStore.sellOrders[j];
+      if (this.simulationStore.currentPrice >= so.price) {
         this.log(`EXEC SELL @${so.price.toFixed(2)}, vol=${so.volume}`);
-        this.meshStore.sellOrders.splice(j, 1);
+        this.simulationStore.sellOrders.splice(j, 1);
         j--;
         this.removeLine("SELL_" + so.price);
 
-        this.meshStore.sellPoints.push({ x: this.meshStore.timeIndex, y: so.price });
+        this.simulationStore.sellPoints.push({ x: this.simulationStore.timeIndex, y: so.price });
 
-        const idx = this.meshStore.openTrades.findIndex(
+        const idx = this.simulationStore.openTrades.findIndex(
             t => t.buyPrice === so.linkBuy
         );
         if (idx >= 0) {
-          const tr = this.meshStore.openTrades[idx];
+          const tr = this.simulationStore.openTrades[idx];
           // Считаем профит классической формулой (цена продажи - цена покупки)*volume
           const profit = (so.price - tr.buyPrice) * tr.volume;
-          this.meshStore.totalProfit += profit;
-          this.meshStore.closedTrades.push({
+          this.simulationStore.totalProfit += profit;
+          this.simulationStore.closedTrades.push({
             buyPrice: tr.buyPrice,
             sellPrice: so.price,
             volume: tr.volume,
             profit,
           });
-          this.meshStore.openTrades.splice(idx, 1);
+          this.simulationStore.openTrades.splice(idx, 1);
 
           // Восстановление лимитки (если включено)
-          if (this.config.enableRestore && this.meshStore.remainingRestoreCount > 0) {
+          if (this.simulationStore.enableRestore && this.simulationStore.remainingRestoreCount > 0) {
             if (this.isPositionLimitReached()) {
               this.log("Превышен лимит позиций и лимиток. Восстановление отменено.");
               return;
             }
-            this.meshStore.buyLevels.push({
+            // Новая проверка: лимит лимиток
+            if (this.simulationStore.buyLevels.length >= this.simulationStore.levelsCount) {
+              this.log("Превышен лимит лимиток. Восстановление отменено.");
+              continue;
+            }
+
+            this.simulationStore.buyLevels.push({
               price: tr.buyPrice,
-              volume: this.config.volume,
+              volume: this.simulationStore.volume,
             });
-            this.meshStore.linesData.push({
+            this.simulationStore.linesData.push({
               id: "BUY_" + tr.buyPrice,
               price: tr.buyPrice,
               color: "green",
             });
-            this.meshStore.remainingRestoreCount--;
+            this.simulationStore.remainingRestoreCount--;
             this.log(
                 `Restored BUY limit @${tr.buyPrice.toFixed(
                     2
-                )}. Remaining: ${this.meshStore.remainingRestoreCount}`
+                )}. Remaining: ${this.simulationStore.remainingRestoreCount}`
             );
           }
         }
@@ -267,50 +362,69 @@ export default {
   },
 
   removeLine(id) {
-    const idx = this.meshStore.linesData.findIndex(l => l.id === id);
+    const idx = this.simulationStore.linesData.findIndex(l => l.id === id);
     if (idx >= 0) {
-      this.meshStore.linesData.splice(idx, 1);
+      this.simulationStore.linesData.splice(idx, 1);
     }
   },
 
   updateChart() {
+
     if (!this.chartInstance) return;
 
-    // 1. Берём «сырые» данные цены.
-    const rawPriceData = toRaw(this.meshStore.priceData);
-    this.chartInstance.data.datasets[0].data = rawPriceData;
 
-    // 2. Получаем диапазон y (минимум и максимум).
+    const rawPriceData = toRaw(this.simulationStore.priceData);
+    const rawLines = toRaw(this.simulationStore.linesData);
     const allPrices = rawPriceData.map(p => p.y);
 
-    // Если вдруг массив цен пуст (или что-то аналогичное),
-    // нужно предусмотреть защиту от ошибки:
-    if (!allPrices.length) {
+    // Добавляем цены лимитных ордеров
+    const linePrices = rawLines.map(line => line.price);
+
+    // Объединяем данные цен
+    const allYValues = [...allPrices, ...linePrices];
+
+    // Если массив цен пуст, обновляем график и выходим
+    if (!allYValues.length) {
+      console.warn("Нет данных для отображения на графике.");
+      this.chartInstance.data.datasets[0].data = []; // Очищаем график
       this.chartInstance.update();
       return;
     }
 
+    this.chartInstance.data.datasets[0].data = rawPriceData;
+
     // 3. Объявляем yMin и yMax:
-    const yMin = Math.min(...allPrices) - 1;
-    const yMax = Math.max(...allPrices) + 1;
+    const yMin = Math.min(...allYValues) - 1;
+    const yMax = Math.max(...allYValues) + 1;
 
     // Дальше продолжаем логику, связанную с вертикальными линиями:
     // (примерно как в предыдущем сообщении)
 
     const verticalTrades = [];
 
+    //console.log("LinesData:", this.simulationStore.linesData);
+
     // Отображение линий с разными цветами
-    const rawLines = toRaw(this.meshStore.linesData);
     const linesPoints = [];
     for (const line of rawLines) {
       linesPoints.push({ x: 0, y: line.price, customColor: line.color });
       linesPoints.push({
-        x: this.meshStore.timeIndex + 5,
+        x: this.simulationStore.timeIndex + 5,
         y: line.price,
         customColor: line.color,
       });
       linesPoints.push({ x: null, y: null });
     }
+
+    // Добавляем линию текущей цены
+    linesPoints.push({ x: 0, y: this.simulationStore.currentPrice, customColor: "white" });
+    linesPoints.push({
+      x: this.simulationStore.timeIndex + 5,
+      y: this.simulationStore.currentPrice,
+      customColor: "white",
+    });
+    linesPoints.push({ x: null, y: null });
+
 
     this.chartInstance.data.datasets[1].data = linesPoints;
 
@@ -323,7 +437,7 @@ export default {
     };
 
     // Пробегаемся по buyPoints
-    for (const bp of toRaw(this.meshStore.buyPoints)) {
+    for (const bp of toRaw(this.simulationStore.buyPoints)) {
       verticalTrades.push({
         x: bp.x,
         y: yMin,
@@ -338,7 +452,7 @@ export default {
     }
 
     // Пробегаемся по sellPoints
-    for (const sp of toRaw(this.meshStore.sellPoints)) {
+    for (const sp of toRaw(this.simulationStore.sellPoints)) {
       verticalTrades.push({
         x: sp.x,
         y: yMin,
@@ -364,6 +478,7 @@ export default {
     // Если надо, обнуляем старые точки (dataset[3]).
     this.chartInstance.data.datasets[3].data = [];
 
+
     this.chartInstance.update();
   },
 
@@ -375,37 +490,43 @@ export default {
   },
 
   shiftGrid() {
-    if (!this.config.enableGridShift) return;
+    if (!this.simulationStore.enableGridShift) return;
 
     this.log("Смещаем сетку в соответствии с текущей ценой...");
 
-    const oldPriceStart = this.config.priceStart;
-    this.config.priceStart = this.meshStore.currentPrice;
+    const oldPriceStart = this.simulationStore.priceStart;
+    this.simulationStore.priceStart = this.simulationStore.currentPrice;
 
     // Если включено смещение TP, смещаем TP у открытых сделок
-    if (this.config.enableTpShift) {
-      const shiftValue = this.config.priceStart - oldPriceStart;
-      for (const ot of this.meshStore.openTrades) {
+    if (this.simulationStore.enableTpShift) {
+      const shiftValue = this.simulationStore.priceStart - oldPriceStart;
+      for (const ot of this.simulationStore.openTrades) {
         // Не меняем ot.buyPrice
         ot.takeProfit += shiftValue;
       }
     }
 
     // 1) Перестраиваем BUY-ордера вокруг новой priceStart
-    this.meshStore.buyLevels = [];
-    this.meshStore.linesData = this.meshStore.linesData.filter(line => !line.id.startsWith("BUY_"));
+    this.simulationStore.buyLevels = [];
+    this.simulationStore.linesData = this.simulationStore.linesData.filter(line => !line.id.startsWith("BUY_"));
 
-    for (let i = 1; i <= this.config.levelsCount; i++) {
-      if (this.isPositionLimitReached()) {
-        this.log("Превышен лимит позиций и лимиток. Новые лимитки не будут выставлены.");
+    for (let i = 1; i <= this.simulationStore.levelsCount; i++) {
+
+      if (this.simulationStore.buyLevels.length >= this.simulationStore.levelsCount) {
+        this.log("Превышен лимит лимиток. Новые лимитки не будут выставлены.");
         break;
       }
-      const levelPrice = this.config.priceStart - i * this.config.gridStep;
-      this.meshStore.buyLevels.push({
+
+      if (this.isPositionLimitReached()) {
+        this.log("Превышен лимит позиций. Новые лимитки не будут выставлены.");
+        break;
+      }
+      const levelPrice = this.roundToStep(this.simulationStore.priceStart - i * this.simulationStore.gridStep, this.simulationStore.priceStep);
+      this.simulationStore.buyLevels.push({
         price: levelPrice,
-        volume: this.config.volume,
+        volume: this.simulationStore.volume,
       });
-      this.meshStore.linesData.push({
+      this.simulationStore.linesData.push({
         id: "BUY_" + levelPrice,
         price: levelPrice,
         color: "green",
@@ -413,17 +534,17 @@ export default {
     }
 
     // 2) Пересоздаём SELL-ордера для (уже) открытых сделок
-    this.meshStore.linesData = this.meshStore.linesData.filter(line => !line.id.startsWith("SELL_"));
-    this.meshStore.sellOrders = [];
+    this.simulationStore.linesData = this.simulationStore.linesData.filter(line => !line.id.startsWith("SELL_"));
+    this.simulationStore.sellOrders = [];
 
-    for (const ot of this.meshStore.openTrades) {
+    for (const ot of this.simulationStore.openTrades) {
       const so = {
         price: ot.takeProfit,
         volume: ot.volume,
         linkBuy: ot.buyPrice,
       };
-      this.meshStore.sellOrders.push(so);
-      this.meshStore.linesData.push({
+      this.simulationStore.sellOrders.push(so);
+      this.simulationStore.linesData.push({
         id: "SELL_" + so.price,
         price: so.price,
         color: "red",
@@ -433,9 +554,9 @@ export default {
     this.updateChart();
 
     // 3) Выбираем случайный интервал до следующего смещения
-    if (this.config.enableGridShift) {
-      const randomInterval = this.config.gridShiftIntervals[
-          Math.floor(Math.random() * this.config.gridShiftIntervals.length)
+    if (this.simulationStore.enableGridShift) {
+      const randomInterval = this.simulationStore.gridShiftIntervals[
+          Math.floor(Math.random() * this.simulationStore.gridShiftIntervals.length)
           ];
       this.gridShiftTimer = setTimeout(this.shiftGrid, randomInterval);
       this.log(`Следующее смещение через ${randomInterval} мс`);
@@ -443,34 +564,47 @@ export default {
   },
 
   isPositionLimitReached() {
-    return this.meshStore.openTrades.length + this.meshStore.buyLevels.length >= this.config.maxOpenTrades;
+    return this.simulationStore.openTrades.length + this.simulationStore.buyLevels.length >= this.simulationStore.maxOpenTrades;
   },
 
   startSimulation() {
-    if (this.meshStore.simulationId) {
+    if (this.simulationStore.simulationId) {
       this.log("Симуляция уже идёт!");
       return;
     }
     this.log("=== START ===");
 
-    //if (!this.meshStore.priceData.length) {
+    this.inProgress = true;
+
+    // Если данных нет, инициализируем начальные уровни
+    if (this.simulationStore.priceData.length === 0) {
+      this.simulationStore.currentPrice = this.simulationStore.initialPrice;
+      this.initBuyOrders();
+    }
+
+    //this.simulationStore.startSimulation();
+
+    //if (!this.simulationStore.priceData.length) {
       //this.resetState(); // Только если данных ещё нет
     //}
 
-    this.meshStore.simulationId = setInterval(this.simulate, this.config.interval);
+    this.simulationStore.simulationId = setInterval(this.simulate, this.simulationStore.interval);
 
-    if (this.config.enableGridShift) {
+    if (this.simulationStore.enableGridShift) {
       this.shiftGrid();
     }
   },
 
   stopSimulation() {
-    if (!this.meshStore.simulationId) {
+    if (!this.simulationStore.simulationId) {
       this.log("Симуляция не запущена!");
       return;
     }
-    clearInterval(this.meshStore.simulationId);
-    this.meshStore.simulationId = null;
+
+    this.inProgress = false;
+
+    clearInterval(this.simulationStore.simulationId);
+    this.simulationStore.simulationId = null;
 
     if (this.gridShiftTimer) {
       clearTimeout(this.gridShiftTimer);
@@ -482,45 +616,73 @@ export default {
 
   applySettings() {
     this.log("Применили настройки: " + JSON.stringify({
-      priceStart: this.config.priceStart,
-      gridStep: this.config.gridStep,
-      levelsCount: this.config.levelsCount,
-      volume: this.config.volume,
-      takeProfitDistance: this.config.takeProfitDistance,
-      volatility: this.config.volatility,
-      interval: this.config.interval,
+      priceStart: this.simulationStore.priceStart,
+      gridStep: this.simulationStore.gridStep,
+      levelsCount: this.simulationStore.levelsCount,
+      volume: this.simulationStore.volume,
+      takeProfitDistance: this.simulationStore.takeProfitDistance,
+      volatility: this.simulationStore.volatility,
+      interval: this.simulationStore.interval,
     }));
-    this.meshStore.remainingRestoreCount = this.config.restoreCount;
     //this.resetState();
   },
 
   initBuyOrders() {
-    this.meshStore.buyLevels = []; // Сброс существующих уровней
-    for (let i = 1; i <= this.config.levelsCount; i++) {
-      if (this.isPositionLimitReached()) {
-        this.log("Превышен лимит позиций и лимиток. Новые лимитки не будут выставлены.");
+
+    console.log("Initializing buy orders...");
+
+    if (!this.simulationStore.linesData) {
+      this.simulationStore.linesData = []; // Инициализация, если не существует
+    }
+
+    this.simulationStore.buyLevels = []; // Сброс существующих уровней
+    this.simulationStore.linesData = this.simulationStore.linesData.filter(line => !line.id.startsWith("BUY_"));
+
+    for (let i = 1; i <= this.simulationStore.levelsCount; i++) {
+      if (this.simulationStore.buyLevels.length >= this.simulationStore.levelsCount) {
+        this.log("Превышен лимит лимиток. Новые лимитки не будут выставлены.");
         break;
       }
-      const levelPrice = this.config.priceStart - i * this.config.gridStep;
-      this.meshStore.buyLevels.push({
+      if (this.isPositionLimitReached()) {
+        this.log("Превышен лимит позиций. Новые позиции не будут выставлены.");
+        break;
+      }
+      const levelPrice = this.simulationStore.priceStart - i * this.simulationStore.gridStep;
+      this.simulationStore.buyLevels.push({
         price: levelPrice,
-        volume: this.config.volume,
+        volume: this.simulationStore.volume,
       });
-      this.meshStore.linesData.push({
+      this.simulationStore.linesData.push({
         id: "BUY_" + levelPrice,
         price: levelPrice,
         color: "green",
       });
     }
+
+    //console.log("LinesData after initBuyOrders:", toRaw(this.simulationStore.linesData));
+
+    this.updateChart();
+    /*console.log("Buy levels:", this.simulationStore.buyLevels);
+    console.log("Lines data:", this.simulationStore.linesData);*/
   },
 
   simulate() {
-    this.meshStore.timeIndex++;
-    const delta = Math.random() * (this.config.volatility * 2) - this.config.volatility;
-    this.meshStore.currentPrice += delta;
-    if (this.meshStore.currentPrice < 0) this.meshStore.currentPrice = 0.1;
+    this.simulationStore.timeIndex++;
 
-    this.meshStore.priceData.push({ x: this.meshStore.timeIndex, y: this.meshStore.currentPrice });
+    // Генерируем случайный множитель шага: положительный или отрицательный
+    const multiplier = (Math.random() - 0.5) * 2 * this.simulationStore.priceStepMultiplier;
+    //const multiplier = (Math.random() > 0.5 ? 1 : -1) * this.simulationStore.priceStepMultiplier;
+
+    const newPrice = this.simulationStore.currentPrice + this.simulationStore.priceStep * multiplier;
+
+    //this.simulationStore.currentPrice += delta;
+
+    // Применяем минимальный шаг
+    this.simulationStore.currentPrice = this.roundToStep(newPrice, this.simulationStore.priceStep);
+
+    if (this.simulationStore.currentPrice < 0) this.simulationStore.currentPrice = 0.1;
+
+    this.simulationStore.priceData.push({ x: this.simulationStore.timeIndex, y: this.simulationStore.currentPrice });
 
     this.checkBuyOrders();
     this.checkSellOrders();
@@ -529,36 +691,36 @@ export default {
   },
 
   checkBuyOrders() {
-    for (let i = 0; i < this.meshStore.buyLevels.length; i++) {
-      const bo = this.meshStore.buyLevels[i];
-      if (this.meshStore.currentPrice <= bo.price) {
-        if (this.meshStore.openTrades.length >= this.config.maxOpenTrades) {
-          this.log(`Лимит открытых позиций достигнут: ${this.config.maxOpenTrades}`);
+    for (let i = 0; i < this.simulationStore.buyLevels.length; i++) {
+      const bo = this.simulationStore.buyLevels[i];
+      if (this.simulationStore.currentPrice <= bo.price) {
+        if (this.simulationStore.openTrades.length >= this.simulationStore.maxOpenTrades) {
+          this.log(`Лимит открытых позиций достигнут: ${this.simulationStore.maxOpenTrades}`);
           return; // Останавливаем добавление новых сделок
         }
 
         this.log(`EXEC BUY @${bo.price.toFixed(2)}, vol=${bo.volume}`);
-        this.meshStore.buyLevels.splice(i, 1);
+        this.simulationStore.buyLevels.splice(i, 1);
         i--;
         this.removeLine("BUY_" + bo.price);
 
-        this.meshStore.buyPoints.push({ x: this.meshStore.timeIndex, y: bo.price });
+        this.simulationStore.buyPoints.push({ x: this.simulationStore.timeIndex, y: bo.price });
 
         const trade = {
           buyPrice: bo.price,
           volume: bo.volume,
-          takeProfit: bo.price + this.config.takeProfitDistance,
+          takeProfit: bo.price + this.simulationStore.takeProfitDistance,
         };
-        this.meshStore.openTrades.push(trade);
+        this.simulationStore.openTrades.push(trade);
 
         const so = {
           price: trade.takeProfit,
           volume: trade.volume,
           linkBuy: trade.buyPrice,
         };
-        this.meshStore.sellOrders.push(so);
+        this.simulationStore.sellOrders.push(so);
 
-        this.meshStore.linesData.push({
+        this.simulationStore.linesData.push({
           id: "SELL_" + so.price,
           price: so.price,
           color: "red",
@@ -567,27 +729,44 @@ export default {
     }
   },
 
-  resetState() {
 
+    resetState() {
       console.log("Сброс состояния вызван!");
 
-      this.meshStore.currentPrice = this.config.priceStart;
-      this.meshStore.timeIndex = 0;
+      // Сохраняем текущую цену
+      const lastPrice = this.simulationStore.currentPrice || this.simulationStore.initialPrice || 10000;
 
-      this.meshStore.buyLevels = [];
-      this.meshStore.sellOrders = [];
-      this.meshStore.openTrades = [];
-      this.meshStore.closedTrades = [];
-      this.meshStore.totalProfit = 0;
+      // Обнуляем данные, но оставляем текущую цену и активную симуляцию
+      Object.assign(this.simulationStore, {
+        timeIndex: 0,
+        buyLevels: [],
+        sellOrders: [],
+        openTrades: [],
+        closedTrades: [],
+        totalProfit: 0,
+        priceData: [],
+        linesData: [],
+        buyPoints: [],
+        sellPoints: [],
+        remainingRestoreCount: this.simulationStore.restoreCount,
+      });
 
-      this.meshStore.priceData = [];
-      this.meshStore.linesData = [];
-      this.meshStore.buyPoints = [];
-      this.meshStore.sellPoints = [];
+      // Восстанавливаем текущую цену
+      this.simulationStore.currentPrice = lastPrice;
 
+      // Инициализируем уровни лимиток
       this.initBuyOrders();
-      this.meshStore.priceData.push({ x: 0, y: this.meshStore.currentPrice });
-      this.updateChart();
+
+      // Обновляем график, чтобы очистить линии и точки
+      if (this.chartInstance) {
+        this.chartInstance.data.datasets.forEach(dataset => {
+          dataset.data = []; // Очищаем все массивы данных графика
+        });
+        //this.chartInstance.update();
+        this.updateChart();
+      }
+
+      console.log("Состояние сброшено. Симуляция продолжается.");
     },
 
     initChartInstance() {
@@ -655,6 +834,39 @@ export default {
             },
             options: {
               animation: false,
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false, // Отключить легенду
+                },
+                /*zoom: {
+                  pan: {
+                    enabled: true,        // Включить панорамирование
+                    mode: 'x',            // Панорамирование только по оси X
+                    speed: 10,            // Скорость панорамирования
+                    threshold: 5,         // Чувствительность к началу панорамирования
+                  },
+                  zoom: {
+                    wheel: {
+                      enabled: true,      // Включить масштабирование колесом мыши
+                      speed: 0.1,         // Скорость масштабирования
+                    },
+                    pinch: {
+                      enabled: true,      // Включить масштабирование пальцами на сенсорных устройствах
+                    },
+                    drag: {
+                      enabled: false,     // Отключить масштабирование перетаскиванием
+                    },
+                    mode: 'x',            // Масштабирование только по оси X
+                    overScaleMode: 'y',   // Предотвращение масштабирования за пределы Y
+                    limits: {
+                      x: { minRange: 1 }, // Минимальный диапазон масштабирования по оси X
+                    },
+                  },
+                },*/
+
+              },
               scales: {
                 x: {
                   type: "linear",
@@ -685,10 +897,17 @@ export default {
 
   setup() {
 
-    const meshStore = useMeshStore(); // Инициализация хранилища
+    //const meshStore = useMeshStore(); // Инициализация хранилища
+    const simulationStore = useSimulationStore();
+
+    const setInitialPrice = () => {
+      simulationStore.setInitialPrice(simulationStore.initialPrice);
+    };
 
     return {
-      meshStore
+      //meshStore,
+      simulationStore,
+      setInitialPrice,
     }
     // ========== РЕАКТИВНЫЕ ДАННЫЕ ==========
 
@@ -718,20 +937,31 @@ export default {
 
   mounted() {
     this.initChartInstance();
+
     //this.resetState();
+    if (!this.simulationStore.buyLevels.length) {
+      this.initBuyOrders(); // Создаем уровни до симуляции
+      //this.updateChart();
+    }
+
+    window.addEventListener("resize", this.updateChartSize);
+
   },
+
   unmounted() {
     this.destroyChartInstance();
+    window.removeEventListener("resize", this.updateChartSize);
   },
 
   watch: {
+
     activeTab(newTab) {
       if (newTab === 0) {
         this.$nextTick(() => {
           if (!this.chartInstance) {
             this.initChartInstance();
           }
-          if (this.chartInstance && this.meshStore.priceData.length > 0) {
+          if (this.chartInstance && this.simulationStore.priceData.length > 0) {
             this.updateChart();
           }
         });
@@ -750,11 +980,11 @@ export default {
 
   computed: {
     currentPriceStr () {
-      return this.meshStore.currentPrice.toFixed(2);
+      return this.simulationStore.currentPrice.toFixed(2);
     },
 
     remainingBuyLimits() {
-      return Math.max(this.config.maxOpenTrades - this.meshStore.openTrades.length, 0);
+      return Math.max(this.simulationStore.maxOpenTrades - this.simulationStore.openTrades.length, 0);
     },
 
   },

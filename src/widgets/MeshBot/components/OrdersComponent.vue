@@ -1,35 +1,67 @@
 <template>
   <div class="orders">
-    <h2>Ордера / Сделки</h2>
-    <table>
-      <thead>
-      <tr>
-        <th>Buy Orders</th>
-        <th>Sell Orders</th>
-        <th>Open Trades</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr>
-        <td>
-          <div v-for="bo in buyLevels" :key="bo.price">
-            @{{ bo.price.toFixed(2) }} x {{ bo.volume }}
-          </div>
-        </td>
-        <td>
-          <div v-for="so in sellOrders" :key="so.price">
-            @{{ so.price.toFixed(2) }} x {{ so.volume }}
-          </div>
-        </td>
-        <td>
-          <div v-for="ot in openTrades" :key="ot.buyPrice">
-            BUY@{{ ot.buyPrice.toFixed(2) }}, TP@{{ ot.takeProfit.toFixed(2) }},
-            vol={{ ot.volume }}
-          </div>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+    <div class="orders-container">
+
+      <!-- Buy Orders Table -->
+      <div class="table-block">
+        <h3>Buy Orders</h3>
+        <table>
+          <thead>
+          <tr>
+            <th>Price</th>
+            <th>Volume</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="index in minRows" :key="'buy-' + index">
+            <td>{{ buyLevels[index - 1]?.price?.toFixed(2) || '' }}</td>
+            <td>{{ buyLevels[index - 1]?.volume || '' }}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Sell Orders Table -->
+      <div class="table-block">
+        <h3>Sell Orders</h3>
+        <table>
+          <thead>
+          <tr>
+            <th>Price</th>
+            <th>Volume</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="index in minRows" :key="'sell-' + index">
+            <td>{{ sellOrders[index - 1]?.price?.toFixed(2) || '' }}</td>
+            <td>{{ sellOrders[index - 1]?.volume || '' }}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Open Trades Table -->
+      <div class="table-block">
+        <h3>Open Trades</h3>
+        <table>
+          <thead>
+          <tr>
+            <th>Buy Price</th>
+            <th>Take Profit</th>
+            <th>Volume</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="index in minRows" :key="'open-' + index">
+            <td>{{ openTrades[index - 1]?.buyPrice?.toFixed(2) || '' }}</td>
+            <td>{{ openTrades[index - 1]?.takeProfit?.toFixed(2) || '' }}</td>
+            <td>{{ openTrades[index - 1]?.volume || '' }}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
   </div>
 </template>
 
@@ -39,6 +71,17 @@ export default {
     buyLevels: Array,
     sellOrders: Array,
     openTrades: Array,
+  },
+  computed: {
+    // Вычисляем минимальное количество строк для отображения
+    minRows() {
+      const maxRows = Math.max(
+          this.buyLevels.length,
+          this.sellOrders.length,
+          this.openTrades.length
+      );
+      return Math.max(maxRows, 5); // Минимум 5 строк
+    },
   },
 };
 </script>
