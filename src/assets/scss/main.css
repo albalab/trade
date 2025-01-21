@@ -19,12 +19,15 @@ ul, ol, li{
     margin: 0;
     list-style: none;
 }
-input{
+input, select{
     border-radius: 2px;
-    background: rgba(255,255,255,0.05);
-    border: solid 1px rgba(255,255,255,0.1);
+    background: none;
+    border: none;
+    border-bottom: solid 1px rgba(255,255,255,0.1);
     margin: 0 0 4px;
     color: rgba(209, 214, 247, 0.9);
+    font-size: 9px;
+    outline: none;
 }
 input:focus {
     outline: none !important;
@@ -74,20 +77,25 @@ a{
     pointer-events: none;
     filter: saturate(0) contrast(70%);
 }
+
 .btn{
     display: inline-block;
-    background: #7551ca;
+    background: #784bdf;
     border: none;
     color: rgba(255,255,255,0.8);
     padding: 5px 10px;
     border-radius: 3px;
     margin: 0 4px 4px 0;
     cursor: pointer;
-    font-weight: 600;
-    text-transform: uppercase;
+    user-select: none;
 }
 .btn:hover{
     filter: brightness(110%);
+}
+.btn:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 3px 4px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
+    background: #6744b0; /* Немного темнее, чтобы выделить эффект нажатия */
 }
 
 .btn-second{
@@ -99,7 +107,12 @@ a{
 .btn-second:hover{
     background: rgba(255,255,255,0.02);
 }
-
+.btn-bot-add{
+    width: 100%;
+    background: none;
+    border: solid 1px #784bdf;
+    margin-top: 10px;
+}
 #grid {
     display: grid;
     grid-gap: 0;
@@ -786,7 +799,6 @@ input:checked + .slider:before {
 
 .section-settings .name{
     display: block;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     padding-left: 50px;
@@ -814,31 +826,62 @@ input:checked + .slider:before {
 }
 
 .mesh-bot .tabs {
-    display: flex;
-    background-color: #333;
-    border-bottom: 2px solid #404562;
+    padding: 0 0 20px;
 }
-
-.mesh-bot .tab {
-    flex: 1;
-    padding: 10px 20px;
+.mesh-bot .tabs .active{
+    color: white;
+    background: rgba(120,75,223,1);
+}
+.mesh-bot .bot-item{
+    position: relative;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-bottom: solid 1px rgba(255, 255, 255, 0.05);
+}
+.mesh-bot .bot-item:last-child{}
+.mesh-bot .bot-item:hover{
+    background: rgba(130, 80, 240, 0.3);
+}
+.mesh-bot .bot-item.active:hover{
+    background: rgba(120,75,223,1);
+    cursor: default;
+}
+.mesh-bot .tabs .fa-gamepad-modern{
+    position: relative;
+    top: 1px;
+    font-size: 12px;
+    margin-right: 2px;
+    line-height: 9px;
+}
+.mesh-bot-tab {
+    min-width: 50px;
+    margin: 0 2px 6px;
+    padding: 4px 8px;
     text-align: center;
     cursor: pointer;
-    background-color: #242737;
-    color: white;
-    border: none;
+    color: rgba(209, 214, 247, 0.9);
+    border: solid 1px #565a71;
+    background: #555b73;
     outline: none;
+    border-radius: 3px;
 }
 
-.mesh-bot .tab:hover {
-    background-color: #404562;
+.mesh-bot-tab:hover {
+    background-color: #636c88;
 }
-
-.mesh-bot .tab.active {
-    background-color: #3a3f4f;
-    font-weight: bold;
-    box-shadow: 0 2px 0 0 #4caf50;
-    /*border-bottom: 2px solid #4caf50;*/
+.mesh-bot-tab.tab-simulator {
+    position: absolute;
+    left: 10px;
+    top: 30px;
+    padding: 4px 11px;
+    margin-right: 10px;
+    /*border-radius: 10px;*/
+    /*background: #784bdf;*/
+}
+.mesh-bot-tab.active {
+    border-color: #784bdf;
+    background: #784bdf;
+    color: rgba(255,255,255,0.8);
 }
 
 .mesh-bot .tab-content {
@@ -858,8 +901,7 @@ input:checked + .slider:before {
 }
 
 .history {
-    max-height: 300px;
-    height: 100%;
+    min-height: 100px;
     overflow-y: auto;
 }
 .history table {
@@ -935,6 +977,13 @@ input:checked + .slider:before {
     padding: 10px;
 }
 
+.meshbot-content{
+    position: relative;
+}
+.meshbot-content-simulation{
+    padding-left: 140px;
+    min-height: 82px;
+}
 .meshbot-simulator{
     padding-bottom: 20px;
 }
@@ -942,7 +991,7 @@ input:checked + .slider:before {
 
 }
 .meshbot-simulator .settings-items{
-    padding: 14px 0 10px;
+    padding: 14px 10px 10px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
 }
@@ -954,11 +1003,152 @@ input:checked + .slider:before {
 }
 
 .mesh-simulation-buttons{
-    margin-bottom: 10px;
-    padding-top: 14px;
-    border-top: solid 1px rgba(255, 255, 255, 0.1);
+    padding: 20px;
 }
 .mesh-simulation-buttons .fal{
     font-size: 10px;
     width: 16px;
+}
+
+.meshbot-section:last-child .meshbot-section-header{
+    border-bottom: none;
+}
+.meshbot-section{
+    border: solid 1px #424960;
+    border-top: none;
+    background: #2b2f41;
+}
+.meshbot-section-header:hover{
+    background: #373d54;
+}
+.meshbot-section-header{
+    line-height: 12px;
+    padding: 6px 10px 7px;
+    background: #3b415a;
+    cursor: pointer;
+    border-bottom: solid 1px #2b3042;
+    user-select: none;
+}
+.meshbot-section-header .title .fal{
+    display: inline-block;
+    width: 16px;
+    font-size: 10px;
+}
+.meshbot-section-header .title{
+    font-weight: bold;
+    opacity: 1;
+    font-size: 9px;
+    text-transform: uppercase;
+}
+.meshbot-section-content{
+    padding: 10px;
+}
+
+.create-bot{
+    padding: 30px 10px;
+}
+.create-bot-selectors{
+    padding-top: 4px;
+    display: inline-block;
+}
+.create-bot-selectors select{
+    margin-right: 8px;
+}
+.create-bot-block{
+    padding: 0 0 20px;
+}
+.create-bot-block .btn{
+    margin: 0;
+}
+
+.delete-bot{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    color: #FF9494;
+    cursor: pointer;
+    text-align: center;
+    line-height: 20px;
+}
+.delete-bot.disabled {
+    color: rgba(255, 255, 255, 0.2); /* Приглушённый цвет */
+    cursor: default; /* Убираем указатель */
+}
+
+.delete-bot.disabled:hover {
+    color: rgba(255, 255, 255, 0.2); /* Цвет не меняется при наведении */
+}
+.delete-bot .fal{
+    font-size: 10px;
+    margin-right: 4px;
+}
+.no-bots-message{
+    padding-left: 100px;
+    width: 130px;
+    height: 14px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    text-align: center;
+    opacity: 0.7;
+}
+
+.bots-section{
+    min-height: 290px;
+    position: relative;
+    border: solid 1px #434a60;
+    border-radius: 4px;
+    margin-right: 10px;
+    background: #32384c;
+    user-select: none;
+    overflow: hidden;
+}
+.bots-section-title span{
+    opacity: 0.6;
+    font-weight: normal;
+}
+.bots-section-title{
+    font-weight: bold;
+    padding: 0 10px 8px;
+    color: rgba(209, 214, 247, 0.8);
+    border-bottom: solid 1px rgba(255,255,255,0.06);
+}
+
+.bots-selector{
+    display: flex;
+    justify-content: center;
+    min-height: 50px;
+    margin: 0 0 10px;
+}
+.bots-selector select{
+    margin-right: 5px;
+}
+.bots-selector .name{
+    display: inline-block;
+    width: 80px;
+    opacity: 0.5;
+    margin: 0 0 5px;
+}
+.bots-selector-container{
+    padding: 10px;
+    margin: 0 0 20px;
+    background: #262b3a;
+}
+.bot-section-title{
+    padding: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.bots-selector-button{
+    text-align: center;
+}
+.empty-message-bots{
+    text-align: center;
+    color: rgba(209, 214, 247, 0.8);
+    padding: 30px 10px 10px;
 }

@@ -1,14 +1,7 @@
 import { defineStore } from "pinia";
 
-export const useSimulationStore = defineStore("simulation", {
+export const useMeshbotStore = defineStore("meshbot", {
     state: () => ({
-
-        templates: [
-            { name: "Шаблон 1", isPrimary: true }, // Основной шаблон
-            { name: "Шаблон 2", isPrimary: false }, // Основной шаблон
-        ],
-
-
         initialPrice: 10000,
         currentPrice: 10000,
         priceStart: 10000,
@@ -16,8 +9,8 @@ export const useSimulationStore = defineStore("simulation", {
         priceStepMultiplier: 10,
         gridStep: 20,
         takeProfitDistance: 20,
-        levelsCount: 3,
-        volume: 10,
+        levelsCount: 10,
+        volume: 2,
         volatility: 1,
         interval: 10,
         enableRestore: true,
@@ -39,7 +32,6 @@ export const useSimulationStore = defineStore("simulation", {
         buyPoints: [],
         sellPoints: [],
     }),
-    persist: true,
     actions: {
         setConfig(key, value) {
             this[key] = value;

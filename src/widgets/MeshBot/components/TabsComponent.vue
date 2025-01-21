@@ -1,14 +1,19 @@
 <template>
   <div class="tabs">
-    <button
+    <div
         v-for="(tab, index) in tabs"
         :key="index"
-        class="tab"
-        :class="{ active: activeTab === index }"
+        class="bot-item"
+        :class="{
+          'tab-simulator': tab.name === 'Симулятор',
+          active: activeTab === index
+        }"
         @click="$emit('tab-click', index)"
     >
+      <i v-if="tab.name === 'Симулятор'"
+         class="fal fa-gamepad-modern"></i>
       {{ tab.name }}
-    </button>
+    </div>
   </div>
 </template>
 
