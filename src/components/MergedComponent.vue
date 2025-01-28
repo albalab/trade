@@ -84,6 +84,14 @@
           </div>
         </div>
 
+        <div v-if="widget.type === 21" :data="widget">
+          <MeshBot />
+        </div>
+
+        <div v-if="widget.type === 22" :data="widget">
+          <ChatTemplate />
+        </div>
+
         <div v-if="widget.type === 9" :data="widget">
             <AlorStatsDiagram
                 :totalItemsStats="buyFrequency"
@@ -249,6 +257,8 @@ import {
 
 import WidgetGrid from './WidgetGrid.vue';
 
+import ChatTemplate from '@//widgets/ChatTemplate.vue';
+import MeshBot from '@//widgets/MeshBot/MeshBot.vue';
 import CardioTemplateWide from '@/widgets/CardioTemplateWide.vue';
 import CardioTemplate from '@/widgets/CardioTemplate.vue';
 import IntervalsTemplate from '@/widgets/IntervalsTemplate.vue';
@@ -285,15 +295,14 @@ export default {
   },
 
   components: {
+    ChatTemplate,
+    MeshBot,
     IntervalsTemplate,
     CardioTemplate,
     CardioTemplateWide,
-    CreateGroupOrders,
     TopDeals,
     StatisticRenderer,
-    ActivePositions,
     DataFabric,
-    CreateOrder,
     LevelsRenderer,
     AlorTrades,
     AlorOrderbooks,
@@ -301,6 +310,9 @@ export default {
     AlorCandles,
     WidgetGrid,
     ActiveOrders,
+    CreateGroupOrders,
+    ActivePositions,
+    CreateOrder,
 
     //SessionManager,
     //AlorTradesPlus,
@@ -370,24 +382,15 @@ export default {
         { name: 'Create orders', param: 0, type: 5},
         { name: 'Active orders', param: 0, type: 6 },
         { name: 'Positions', param: 0, type: 7 },
-
         { name: 'Summary', param: 0, type: 8, gridColumn: 'span 4', gridRow: 'span 2' },
-
         { name: 'Aggregated events', param: 0, type: 18, gridColumn: 'span 1', gridRow: 'span 2' },
-        { name: 'Timelines items', param: 0, type: 16, gridRow: 'span 2' },
-
         { name: 'Template cardio', param: 0, type: 17, gridColumn: 'span 1', gridRow: 'span 2' },
         { name: 'Template cardio wide', param: 0, type: 19, gridColumn: 'span 3', gridRow: 'span 2' },
         { name: 'Intervals template', param: 0, type: 20, gridColumn: 'span 1', gridRow: 'span 1' },
-
         { name: 'Data Fabric', param: 0, type: 1 },
         //{ name: 'Alor Statistics', param: 0, type: 2, gridColumn: 'span 2' },
         { name: 'Manual order', param: 0, type: 3 },
         { name: 'Top deals', param: 0, type: 4, gridRow: 'span 3', gridColumn: 'span 2' },
-
-
-
-
         { name: 'Signals', param: 0, type: 9, gridRow: 'span 4'},
         { name: 'Trades', param: 0, type: 10, gridRow: 'span 2'},
         { name: 'Orderbooks', param: 0, type: 11, gridRow: 'span 2'},
@@ -396,7 +399,8 @@ export default {
         { name: 'Cancel all', param: 0, type: 14 },
         { name: 'Виджет 15', param: 0, type: 15, gridRow: 'span 2' },
         { name: 'Timelines items', param: 0, type: 16, gridRow: 'span 3' },
-
+        { name: 'Meshbot', param: 0, type: 21, gridColumn: 'span 3', gridRow: 'span 5' },
+        { name: 'Chat AI', param: 0, type: 22, gridColumn: 'span 2', gridRow: 'span 4' },
       ],
 
 

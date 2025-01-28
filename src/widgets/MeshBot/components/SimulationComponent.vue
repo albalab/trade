@@ -1,6 +1,56 @@
 <template>
   <div class="meshbot-simulator">
 
+
+
+    <div class="meshbot-section">
+      <div class="meshbot-section-header"
+           @click="toggleBlock('block3')">
+        <h2 class="title">
+          <i v-if="visibilityState['block3']"  class="fal fa-chevron-down"></i>
+          <i v-else  class="fal fa-chevron-right"></i>
+          Бот "{{currentBot.name}}"
+
+          <div class="delete-bot">
+            <div class="delete-bot-button"
+                 @click.stop="deleteBot()">
+              <i class="fal fa-trash"></i>
+            </div>
+          </div>
+        </h2>
+      </div>
+
+      <div v-show="visibilityState.block3">
+        <div class="mesh-simulation-buttons" style="position: relative;">
+          <button class="btn" @click="!inProgress ? startSimulation() : stopSimulation()">
+            <i class="fal" :class="{'fa-pause': inProgress, 'fa-play': !inProgress}"></i>
+          </button>
+          <button class="btn" @click="resetState()">
+            <i class="fal fa-repeat"></i>
+          </button>
+
+          <label class="checkbox-simulator">
+            <input class="input" type="checkbox" v-model="isGenerateData"/>
+            <span class="name">Генерировать данные</span>
+          </label>
+
+          <label class="checkbox-simulator">
+            <input class="input" type="checkbox" v-model="isRealTrade" @change="toggleRealTrade"/>
+            <span class="name">Реальная торговля</span>
+          </label>
+
+          <div style="position: absolute; right: 10px; top: 20px;">
+            <strong>Прибыль:</strong> {{ settings.totalProfit.toFixed(2) }}
+          </div>
+        </div>
+
+        <div class="chart">
+          <canvas ref="chartCanvas" width="600" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+
     <div class="meshbot-section">
 
       <div class="meshbot-section-header"
@@ -8,7 +58,7 @@
         <h2 class="title">
           <i  v-if="visibilityState['block1']" class="fal fa-chevron-down"></i>
           <i v-else class="fal fa-chevron-right"></i>
-          Параметры бота "Шаблон 1"
+          Параметры бота "Базовый шаблон"
         </h2>
       </div>
 
@@ -16,60 +66,61 @@
         <div class="settings-grid">
 
           <div class="settings-block">
-            Риск
+            <div class="settings-block-title">Риск</div>
             <label>
-              <input type="number" v-model.number="simulationStore.maxOpenTrades" />
+              <input type="number" v-model.number="settings.maxOpenTrades" />
               <span class="name">Лимит открытых позиций<br/> (осталось {{ remainingBuyLimits }})</span>
             </label>
 
             <label>
-              <input type="number" v-model.number="simulationStore.volume" />
+              <input type="number" v-model.number="settings.volume" />
               <span class="name">Объём позиций</span>
             </label>
           </div>
 
           <div class="settings-block">
-            Сетка
+            <div class="settings-block-title">Сетка</div>
             <label>
-              <input type="number" v-model.number="simulationStore.levelsCount" />
+              <input type="number" v-model.number="settings.levelsCount" />
               <span class="name">Число лимиток в пакете, шт</span>
             </label>
 
             <label>
-              <input type="number" v-model.number="simulationStore.gridStep" step="0.1" />
+              <input type="number" v-model.number="settings.gridStep" step="1" />
               <span class="name">Шаг сетки, пункты</span>
             </label>
 
             <label>
-              <input type="number" v-model.number="simulationStore.takeProfitDistance" step="0.1" />
+              <input type="number" v-model.number="settings.takeProfitDistance" step="1" />
               <span class="name">Тейк, пункты</span>
             </label>
           </div>
 
           <div class="settings-block">
-            Улучшение сетки
+            <div class="settings-block-title">Улучшение сетки</div>
             <label>
-              <input type="checkbox" v-model="simulationStore.enableRestore" />
+              <input type="checkbox" v-model="settings.enableRestore" />
               <span class="name">Включить восстановление лимиток</span>
             </label>
 
             <label>
-              <input type="number" v-model.number="simulationStore.restoreCount" min="1" />
+              <input type="number" v-model.number="settings.restoreCount" min="1" />
               <span class="name">Число восстанавливаемых лимиток</span>
             </label>
 
             <label>
-              <input type="checkbox" v-model="simulationStore.enableGridShift" />
+              <input type="checkbox" v-model="settings.enableGridShift" />
               <span class="name">Включить смещение сетки</span>
             </label>
 
             <label>
-              <input type="checkbox" v-model="simulationStore.enableTpShift" />
+              <input type="checkbox" v-model="settings.enableTpShift" />
               <span class="name">Включить смещение тейка</span>
             </label>
           </div>
 
         </div>
+
       </div>
     </div>
 
@@ -85,6 +136,7 @@
       </div>
 
       <div v-show="visibilityState['block2']">
+
         <div class="settings-items">
           <div class="item">
             <div style="margin: 0 0 8px;">
@@ -103,59 +155,184 @@
 
           <div class="item">
             Стартовая цена:
-            <input type="number" v-model.number="simulationStore.initialPrice" step="1" @change="resetState()"/>
+            <input type="number" v-model.number="settings.initialPrice" step="1" @change="resetState()"/>
 
-            <p>Текущая цена: {{ simulationStore.currentPrice }}</p>
+            <p>Текущая цена: {{ settings.currentPrice }}</p>
 
-<!--            <div>
-              <span class="name">Множитель волатильности (>1)</span>
-              <input type="number" v-model.number="simulationStore.priceStepMultiplier" step="0.1" min="1" />
-            </div>-->
+            <!--            <div>
+                          <span class="name">Множитель волатильности (>1)</span>
+                          <input type="number" v-model.number="settings.priceStepMultiplier" step="0.1" min="1" />
+                        </div>-->
           </div>
 
           <div class="item">
             <span class="name">Волатильность</span>
-            <input type="number" v-model.number="simulationStore.volatility" step="0.1" />
+            <input type="number" v-model.number="settings.volatility" step="0.1" />
           </div>
 
           <div class="item">
             <span class="name">Период тиков (ms)</span>
-            <input type="number" v-model.number="simulationStore.interval" />
+            <input type="number" v-model.number="settings.interval" />
           </div>
         </div>
       </div>
     </div>
+
+
 
     <div class="meshbot-section">
       <div class="meshbot-section-header"
-           @click="toggleBlock('block3')">
+           @click="toggleBlock('block8')">
         <h2 class="title">
-          <i v-if="visibilityState['block3']"  class="fal fa-chevron-down"></i>
+          <i v-if="visibilityState['block8']"
+             class="fal fa-chevron-down"></i>
           <i v-else  class="fal fa-chevron-right"></i>
-          Симуляция торговли
+          Простейшая торговля
         </h2>
       </div>
+      <div v-show="visibilityState['block8']">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; grid-gap: 20px; padding: 20px;">
 
-      <div v-show="visibilityState.block3">
-        <div class="mesh-simulation-buttons" style="position: relative;">
-          <button class="btn" @click="!inProgress ? startSimulation() : stopSimulation()">
-            <i class="fal" :class="{'fa-pause': inProgress, 'fa-play': !inProgress}"></i>
-          </button>
-          <button class="btn" @click="resetState()">
-            <i class="fal fa-repeat"></i>
-          </button>
+          <!--CREATE GROUP ORDERS-->
+          <div>
+            <ul>
+              <li v-for="(order, index) in groupOrders" :key="index" style="margin: 0 0 10px;">
+                <div v-if="order.price">
+                  {{ index + 1 }}. {{ order.side }} {{ order.quantity }} {{ order.instrument.symbol }} по {{ order.price }} {{ order.user.portfolio }}
+                </div>
+              </li>
+            </ul>
 
-          <div style="position: absolute; right: 10px; top: 20px;">
-            <strong>Прибыль:</strong> {{ simulationStore.totalProfit.toFixed(2) }}
+            <button class="btn"
+                    @click="sendGroupLimitOrders(templateGroupOrders)">
+              Создать лимитки
+            </button>
+
+            <div style="padding-top: 6px;">
+              <label class="checkbox-label" style="display: inline-block; padding-left: 21px; padding-top: 1px;">
+                <input v-model="isTimerRunning" @change="toggleTimer" class="checkbox" type="checkbox" style="top: 0;"/>
+                Автомат с интервалом
+              </label>
+
+              <span style=" padding-left: 8px;">
+                <input v-model="count" style="width: 20px;"/> сек
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div class="chart">
-          <canvas ref="chartCanvas" width="600" height="300"></canvas>
+          <!-- ACTIVE ORDERS -->
+          <div>
+            <div class="limit-orders">
+              <div class="limit-orders-head"
+                   v-if="ordersStore.limitOrders.length"
+                   style="position: relative; min-height: 10px;">
+                <label class="checkbox-label">
+                  <input
+                      style="top: 4px; position: absolute;"
+                      class="checkbox"
+                      type="checkbox"
+                      :checked="areAllSelected"
+                      @change="toggleAll($event)"
+                  />
+                  <div style="padding: 4px 0 4px 20px;">Выбрать все</div>
+                </label>
+                <div @click="cancelAllOrders()"
+                     class="close-order">
+                  <i class="fat fa-xmark"></i>
+                </div>
+              </div>
+              <div
+                  v-for="item in ordersStore.limitOrders"
+                  :key="item.data.id"
+                  class="limit-orders-row"
+              >
+                <div class="limit-order">
+                  <label class="checkbox-label">
+
+                    <div class="limit-order-row">
+
+                      <div>
+                        <input
+                            class="checkbox"
+                            type="checkbox"
+                            :value="item.data?.orderNumber"
+                            v-model="selectedOrders"
+                        />
+                      </div>
+
+                      <div>
+                        {{ item?.data?.symbol }}
+                      </div>
+
+                      <div style="white-space: nowrap;">
+                        {{item.data.volume}} руб
+                      </div>
+
+                      <div style="padding: 0 20px; white-space: nowrap;">
+                        {{item.data.qty}} шт
+                      </div>
+                    </div>
+
+                  </label>
+                </div>
+                <div class="close-button">
+                  <button @click="cancelOrders([item.data?.orderNumber])">
+                    <i class="fat fa-xmark" style="font-size: 12px"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div v-if="ordersStore.limitOrders.length"
+                   class="limit-orders-buttons">
+                <button class="btn"
+                        :class="{'disabled': selectedOrders.length === 0}"
+                        @click="(selectedOrders.length > 0) ? cancelOrders(selectedOrders) : null">
+                  Снять
+                </button>
+              </div>
+
+              <div style="padding-top: 6px;">
+                <label class="checkbox-label" style="display: inline-block; padding-left: 21px; padding-top: 1px;">
+                  <input v-model="isTimerRunning2" @change="toggleTimer2" class="checkbox" type="checkbox" style="top: 0;"/>
+                  Автомат с интервалом
+                </label>
+
+                <span style=" padding-left: 8px;">
+                  <input v-model="count2" style="width: 20px;"/> сек
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+          <!--ACTIVE POSITIONS-->
+          <div>
+            <!--    <button class="btn" @click="fetchPositions2">
+      Загрузить позиции
+    </button>-->
+
+            <div v-for="p in ordersStore.activePositions" :key="p.guid" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; white-space: nowrap;">
+              <span>{{p.symbol}} </span>
+              <strong>{{p.volume.toFixed(2)}} руб</strong>
+              <span style="margin-left: 10px;">{{p.qtyUnits}} шт</span>
+
+
+              <!--this.dataFabricStore.lastValues.data?.MTLR.oBestBidPrice-->
+
+              <span v-if="this.orderbooksStore.orderbooksMetrics">
+                <strong v-if="this.orderbooksStore.orderbooksMetrics[p.symbol]" style="margin-left: 10px;">
+                    {{((this.orderbooksStore.orderbooksMetrics[p.symbol]?.orderbookBestAskPrice * p.qtyUnits) - p.volume).toFixed(2)}} руб
+                </strong><!--{{p.qtyUnits}}, {{p.avgPrice}}<br>-->
+              </span>
+
+            </div>
+
+          </div>
+
+
         </div>
       </div>
     </div>
-
 
     <div class="meshbot-section">
       <div class="meshbot-section-header"
@@ -169,9 +346,9 @@
 
         <OrdersComponent
             v-if="visibilityState['block4']"
-            :buyLevels="simulationStore.buyLevels"
-            :sellOrders="simulationStore.sellOrders"
-            :openTrades="simulationStore.openTrades"
+            :buyLevels="settings.buyLevels"
+            :sellOrders="settings.sellOrders"
+            :openTrades="settings.openTrades"
         />
     </div>
 
@@ -186,8 +363,8 @@
       </div>
       <HistoryComponent
           v-if="visibilityState['block5']"
-          :closedTrades="simulationStore.closedTrades"
-          :totalProfit="simulationStore.totalProfit"
+          :closedTrades="settings.closedTrades"
+          :totalProfit="settings.totalProfit"
       />
     </div>
 
@@ -203,7 +380,7 @@
       <LogComponent
           v-if="visibilityState['block6']"
           :logText="logText"
-          :remainingRestoreCount="simulationStore.remainingRestoreCount"
+          :remainingRestoreCount="settings.remainingRestoreCount"
       />
     </div>
 
@@ -211,6 +388,13 @@
 </template>
 
 <script>
+
+import { useOrderbooksStore } from '@/stores/orderbooksStore';
+import { useOrdersStore } from '@/stores/ordersStore';
+import {sendGroupLimitOrders, cancelGroupOrders, cancelAllOrders } from "@/modules/LimitOrderModule";
+
+
+import { useDataFabricStore } from '@/stores/dataFabricStore';
 import OrdersComponent from "@/widgets/MeshBot/components/OrdersComponent.vue";
 import HistoryComponent from "@/widgets/MeshBot/components/HistoryComponent.vue";
 import LogComponent from "@/widgets/MeshBot/components/LogComponent.vue";
@@ -222,25 +406,33 @@ Chart.register(...registerables);
 
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {useSimulationStore} from "@/stores/simulationStore";
+
 Chart.register(zoomPlugin);
+
 
 
 export default {
   name: "SimulationComponent",
-  components: { OrdersComponent, HistoryComponent, LogComponent },
+
+  components: {
+    OrdersComponent,
+    HistoryComponent,
+    LogComponent,
+  },
 
   setup() {
 
-    //const meshStore = useMeshStore(); // Инициализация хранилища
-    const simulationStore = useSimulationStore();
+    const ordersStore = useOrdersStore();
+    const orderbooksStore = useOrderbooksStore();
 
-    const setInitialPrice = () => {
-      simulationStore.setInitialPrice(simulationStore.initialPrice);
-    };
+    const dataFabricStore = useDataFabricStore();
+    const simulationStore = useSimulationStore();
 
     return {
       simulationStore,
-      setInitialPrice,
+      orderbooksStore,
+      ordersStore,
+      dataFabricStore,
     }
     // ========== РЕАКТИВНЫЕ ДАННЫЕ ==========
 
@@ -268,8 +460,86 @@ export default {
 
   },
 
+  props: {
+    stopBotSimulationIndex: Number,
+    botId: Number,
+  },
+
   data() {
     return {
+
+      placedBuyOrders: [],
+
+      realOrders: [], // массив, который будет хранить реальные ордера
+      isRealTradeActive: false, // флаг реальной торговли
+
+      //CREATE GROUP ORDERS
+
+      defaultCount: 7,
+      count: 7,
+      isTimerRunning: false,
+
+      templateGroupOrders: [
+        {
+          side: "buy",
+          quantity: 1,
+          price: null,
+          instrument: {
+            symbol: "SBER",
+            exchange: "MOEX",
+            instrumentGroup: "TQBR",
+          },
+          user: {
+            portfolio: "D88141",
+          },
+          timeInForce: "oneday",
+        },
+        {
+          side: "buy",
+          quantity: 1,
+          price: null,
+          instrument: {
+            symbol: "MTLR",
+            exchange: "MOEX",
+            instrumentGroup: "TQBR",
+          },
+          user: {
+            portfolio: "D88141",
+          },
+          timeInForce: "oneday",
+        }
+      ],
+
+      groupOrders: [],
+
+      sideOrder: 'buy',
+      priceOrder: null,
+      exchange: '',
+
+
+      //ACTIVE ORDERS
+      defaultCount2: 11,
+      count2: 11,
+      isTimerRunning2: false,
+
+      selectedOrders: [],
+
+
+
+
+
+
+
+
+
+
+
+      simulationId: null,
+      
+      isGenerateData: false,
+      isRealTrade: true,
+
+      //isRealPrice: true,
 
       visibilityState: {
         block1: true,
@@ -279,6 +549,7 @@ export default {
         block5: true,
         block6: true,
         block7: true,
+        block8: true,
       },
 
       forwardPadding: 10,
@@ -346,6 +617,202 @@ export default {
 
   methods: {
 
+
+
+    // CREATE GROUP ORDERS
+    updateGroupOrders() {
+      const groupOrders = [...this.templateGroupOrders];
+      //console.log(groupOrders);
+      groupOrders.forEach((order) => {
+        if(!this.orderbooksStore.orderbooksMetrics) return;
+        if(this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice){
+          order.price = this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice - 1;
+        }
+      });
+
+    },
+
+    async sendGroupLimitOrders(orders) {
+      try {
+        const result = await sendGroupLimitOrders(orders);
+
+        const newOrders = result.data.map((order, index) => {
+          if (order.data?.message === "success" && order.data?.orderNumber) {
+            const originalOrder = orders[index];
+            return {
+              data: {
+                id: order.data.orderNumber,
+                orderNumber: order.data.orderNumber,
+                side: originalOrder.side,
+                quantity: originalOrder.quantity,
+                price: originalOrder.price,
+                symbol: originalOrder.instrument.symbol,
+                exchange: originalOrder.instrument.exchange,
+                portfolio: originalOrder.user.portfolio,
+                timeInForce: originalOrder.timeInForce,
+                volume: originalOrder.quantity * originalOrder.price,
+                qty: originalOrder.quantity,
+              },
+            };
+          }
+          return null;
+        }).filter(Boolean);
+
+        // Объединяем старые и новые ордера
+        const existingOrders = [...this.ordersStore.limitOrders];
+        const updatedOrders = [...existingOrders];
+
+        newOrders.forEach((newOrder) => {
+          const existingIndex = updatedOrders.findIndex(
+              (order) => order.data.id === newOrder.data.id
+          );
+
+          if (existingIndex > -1) {
+            // Если ордер уже существует, обновляем его
+            updatedOrders[existingIndex] = newOrder;
+          } else {
+            // Если ордера нет, добавляем его
+            updatedOrders.push(newOrder);
+          }
+        });
+
+        this.ordersStore.limitOrders = updatedOrders;
+
+      } catch (error) {
+        console.error("Ошибка при отправке группы лимитных ордеров:", error.message);
+      }
+    },
+
+    startTimer() {
+      const updateTimer = () => {
+        if (!this.isTimerRunning) {
+          clearTimeout(this.timerId); // Остановить таймер, если флаг false
+          return;
+        }
+
+        this.count = this.count > 0 ? this.count - 1 : this.defaultCount;
+        if (this.count === 0) {
+          this.sendGroupLimitOrders(this.templateGroupOrders);
+        }
+
+        // Планируем следующий вызов через 1 секунду
+        this.timerId = setTimeout(updateTimer, 1000);
+      };
+
+      // Запускаем таймер, если флаг true
+      if (this.isTimerRunning) {
+        updateTimer();
+      }
+    },
+
+    toggleTimer() {
+      if (this.isTimerRunning) {
+        // Если таймер включён, запускаем его с задержкой 5 секунд
+        setTimeout(() => {
+          if (this.isTimerRunning) this.startTimer();
+        }, 1000);
+      } else {
+        // Если таймер выключен, останавливаем его
+        clearTimeout(this.timerId);
+        this.timerId = null;
+      }
+    },
+
+
+    async cancelAllOrders() {
+      try {
+        const exchange = 'MOEX'; // Укажите биржу
+        const portfolio = 'D88141'; // Укажите портфель
+        await cancelAllOrders(exchange, portfolio).then(() => {
+          this.ordersStore.limitOrders = [];
+        });
+
+        //console.log("Все ордера успешно отменены:", result);
+      } catch (error) {
+        console.error("Ошибка при отмене всех ордеров:", error.message);
+      }
+    },
+
+    toggleAll(event) {
+      if (event.target.checked) {
+        this.selectedOrders = this.ordersStore.limitOrders.map(
+            (item) => item.data.orderNumber
+        );
+      } else {
+        this.selectedOrders = [];
+      }
+    },
+
+    async cancelOrders(orderIds) {
+      try {
+        const params = {
+          orderIds: orderIds,
+          portfolio: "D88141",
+          exchange: "MOEX",
+          stop: false,
+        };
+
+        const response = await cancelGroupOrders(params);
+
+        if (response.success) {
+          const ordersToRemove = response.data.map((order) => order.orderId);
+
+          if (ordersToRemove.length > 0) {
+            this.ordersStore.limitOrders = this.ordersStore.limitOrders.filter(
+                (order) => !ordersToRemove.includes(order.data.orderNumber)
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Ошибка при отмене ордеров:", error.message);
+      }
+    },
+
+
+    startTimer2() {
+      const updateTimer = () => {
+        if (!this.isTimerRunning2) {
+          clearTimeout(this.timerId); // Остановить таймер, если флаг false
+          return;
+        }
+
+        this.count2 = this.count2 > 0 ? this.count2 - 1 : this.defaultCount2;
+        if (this.count2 === 0) {
+          this.cancelAllOrders();
+        }
+
+        // Планируем следующий вызов через 1 секунду
+        this.timerId = setTimeout(updateTimer, 1000);
+      };
+
+      // Запускаем таймер, если флаг true
+      if (this.isTimerRunning2) {
+        updateTimer();
+      }
+    },
+
+    toggleTimer2() {
+      if (this.isTimerRunning2) {
+        // Если таймер включён, запускаем его с задержкой 5 секунд
+        setTimeout(() => {
+          if (this.isTimerRunning2) this.startTimer2();
+        }, 1000);
+      } else {
+        // Если таймер выключен, останавливаем его
+        clearTimeout(this.timerId);
+        this.timerId = null;
+      }
+    },
+
+
+    toggleRealTrade() {
+
+    },
+
+    deleteBot(){
+      this.$emit('delete-bot');
+    },
+
     toggleBlock(blockId) {
       this.visibilityState[blockId] = !this.visibilityState[blockId];
     },
@@ -365,82 +832,56 @@ export default {
       }
     },
 
-    checkSellOrders() {
-      for (let j = 0; j < this.simulationStore.sellOrders.length; j++) {
-        const so = this.simulationStore.sellOrders[j];
-        if (this.simulationStore.currentPrice >= so.price) {
-          this.log(`EXEC SELL @${so.price.toFixed(2)}, vol=${so.volume}`);
-          this.simulationStore.sellOrders.splice(j, 1);
-          j--;
-          this.removeLine("SELL_" + so.price);
+    async placeRealBuyOrder(price, volume) {
+      // Нормализуем цену согласно настройкам
+      const normalizedPrice = this.normalizePrice(price);
+      const normalizedVolume = this.normalizeVolume(volume);
 
-          this.simulationStore.sellPoints.push({ x: this.simulationStore.timeIndex, y: so.price });
+      // Используем существующий API метод для размещения лимитного ордера
+      const order = {
+        symbol: "MTLR", // Пример символа, замените на необходимый
+        side: "buy",
+        quantity: normalizedVolume,
+        price: normalizedPrice,
+        timeInForce: "GTC", // Или другие необходимы параметры
+      };
+      // Вызов API метода размещения ордера
+      const response = await sendGroupLimitOrders([order]); // Предполагается, что sendGroupLimitOrders может принимать массив ордеров
 
-          const idx = this.simulationStore.openTrades.findIndex(
-              t => t.buyPrice === so.linkBuy
-          );
-          if (idx >= 0) {
-            const tr = this.simulationStore.openTrades[idx];
-            // Считаем профит классической формулой (цена продажи - цена покупки)*volume
-            const profit = (so.price - tr.buyPrice) * tr.volume;
-            this.simulationStore.totalProfit += profit;
-            this.simulationStore.closedTrades.push({
-              buyPrice: tr.buyPrice,
-              sellPrice: so.price,
-              volume: tr.volume,
-              profit,
-            });
-            this.simulationStore.openTrades.splice(idx, 1);
-
-            // Восстановление лимитки (если включено)
-            if (this.simulationStore.enableRestore && this.simulationStore.remainingRestoreCount > 0) {
-              if (this.isPositionLimitReached()) {
-                this.log("Превышен лимит позиций и лимиток. Восстановление отменено.");
-                return;
-              }
-              // Новая проверка: лимит лимиток
-              if (this.simulationStore.buyLevels.length >= this.simulationStore.levelsCount) {
-                this.log("Превышен лимит лимиток. Восстановление отменено.");
-                continue;
-              }
-
-              this.simulationStore.buyLevels.push({
-                price: tr.buyPrice,
-                volume: this.simulationStore.volume,
-              });
-              this.simulationStore.linesData.push({
-                id: "BUY_" + tr.buyPrice,
-                price: tr.buyPrice,
-                color: "rgba(255,183,77,0.7)",
-              });
-              this.simulationStore.remainingRestoreCount--;
-              this.log(
-                  `Restored BUY limit @${tr.buyPrice.toFixed(
-                      2
-                  )}. Remaining: ${this.simulationStore.remainingRestoreCount}`
-              );
-            }
-          }
-        }
+      if (response.data && response.data.length > 0 && response.data[0].data?.orderNumber) {
+        return response.data[0].data;
+      } else {
+        throw new Error("Не удалось разместить реальный BUY ордер.");
       }
     },
 
+    async cancelRealSellOrder(orderId) {
+      // Используем существующий API метод для отмены ордера
+      await this.cancelOrders([orderId]);
+    },
+
+    normalizePrice(price) {
+      if (!this.settings || !this.settings.priceStep) return price;
+      return Math.round(price / this.settings.priceStep);
+    },
+
     removeLine(id) {
-      const idx = this.simulationStore.linesData.findIndex(l => l.id === id);
+      const idx = this.settings.linesData.findIndex(l => l.id === id);
       if (idx >= 0) {
-        this.simulationStore.linesData.splice(idx, 1);
+        this.settings.linesData.splice(idx, 1);
       }
     },
 
     updateChart() {
 
+      if(!this.settings) return;
       if (!this.chartInstance) return;
 
-      const rawPriceData = toRaw(this.simulationStore.priceData);
-      const rawLines = toRaw(this.simulationStore.linesData);
+      const rawPriceData = toRaw(this.settings.priceData);
+      const rawLines = toRaw(this.settings.linesData);
       //const allPrices = rawPriceData.map(p => p.y);
-      const buyPrices = this.simulationStore.buyLevels.map(level => level.price);
-      const sellPrices = this.simulationStore.sellOrders.map(order => order.price);
+      const buyPrices = this.settings.buyLevels.map(level => level.price);
+      const sellPrices = this.settings.sellOrders.map(order => order.price);
 
       // Применяем фильтр в зависимости от режима
       let filteredPriceData;
@@ -479,14 +920,14 @@ export default {
 
       const verticalTrades = [];
 
-      //console.log("LinesData:", this.simulationStore.linesData);
+      //console.log("LinesData:", this.settings.linesData);
 
       // Отображение линий с разными цветами
       const linesPoints = [];
       for (const line of rawLines) {
         linesPoints.push({ x: 0, y: line.price, customColor: line.color });
         linesPoints.push({
-          x: this.simulationStore.timeIndex + 5,
+          x: this.settings.timeIndex + 5,
           y: line.price,
           customColor: line.color,
         });
@@ -494,10 +935,10 @@ export default {
       }
 
       // Добавляем линию текущей цены
-      linesPoints.push({ x: 0, y: this.simulationStore.currentPrice, customColor: "white" });
+      linesPoints.push({ x: 0, y: this.settings.currentPrice, customColor: "white" });
       linesPoints.push({
-        x: this.simulationStore.timeIndex + 5,
-        y: this.simulationStore.currentPrice,
+        x: this.settings.timeIndex + 5,
+        y: this.settings.currentPrice,
         customColor: "white",
       });
       linesPoints.push({ x: null, y: null });
@@ -514,7 +955,7 @@ export default {
       };
 
       // Пробегаемся по buyPoints
-      for (const bp of toRaw(this.simulationStore.buyPoints)) {
+      for (const bp of toRaw(this.settings.buyPoints)) {
         verticalTrades.push({
           x: bp.x,
           y: yMin,
@@ -531,7 +972,7 @@ export default {
       }
 
       // Пробегаемся по sellPoints
-      for (const sp of toRaw(this.simulationStore.sellPoints)) {
+      for (const sp of toRaw(this.settings.sellPoints)) {
         verticalTrades.push({
           x: sp.x,
           y: yMin,
@@ -574,29 +1015,32 @@ export default {
     },
 
     shiftGrid() {
-      if (!this.simulationStore.enableGridShift) return;
+
+      if(!this.settings) return;
+
+      if (!this.settings.enableGridShift) return;
 
       this.log("Смещаем сетку в соответствии с текущей ценой...");
 
-      const oldPriceStart = this.simulationStore.priceStart;
-      this.simulationStore.priceStart = this.simulationStore.currentPrice;
+      const oldPriceStart = this.settings.priceStart;
+      this.settings.priceStart = this.settings.currentPrice;
 
       // Если включено смещение TP, смещаем TP у открытых сделок
-      if (this.simulationStore.enableTpShift) {
-        const shiftValue = this.simulationStore.priceStart - oldPriceStart;
-        for (const ot of this.simulationStore.openTrades) {
+      if (this.settings.enableTpShift) {
+        const shiftValue = this.settings.priceStart - oldPriceStart;
+        for (const ot of this.settings.openTrades) {
           // Не меняем ot.buyPrice
           ot.takeProfit += shiftValue;
         }
       }
 
       // 1) Перестраиваем BUY-ордера вокруг новой priceStart
-      this.simulationStore.buyLevels = [];
-      this.simulationStore.linesData = this.simulationStore.linesData.filter(line => !line.id.startsWith("BUY_"));
+      this.settings.buyLevels = [];
+      this.settings.linesData = this.settings.linesData.filter(line => !line.id.startsWith("BUY_"));
 
-      for (let i = 1; i <= this.simulationStore.levelsCount; i++) {
+      for (let i = 1; i <= this.settings.levelsCount; i++) {
 
-        if (this.simulationStore.buyLevels.length >= this.simulationStore.levelsCount) {
+        if (this.settings.buyLevels.length >= this.settings.levelsCount) {
           this.log("Превышен лимит лимиток. Новые лимитки не будут выставлены.");
           break;
         }
@@ -605,12 +1049,12 @@ export default {
           this.log("Превышен лимит позиций. Новые лимитки не будут выставлены.");
           break;
         }
-        const levelPrice = this.roundToStep(this.simulationStore.priceStart - i * this.simulationStore.gridStep, this.simulationStore.priceStep);
-        this.simulationStore.buyLevels.push({
+        const levelPrice = this.roundToStep(this.settings.priceStart - i * this.settings.gridStep, this.settings.priceStep);
+        this.settings.buyLevels.push({
           price: levelPrice,
-          volume: this.simulationStore.volume,
+          volume: this.settings.volume,
         });
-        this.simulationStore.linesData.push({
+        this.settings.linesData.push({
           id: "BUY_" + levelPrice,
           price: levelPrice,
           color: "rgba(255,183,77,0.7)",
@@ -618,17 +1062,17 @@ export default {
       }
 
       // 2) Пересоздаём SELL-ордера для (уже) открытых сделок
-      this.simulationStore.linesData = this.simulationStore.linesData.filter(line => !line.id.startsWith("SELL_"));
-      this.simulationStore.sellOrders = [];
+      this.settings.linesData = this.settings.linesData.filter(line => !line.id.startsWith("SELL_"));
+      this.settings.sellOrders = [];
 
-      for (const ot of this.simulationStore.openTrades) {
+      for (const ot of this.settings.openTrades) {
         const so = {
           price: ot.takeProfit,
           volume: ot.volume,
           linkBuy: ot.buyPrice,
         };
-        this.simulationStore.sellOrders.push(so);
-        this.simulationStore.linesData.push({
+        this.settings.sellOrders.push(so);
+        this.settings.linesData.push({
           id: "SELL_" + so.price,
           price: so.price,
           color: "#9B67DB",
@@ -638,9 +1082,9 @@ export default {
       this.updateChart();
 
       // 3) Выбираем случайный интервал до следующего смещения
-      if (this.simulationStore.enableGridShift) {
-        const randomInterval = this.simulationStore.gridShiftIntervals[
-            Math.floor(Math.random() * this.simulationStore.gridShiftIntervals.length)
+      if (this.settings.enableGridShift) {
+        const randomInterval = this.settings.gridShiftIntervals[
+            Math.floor(Math.random() * this.settings.gridShiftIntervals.length)
             ];
         this.gridShiftTimer = setTimeout(this.shiftGrid, randomInterval);
         this.log(`Следующее смещение через ${randomInterval} мс`);
@@ -648,11 +1092,12 @@ export default {
     },
 
     isPositionLimitReached() {
-      return this.simulationStore.openTrades.length + this.simulationStore.buyLevels.length >= this.simulationStore.maxOpenTrades;
+      if(!this.settings) return;
+      return this.settings.openTrades.length + this.settings.buyLevels.length >= this.settings.maxOpenTrades;
     },
 
     startSimulation() {
-      if (this.simulationStore.simulationId) {
+      if (this.simulationId) {
         this.log("Симуляция уже идёт!");
         return;
       }
@@ -660,23 +1105,23 @@ export default {
 
       this.inProgress = true;
 
-      this.simulationStore.simulationId = setInterval(this.simulate, this.simulationStore.interval);
+      this.simulationId = setInterval(this.simulate, this.settings.interval);
 
-      if (this.simulationStore.enableGridShift) {
+      if (this.settings.enableGridShift) {
         this.shiftGrid();
       }
     },
 
     stopSimulation() {
-      if (!this.simulationStore.simulationId) {
+      if (!this.simulationId) {
         this.log("Симуляция не запущена!");
         return;
       }
 
       this.inProgress = false;
 
-      clearInterval(this.simulationStore.simulationId);
-      this.simulationStore.simulationId = null;
+      clearInterval(this.simulationId);
+      this.simulationId = null;
 
       if (this.gridShiftTimer) {
         clearTimeout(this.gridShiftTimer);
@@ -686,32 +1131,21 @@ export default {
       this.log("=== STOP ===");
     },
 
-    applySettings() {
-      this.log("Применили настройки: " + JSON.stringify({
-        priceStart: this.simulationStore.priceStart,
-        gridStep: this.simulationStore.gridStep,
-        levelsCount: this.simulationStore.levelsCount,
-        volume: this.simulationStore.volume,
-        takeProfitDistance: this.simulationStore.takeProfitDistance,
-        volatility: this.simulationStore.volatility,
-        interval: this.simulationStore.interval,
-      }));
-      //this.resetState();
-    },
-
     initBuyOrders() {
+
+      if(!this.settings) return;
 
       console.log("Initializing buy orders...");
 
-      if (!this.simulationStore.linesData) {
-        this.simulationStore.linesData = []; // Инициализация, если не существует
+      if (!this.settings.linesData) {
+        this.settings.linesData = []; // Инициализация, если не существует
       }
 
-      this.simulationStore.buyLevels = []; // Сброс существующих уровней
-      this.simulationStore.linesData = this.simulationStore.linesData.filter(line => !line.id.startsWith("BUY_"));
+      this.settings.buyLevels = []; // Сброс существующих уровней
+      this.settings.linesData = this.settings.linesData.filter(line => !line.id.startsWith("BUY_"));
 
-      for (let i = 1; i <= this.simulationStore.levelsCount; i++) {
-        if (this.simulationStore.buyLevels.length >= this.simulationStore.levelsCount) {
+      for (let i = 1; i <= this.settings.levelsCount; i++) {
+        if (this.settings.buyLevels.length >= this.settings.levelsCount) {
           this.log("Превышен лимит лимиток. Новые лимитки не будут выставлены.");
           break;
         }
@@ -720,45 +1154,68 @@ export default {
           break;
         }
 
-        const levelPrice = this.simulationStore.currentPrice - i * this.simulationStore.gridStep;
+        const levelPrice = this.settings.currentPrice - i * this.settings.gridStep;
 
-        this.simulationStore.buyLevels.push({
+        this.settings.buyLevels.push({
           price: levelPrice,
-          volume: this.simulationStore.volume,
+          volume: this.settings.volume,
         });
 
         // Выставляем лимитки до симуляции
-        this.simulationStore.linesData.push({
+        this.settings.linesData.push({
           id: "BUY_" + levelPrice,
           price: levelPrice,
           color: "rgba(255,183,77,0.7)",
         });
       }
 
-      //console.log("LinesData after initBuyOrders:", toRaw(this.simulationStore.linesData));
+      //console.log("LinesData after initBuyOrders:", toRaw(this.settings.linesData));
 
       this.updateChart();
-      /*console.log("Buy levels:", this.simulationStore.buyLevels);
-      console.log("Lines data:", this.simulationStore.linesData);*/
+      /*console.log("Buy levels:", this.settings.buyLevels);
+      console.log("Lines data:", this.settings.linesData);*/
     },
 
-    simulate() {
-      this.simulationStore.timeIndex++;
+    realTrade() {
+      this.settings.timeIndex++;
+
+      // Здесь необходимо сделать нормировку цены - хардкод 100
+      const newPrice = this.dataFabricStore.lastValues.data?.MTLR.oBestBidPrice * 100;
+      this.settings.initialPrice = newPrice;
+      this.settings.currentPrice = newPrice;
+
+      this.settings.priceData.push({ x: this.settings.timeIndex, y: this.settings.currentPrice });
+
+      this.checkRealBuyOrders();
+      this.checkRealSellOrders();
+
+      this.updateChart();
+    },
+
+    simulateTrade() {
+      this.settings.timeIndex++;
 
       // Генерируем случайный множитель шага: положительный или отрицательный
-      const multiplier = (Math.random() - 0.5) * 2 * this.simulationStore.priceStepMultiplier;
-      //const multiplier = (Math.random() > 0.5 ? 1 : -1) * this.simulationStore.priceStepMultiplier;
+      const multiplier = (Math.random() - 0.5) * 2 * this.settings.priceStepMultiplier;
+      //const multiplier = (Math.random() > 0.5 ? 1 : -1) * this.settings.priceStepMultiplier;
 
-      const newPrice = this.simulationStore.currentPrice + this.simulationStore.priceStep * multiplier;
+      let newPrice = this.settings.currentPrice + this.settings.priceStep * multiplier;
 
-      //this.simulationStore.currentPrice += delta;
+      if(!this.isGenerateData){
+        newPrice = this.dataFabricStore.lastValues.data?.MTLR.oBestBidPrice * 100;
+        this.settings.initialPrice = newPrice;
+      }
+
+      //console.log(newPrice);
+
+      //this.settings.currentPrice += delta;
 
       // Применяем минимальный шаг
-      this.simulationStore.currentPrice = this.roundToStep(newPrice, this.simulationStore.priceStep);
+      this.settings.currentPrice = this.roundToStep(newPrice, this.settings.priceStep);
 
-      if (this.simulationStore.currentPrice < 0) this.simulationStore.currentPrice = 0.1;
+      if (this.settings.currentPrice < 0) this.settings.currentPrice = 0.1;
 
-      this.simulationStore.priceData.push({ x: this.simulationStore.timeIndex, y: this.simulationStore.currentPrice });
+      this.settings.priceData.push({ x: this.settings.timeIndex, y: this.settings.currentPrice });
 
       this.checkBuyOrders();
       this.checkSellOrders();
@@ -766,76 +1223,284 @@ export default {
       this.updateChart();
     },
 
-    syncLinesDataWithBuyLevels() {
-      // Сбрасываем существующие линии
-      this.simulationStore.linesData = [];
+    simulate() {
+      if(!this.settings) return;
 
-      // Добавляем лимитки в linesData
-      this.simulationStore.buyLevels.forEach(level => {
-        this.simulationStore.linesData.push({
-          id: "BUY_" + level.price,
-          price: level.price,
-          color: "rgba(255,183,77,0.7)",
-        });
-      });
+      if(this.isRealTrade) {
+        this.realTrade();
+      } else {
+        this.simulateTrade();
+      }
 
-      console.log("Lines synchronized:", this.simulationStore.linesData);
     },
 
-    syncPriceDataWithBuyLevels() {
-      // Добавляем стартовую цену как первый элемент
-      const initialPricePoint = {
-        x: 0, // Временная метка (может быть изменена)
-        y: this.simulationStore.initialPrice,
-      };
-
-      // Объединяем стартовую цену и лимитки
-      this.simulationStore.priceData = [
-        initialPricePoint,
-        ...this.simulationStore.buyLevels.map((level, index) => ({
-          x: index + 1, // Смещение индекса для лимиток
-          y: level.price,
-        })),
-      ];
-
-      console.log("Synchronized priceData with initial price and buyLevels:", this.simulationStore.priceData);
+    async cancelAllPreviousOrders() {
+      if (this.settings.enableGridShift) {
+        await this.cancelAllOrders();  // Используем имеющийся метод
+        this.placedBuyOrders = []; // Сбрасываем массив с выставленными ордерами
+      }
     },
 
     checkBuyOrders() {
-      for (let i = 0; i < this.simulationStore.buyLevels.length; i++) {
-        const bo = this.simulationStore.buyLevels[i];
-        if (this.simulationStore.currentPrice <= bo.price) {
-          if (this.simulationStore.openTrades.length >= this.simulationStore.maxOpenTrades) {
-            this.log(`Лимит открытых позиций достигнут: ${this.simulationStore.maxOpenTrades}`);
+
+      if(!this.settings) return;
+
+      for (let i = 0; i < this.settings.buyLevels.length; i++) {
+
+        const bo = this.settings.buyLevels[i];
+
+
+        if (this.settings.currentPrice <= bo.price) {
+          if (this.settings.openTrades.length >= this.settings.maxOpenTrades) {
+            this.log(`Лимит открытых позиций достигнут: ${this.settings.maxOpenTrades}`);
             return; // Останавливаем добавление новых сделок
           }
 
           this.log(`EXEC BUY @${bo.price.toFixed(2)}, vol=${bo.volume}`);
-          this.simulationStore.buyLevels.splice(i, 1);
+
+          this.settings.buyLevels.splice(i, 1);
           i--;
           this.removeLine("BUY_" + bo.price);
 
-          this.simulationStore.buyPoints.push({ x: this.simulationStore.timeIndex, y: bo.price });
+          this.settings.buyPoints.push({x: this.settings.timeIndex, y: bo.price});
 
           const trade = {
             buyPrice: bo.price,
             volume: bo.volume,
-            takeProfit: bo.price + this.simulationStore.takeProfitDistance,
+            takeProfit: bo.price + this.settings.takeProfitDistance,
           };
-          this.simulationStore.openTrades.push(trade);
+          this.settings.openTrades.push(trade);
 
           const so = {
             price: trade.takeProfit,
             volume: trade.volume,
             linkBuy: trade.buyPrice,
           };
-          this.simulationStore.sellOrders.push(so);
+          this.settings.sellOrders.push(so);
 
-          this.simulationStore.linesData.push({
+          this.settings.linesData.push({
             id: "SELL_" + so.price,
             price: so.price,
             color: "#9B67DB",
           });
+
+        }
+
+      }
+    },
+
+    checkSellOrders() {
+
+      if(!this.settings) return;
+
+      for (let j = 0; j < this.settings.sellOrders.length; j++) {
+        const so = this.settings.sellOrders[j];
+        if (this.settings.currentPrice >= so.price) {
+          this.log(`EXEC SELL @${so.price.toFixed(2)}, vol=${so.volume}`);
+
+
+          this.settings.sellOrders.splice(j, 1);
+          j--;
+          this.removeLine("SELL_" + so.price);
+
+          this.settings.sellPoints.push({x: this.settings.timeIndex, y: so.price});
+
+          const idx = this.settings.openTrades.findIndex(
+              t => t.buyPrice === so.linkBuy
+          );
+          if (idx >= 0) {
+            const tr = this.settings.openTrades[idx];
+            // Считаем профит классической формулой (цена продажи - цена покупки)*volume
+            const profit = (so.price - tr.buyPrice) * tr.volume;
+            this.settings.totalProfit += profit;
+            this.settings.closedTrades.push({
+              buyPrice: tr.buyPrice,
+              sellPrice: so.price,
+              volume: tr.volume,
+              profit,
+            });
+            this.settings.openTrades.splice(idx, 1);
+
+            // Восстановление лимитки (если включено)
+            if (this.settings.enableRestore && this.settings.remainingRestoreCount > 0) {
+              if (this.isPositionLimitReached()) {
+                this.log("Превышен лимит позиций и лимиток. Восстановление отменено.");
+                return;
+              }
+              // Новая проверка: лимит лимиток
+              if (this.settings.buyLevels.length >= this.settings.levelsCount) {
+                this.log("Превышен лимит лимиток. Восстановление отменено.");
+                continue;
+              }
+
+              this.settings.buyLevels.push({
+                price: tr.buyPrice,
+                volume: this.settings.volume,
+              });
+              this.settings.linesData.push({
+                id: "BUY_" + tr.buyPrice,
+                price: tr.buyPrice,
+                color: "rgba(255,183,77,0.7)",
+              });
+              this.settings.remainingRestoreCount--;
+              this.log(
+                  `Restored BUY limit @${tr.buyPrice.toFixed(
+                      2
+                  )}. Remaining: ${this.settings.remainingRestoreCount}`
+              );
+            }
+          }
+
+        }
+      }
+    },
+
+    checkRealBuyOrders() {
+
+      if(!this.settings) return;
+
+      this.cancelAllPreviousOrders();
+
+      for (let i = 0; i < this.settings.buyLevels.length; i++) {
+
+        const bo = this.settings.buyLevels[i]
+
+        const isOrderAlreadyPlaced = this.placedBuyOrders.includes(bo.price);
+
+        if (this.settings.openTrades.length >= this.settings.maxOpenTrades) {
+          this.log(`Лимит открытых позиций достигнут: ${this.settings.maxOpenTrades}`);
+          return; // Останавливаем добавление новых сделок
+        }
+
+        if (this.settings.currentPrice >= bo.price && !isOrderAlreadyPlaced) {
+          console.log('Set buy limit, current price', this.settings.currentPrice/100, ', Buy Level price', bo.price/100, ', Volume', bo.volume);
+
+          const order =  {
+              side: "buy",
+              quantity: 1,
+              price: bo.price/100,
+              instrument: {
+                symbol: "MTLR",
+                exchange: "MOEX",
+                instrumentGroup: "TQBR",
+              },
+              user: {
+                portfolio: "D88141",
+              },
+              timeInForce: "oneday",
+            };
+
+          this.sendGroupLimitOrders([order]);
+
+          this.placedBuyOrders.push(bo.price);
+
+          //console.log('Set buy limit, ', 'price', bo.price / 100, ', volume', bo.volume);
+        }
+
+
+        /*
+
+        if (this.settings.currentPrice <= bo.price) {
+          if (this.settings.openTrades.length >= this.settings.maxOpenTrades) {
+            this.log(`Лимит открытых позиций достигнут: ${this.settings.maxOpenTrades}`);
+            return; // Останавливаем добавление новых сделок
+          }
+
+          this.log(`EXEC BUY @${bo.price.toFixed(2)}, vol=${bo.volume}`);
+
+          this.settings.buyLevels.splice(i, 1);
+          i--;
+          this.removeLine("BUY_" + bo.price);
+
+          this.settings.buyPoints.push({x: this.settings.timeIndex, y: bo.price});
+
+          const trade = {
+            buyPrice: bo.price,
+            volume: bo.volume,
+            takeProfit: bo.price + this.settings.takeProfitDistance,
+          };
+          this.settings.openTrades.push(trade);
+
+          const so = {
+            price: trade.takeProfit,
+            volume: trade.volume,
+            linkBuy: trade.buyPrice,
+          };
+          this.settings.sellOrders.push(so);
+
+          this.settings.linesData.push({
+            id: "SELL_" + so.price,
+            price: so.price,
+            color: "#9B67DB",
+          });
+
+        }
+*/
+      }
+    },
+
+    checkRealSellOrders() {
+
+      if(!this.settings) return;
+
+      for (let j = 0; j < this.settings.sellOrders.length; j++) {
+        const so = this.settings.sellOrders[j];
+        if (this.settings.currentPrice >= so.price) {
+          this.log(`EXEC SELL @${so.price.toFixed(2)}, vol=${so.volume}`);
+
+
+          this.settings.sellOrders.splice(j, 1);
+          j--;
+          this.removeLine("SELL_" + so.price);
+
+          this.settings.sellPoints.push({x: this.settings.timeIndex, y: so.price});
+
+          const idx = this.settings.openTrades.findIndex(
+              t => t.buyPrice === so.linkBuy
+          );
+          if (idx >= 0) {
+            const tr = this.settings.openTrades[idx];
+            // Считаем профит классической формулой (цена продажи - цена покупки)*volume
+            const profit = (so.price - tr.buyPrice) * tr.volume;
+            this.settings.totalProfit += profit;
+            this.settings.closedTrades.push({
+              buyPrice: tr.buyPrice,
+              sellPrice: so.price,
+              volume: tr.volume,
+              profit,
+            });
+            this.settings.openTrades.splice(idx, 1);
+
+            // Восстановление лимитки (если включено)
+            if (this.settings.enableRestore && this.settings.remainingRestoreCount > 0) {
+              if (this.isPositionLimitReached()) {
+                this.log("Превышен лимит позиций и лимиток. Восстановление отменено.");
+                return;
+              }
+              // Новая проверка: лимит лимиток
+              if (this.settings.buyLevels.length >= this.settings.levelsCount) {
+                this.log("Превышен лимит лимиток. Восстановление отменено.");
+                continue;
+              }
+
+              this.settings.buyLevels.push({
+                price: tr.buyPrice,
+                volume: this.settings.volume,
+              });
+              this.settings.linesData.push({
+                id: "BUY_" + tr.buyPrice,
+                price: tr.buyPrice,
+                color: "rgba(255,183,77,0.7)",
+              });
+              this.settings.remainingRestoreCount--;
+              this.log(
+                  `Restored BUY limit @${tr.buyPrice.toFixed(
+                      2
+                  )}. Remaining: ${this.settings.remainingRestoreCount}`
+              );
+            }
+          }
+
         }
       }
     },
@@ -843,11 +1508,17 @@ export default {
     resetState() {
       console.log("Сброс состояния вызван!");
 
-      // Сохраняем текущую цену
-      //const lastPrice = this.simulationStore.currentPrice || this.simulationStore.initialPrice || 10000;
+      // Если боты и активный бот индекс не установлены, выходим
+      if (this.simulationStore.activeBotIndex === null || !this.simulationStore.bots[this.simulationStore.activeBotIndex]) {
+        console.warn("Активный бот не найден. Сброс состояния не выполнен.");
+        return;
+      }
 
-      // Обнуляем данные, но оставляем текущую цену и активную симуляцию
-      Object.assign(this.simulationStore, {
+      const botSettings = this.simulationStore.bots[this.simulationStore.activeBotIndex].settings;
+
+      // Сброс всех параметров бота
+      Object.assign(botSettings, {
+        currentPrice: botSettings.initialPrice,
         timeIndex: 0,
         buyLevels: [],
         sellOrders: [],
@@ -858,43 +1529,20 @@ export default {
         linesData: [],
         buyPoints: [],
         sellPoints: [],
-        remainingRestoreCount: this.simulationStore.restoreCount,
+        remainingRestoreCount: botSettings.restoreCount,
       });
 
-      // Устанавливаем начальную цену
-      this.simulationStore.currentPrice = this.simulationStore.initialPrice;
-
-
-      this.simulationStore.priceData.push(
-          { x: 0, y: this.simulationStore.initialPrice },
-          { x: 1, y: this.simulationStore.initialPrice }
+      // Инициализация данных для графика
+      botSettings.priceData.push(
+          { x: 0, y: botSettings.initialPrice },
+          { x: 1, y: botSettings.initialPrice }
       );
 
-      // Добавляем начальную цену в данные графика
-      /*this.simulationStore.priceData.push({
-        x: 0,
-        y: this.simulationStore.currentPrice,
-      });*/
-
-      // Инициализируем уровни лимиток
+      // Инициализация уровней лимиток
       this.initBuyOrders();
-      //this.syncLinesDataWithBuyLevels();
-      this.updateChart();
 
-      /*if (!this.simulationStore.buyLevels.length) {
-      this.initBuyOrders(); // Создаем уровни до симуляции
-      this.syncPriceDataWithBuyLevels();
+      // Обновление графика для отображения сброшенного состояния
       this.updateChart();
-      //this.updateChart();
-    }*/
-
-      // Обновляем график
-      /*if (this.chartInstance) {
-        this.chartInstance.data.datasets.forEach(dataset => {
-          dataset.data = []; // Очищаем все данные графика
-        });
-        this.updateChart();
-      }*/
 
       console.log("Состояние сброшено. Симуляция продолжается.");
     },
@@ -966,7 +1614,7 @@ export default {
             options: {
               animation: false,
               responsive: true,
-              maintainAspectRatio: false,
+              maintainAspectRatio: true,
               plugins: {
                 clip: {
                   left: true,
@@ -976,6 +1624,21 @@ export default {
                 },
                 legend: {
                   display: false, // Отключить легенду
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      let label = context.dataset.label || '';
+                      if (label) {
+                        label += ': ';
+                      }
+                      if (context.parsed.y !== null) {
+                        // Убираем разделители тысяч в подсказках
+                        label += context.parsed.y.toLocaleString('ru-RU', { useGrouping: false });
+                      }
+                      return label;
+                    }
+                  }
                 },
                 /*zoom: {
                   pan: {
@@ -1017,6 +1680,12 @@ export default {
                   grid: {
                     color: "rgba(255, 255, 255, 0.05)",
                   },
+                  ticks: {
+                    // Убираем разделители тысяч на оси Y
+                    callback: function(value) {
+                      return value.toLocaleString('ru-RU', { useGrouping: false });
+                    }
+                  }
                 },
               },
             },
@@ -1032,7 +1701,14 @@ export default {
     },
   },
 
-  mounted(){
+  mounted() {
+
+    //CREATE GROUP ORDERS
+    setInterval(() => {
+      this.updateGroupOrders();
+    }, 1000);
+
+
     this.initChartInstance();
 
     this.resetState();
@@ -1047,6 +1723,10 @@ export default {
   },
 
   watch: {
+
+    stopBotSimulationIndex() {
+      this.stopSimulation();
+    },
 
     displayMode() {
       this.updateChart();
@@ -1063,28 +1743,86 @@ export default {
           if (!this.chartInstance) {
             this.initChartInstance();
           }
-          if (this.chartInstance && this.simulationStore.priceData.length > 0) {
-            this.updateChart();
+          if(this.settings){
+            if (this.chartInstance && this.settings.priceData.length > 0) {
+              this.updateChart();
+            }
           }
         });
       } else if (newTab !== 0 && this.chartInstance) {
         this.destroyChartInstance();
       }
     },
-    config: {
+    /*config: {
       handler() {
         this.applySettings();
       },
       deep: true,
-    },
+    },*/
   },
 
   computed: {
+    currentBot() {
+      return this.simulationStore.bots[this.simulationStore.activeBotIndex];
+    },
+    areAllSelected() {
+      return (
+          this.selectedOrders.length === this.ordersStore.limitOrders.length &&
+          this.ordersStore.limitOrders.length > 0
+      );
+    },
+    settings() {
+        return this.botId ? this.simulationStore.bots[this.botId].settings :
+            {
+              maxOpenTrades: 20,
+              initialPrice: 10000,
+              currentPrice: 10000,
+              gridStep: 20,
+              levelsCount: 5,
+              volume: 10,
+              takeProfitDistance: 20,
+              enableRestore: true,
+              restoreCount: 300,
+              enableGridShift: true,
+              enableTpShift: false,
+              totalProfit: 0,
+              buyLevels: [],
+              sellOrders: [],
+              openTrades: [],
+              closedTrades: [],
+
+              timeIndex: 0,
+              buyPoints: [],
+              sellPoints: [],
+
+              remainingRestoreCount: 300,
+              linesData: [],
+
+              gridShiftIntervals: [2000, 3000, 7000],
+
+
+              priceStep: 1,
+              priceStepMultiplier: 10,
+              volatility: 1,
+              interval: 10,
+
+
+
+
+              priceStart: 10000,
+
+              priceData: [],
+            };
+    },
     currentPriceStr () {
-      return this.simulationStore.currentPrice.toFixed(2);
+      return  this.settings ?
+      this.settings.currentPrice.toFixed(2) :
+      null
     },
     remainingBuyLimits() {
-      return Math.max(this.simulationStore.maxOpenTrades - this.simulationStore.openTrades.length, 0);
+      return this.settings ?
+          Math.max(this.settings.maxOpenTrades - this.settings.openTrades.length, 0) :
+          null;
     },
   }
 };

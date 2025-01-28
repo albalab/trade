@@ -3,6 +3,22 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 // Определяем маршруты
 const routes = [
     {
+        path: '/chat',
+        component: () => import('../widgets/ChatTemplate.vue')
+    },
+    {
+        path: '/bot-example',
+        component: () => import('../widgets/MeshBot/components/TradeComponent2.vue')
+    },
+    {
+        path: '/beacon2',
+        component: () => import('../widgets/BeaconLanguage2.vue')
+    },
+    {
+        path: '/beacon',
+        component: () => import('../widgets/BeaconLanguage.vue')
+    },
+    {
         path: '/markov',
         component: () => import('../widgets/MarkovStockSimulation.vue')
     },

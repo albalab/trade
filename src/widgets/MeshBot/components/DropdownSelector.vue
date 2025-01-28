@@ -1,6 +1,6 @@
 <template>
   <div class="bots-selector dropdown-selector">
-    <span  class="name">Параметры:</span>
+    <span  class="name">Из шаблона:</span>
     <select v-model="localSelected" @change="updateSelection">
       <option v-for="(item, index) in items" :key="item.name" :value="index">
         {{ item.name }}

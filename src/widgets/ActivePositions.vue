@@ -1,11 +1,12 @@
 <template>
   <div>
 
-<!--    <button class="btn" @click="fetchPositions">
+<!--    <button class="btn" @click="fetchPositions2">
       Загрузить позиции
     </button>-->
 
-    <div v-for="p in ordersStore.activePositions" :key="p.guid" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; white-space: nowrap;">
+    <div v-for="p in ordersStore.activePositions" :key="p.guid"
+         style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; white-space: nowrap;">
       <span>{{p.symbol}} </span>
       <strong>{{p.volume.toFixed(2)}} руб</strong>
       <span style="margin-left: 10px;">{{p.qtyUnits}} шт</span>
@@ -44,7 +45,7 @@ export default {
   },
   methods: {
 
-    async fetchPositions() {
+    async fetchPositions2() {
       try {
         const positions = await getPositions('MOEX', 'D88141', 'Simple', false);
 
@@ -68,7 +69,7 @@ export default {
       }
     },
 
-    connectToWebSocket() {
+    connectToWebSocket2() {
       const socket = new WebSocket("wss://signalfabric.com/positions/");
 
       socket.onmessage = (event) => {
@@ -125,12 +126,8 @@ export default {
 
   },
   mounted() {
-    this.fetchPositions();
-    this.connectToWebSocket();
+    this.fetchPositions2();
+    this.connectToWebSocket2();
   },
 };
 </script>
-
-<style scoped>
-/* Минимальные стили */
-</style>

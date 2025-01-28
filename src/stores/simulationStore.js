@@ -3,49 +3,32 @@ import { defineStore } from "pinia";
 export const useSimulationStore = defineStore("simulation", {
     state: () => ({
 
-        templates: [
-            { name: "Шаблон 1", isPrimary: true }, // Основной шаблон
-            { name: "Шаблон 2", isPrimary: false }, // Основной шаблон
+        activeBotIndex: null,
+
+        bots: [
+
         ],
 
-
-        initialPrice: 10000,
-        currentPrice: 10000,
-        priceStart: 10000,
-        priceStep: 1,
-        priceStepMultiplier: 10,
-        gridStep: 20,
-        takeProfitDistance: 20,
-        levelsCount: 3,
-        volume: 10,
-        volatility: 1,
-        interval: 10,
-        enableRestore: true,
-        restoreCount: 300,
-        enableGridShift: true,
-        gridShiftIntervals: [2000, 3000, 7000],
-        enableTpShift: false,
-        maxOpenTrades: 10,
-        // Остальное состояние:
-        buyLevels: [],
-        sellOrders: [],
-        openTrades: [],
-        priceData: [],
-        remainingRestoreCount: 300,
-        closedTrades: [],
-        totalProfit: 0,
-
-        timeIndex: 0,
-        buyPoints: [],
-        sellPoints: [],
     }),
-    persist: true,
+
     actions: {
-        setConfig(key, value) {
-            this[key] = value;
+        setActiveBotIndex(index) {
+            this.activeBotIndex = index;
         },
-        resetRemainingRestoreCount() {
-            this.remainingRestoreCount = this.restoreCount;
+
+        createBot(botData) {
+            this.bots.push(botData);
+            this.setActiveBotIndex(this.bots.length - 1);
         },
+
+        deleteBot(index) {
+            this.bots.splice(index, 1);
+            if (this.activeBotIndex >= index) {
+                this.activeBotIndex = Math.max(this.activeBotIndex - 1, 0);
+            }
+        }
     },
+
+    persist: true,
+
 });

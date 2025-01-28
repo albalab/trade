@@ -1,5 +1,7 @@
 <template>
   <div>
+
+    - Last Values oBestBidPrice[MTLR]: {{dataFabricStore.lastValues.data?.MTLR.oBestBidPrice}}<br>
     - Total: {{dataFabricStore.sourceCounts.sourceTotalCount}}<br>
     - Candles: {{dataFabricStore.sourceCounts.sourceCandlesCount}}<br>
     - Trades: {{dataFabricStore.sourceCounts.sourceTradesCount}}<br>
@@ -51,6 +53,7 @@ export default {
         sourceCounts: {},
         aggregatedEvents: {},
         chunkEvents: {},
+        lastValues: {},
       };
 
       const dataFabricStoreData = data.reduce((acc, item) => {

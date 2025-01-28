@@ -4,6 +4,7 @@ export const useDataFabricStore = defineStore('dataFabric', {
     state: () => ({
         sourceCounts: {},
         aggregatedEvents: {},
+        lastValues: {},
         /*tradesMetrics: {},
         levelsStats: {},
         tradesStatistics: {},

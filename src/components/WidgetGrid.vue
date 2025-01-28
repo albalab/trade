@@ -2,19 +2,20 @@
   <div class="main-container">
 
     <div class="toolbar"
-         :style="{ borderWidth: isSidebarShow ? '200px' : '40px' }">
+         :style="{ borderWidth: baseStore.isSidebarShow ? '200px' : '40px' }">
       <div class="main-logo" style="padding-top: 5px;">
         <a href="/#/mergedcomponent">
           <img src="@/assets/main-logo.png" style="height: 21px;"/>
         </a>
+
       </div>
     </div>
 
     <div
         class="btn-settings"
-        @click="toggleSettingsPane"
+        @click="baseStore.isSidebarShow = !baseStore.isSidebarShow;"
     >
-      <i v-if="!isSidebarShow" class="fat fa-bars"></i>
+      <i v-if="!baseStore.isSidebarShow" class="fat fa-bars"></i>
       <i v-else class="fat fa-xmark"></i>
     </div>
 
@@ -22,8 +23,8 @@
         class="settings-pane"
         id="settingsPane"
         :style="{
-          boxShadow: !isSidebarShow ? 'none' : null,
-          transform: !isSidebarShow ? `translateX(-180px)` : null
+          boxShadow: !baseStore.isSidebarShow ? 'none' : null,
+          transform: !baseStore.isSidebarShow ? `translateX(-180px)` : null
         }">
 
       <div class="settings-pane-scroll">
@@ -136,7 +137,7 @@
         <div class="sidebar-footer">
         <div
             class="btn"
-            @click="toggleSettingsPane"
+            @click="baseStore.isSidebarShow = !baseStore.isSidebarShow;"
         >Закрыть</div>
       </div>
       </div>
@@ -145,14 +146,14 @@
 
 
     <div class="main-view"
-         :class="{ 'main-view-setup': isSidebarShow }"
+         :class="{ 'main-view-setup': baseStore.isSidebarShow }"
          :style="{
-          transform: `scale(${zoomValue})`, //isSidebarShow ? `scale(${zoomValue})` : null,
-          marginLeft: isSidebarShow ? '200px' : '10px',
+          transform: `scale(${zoomValue})`, //baseStore.isSidebarShow ? `scale(${zoomValue})` : null,
+          marginLeft: baseStore.isSidebarShow ? '200px' : '10px',
          }">
       <div class="lines-grid"
-           :class="{'boost': isSidebarShow}"
-           v-if="blocks.length === 0 || isSidebarShow">
+           :class="{'boost': baseStore.isSidebarShow}"
+           v-if="blocks.length === 0 || baseStore.isSidebarShow">
         <div v-for="(item, i) in parseInt(columnsCount)+1"
              :key="`v-${i}`"
              :style="{left: `${i * currentColumnWidth}px`}"
@@ -175,7 +176,7 @@
             class="widget-block"
             :class="`widget-type${blockItem.type}`"
             :style="{
-              //paddingTop: !isSidebarShow ? '6px' : '30px',
+              //paddingTop: !baseStore.isSidebarShow ? '6px' : '30px',
               gridRow: blockItem.gridRow || null,
               gridColumn: blockItem.gridColumn || null,
             }"
@@ -184,16 +185,17 @@
             @dragleave="onDragLeave(index, $event)"
             @drop.prevent="onDrop(index, $event)">
 
-          <div style="width: 100%; overflow: hidden;">
+
+          <div class="widget-title-block">
             <h3 class="widget-title"
                 :style="{
-                   paddingLeft: isSidebarShow ? '24px' : '12px'
+                   paddingLeft: baseStore.isSidebarShow ? '24px' : '12px'
                 }">
               {{blockItem.name}}
             </h3>
 
             <div
-                v-if="isSidebarShow"
+                v-if="baseStore.isSidebarShow"
                 class="drag-handle"
                 draggable="true"
                 :data-block-id="blockItem.id"
@@ -204,19 +206,25 @@
             </div>
 
             <div class="close-block"
-                 v-if="isSidebarShow"
+                 v-if="baseStore.isSidebarShow"
                  @click="removeBlock(blockItem.id)">
               <i class="fat fa-xmark"></i>
             </div>
           </div>
-          <slot :widget="blockItem"></slot>
+
+          <div class="widget-container" :class="cssClass">
+            <slot :widget="blockItem"></slot>
+          </div>
 
         </div>
       </div>
     </div>
 
+    <div class="zoom-control" v-if="!isZoomShow" @click="isZoomShow = !isZoomShow;">
+      <i class="fal fa-chevron-up"></i>
+    </div>
     <div class="zoom-slider"
-         v-if="isSidebarShow">
+         v-if="isZoomShow">
       <input
           type="range"
           :min="0"
@@ -226,25 +234,31 @@
           style="margin: 0; padding: 0;"
       />
       <div style="text-align: center; color: #fff;">{{ zoomValue.toFixed(2) }}</div>
-
-
-        <div
-            class="close-sidebar-zoom"
-            @click="toggleSettingsPane">
-          <i class="fat fa-xmark"></i>
-        </div>
-
+      <div
+          class="close-sidebar-zoom"
+          @click="isZoomShow = !isZoomShow;">
+        <i class="fat fa-xmark"></i>
+      </div>
     </div>
 
   </div>
 </template>
 
 <script>
+import {useBaseStore} from "@/stores/baseStore";
 export default {
+
+  setup() {
+    const baseStore = useBaseStore();
+
+    return { baseStore }
+  },
+
   name: "WidgetGrid",
 
   props: {
     widgetsProps: Array,
+    cssClass: String,
   },
 
   data() {
@@ -256,7 +270,8 @@ export default {
     };
 
     return {
-      isSidebarShow: false,
+      isZoomShow: false,
+      //isSidebarShow: false,
 
       widgets: this.widgetsProps,
       blocks: [],
@@ -432,11 +447,6 @@ export default {
 
       // При необходимости вызываем метод для обновления интерфейса
       this.buildBlocksArrayFromWidgets();
-    },
-
-    // Кнопка «Настройки вида»
-    toggleSettingsPane() {
-      this.isSidebarShow = !this.isSidebarShow;
     },
 
     removeBlock(blockId) {
