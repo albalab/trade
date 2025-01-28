@@ -126,8 +126,10 @@ export default {
 
   },
   mounted() {
-    this.fetchPositions2();
-    this.connectToWebSocket2();
+    if(this.$route.name !== 'workspace') {
+      this.fetchPositions2();
+      this.connectToWebSocket2();
+    }
   },
 };
 </script>

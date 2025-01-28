@@ -1,56 +1,6 @@
 <template>
   <div class="meshbot-simulator">
 
-
-
-    <div class="meshbot-section">
-      <div class="meshbot-section-header"
-           @click="toggleBlock('block3')">
-        <h2 class="title">
-          <i v-if="visibilityState['block3']"  class="fal fa-chevron-down"></i>
-          <i v-else  class="fal fa-chevron-right"></i>
-          Бот "{{currentBot.name}}"
-
-          <div class="delete-bot">
-            <div class="delete-bot-button"
-                 @click.stop="deleteBot()">
-              <i class="fal fa-trash"></i>
-            </div>
-          </div>
-        </h2>
-      </div>
-
-      <div v-show="visibilityState.block3">
-        <div class="mesh-simulation-buttons" style="position: relative;">
-          <button class="btn" @click="!inProgress ? startSimulation() : stopSimulation()">
-            <i class="fal" :class="{'fa-pause': inProgress, 'fa-play': !inProgress}"></i>
-          </button>
-          <button class="btn" @click="resetState()">
-            <i class="fal fa-repeat"></i>
-          </button>
-
-          <label class="checkbox-simulator">
-            <input class="input" type="checkbox" v-model="isGenerateData"/>
-            <span class="name">Генерировать данные</span>
-          </label>
-
-          <label class="checkbox-simulator">
-            <input class="input" type="checkbox" v-model="isRealTrade" @change="toggleRealTrade"/>
-            <span class="name">Реальная торговля</span>
-          </label>
-
-          <div style="position: absolute; right: 10px; top: 20px;">
-            <strong>Прибыль:</strong> {{ settings.totalProfit.toFixed(2) }}
-          </div>
-        </div>
-
-        <div class="chart">
-          <canvas ref="chartCanvas" width="600" height="300"></canvas>
-        </div>
-      </div>
-    </div>
-
-
     <div class="meshbot-section">
 
       <div class="meshbot-section-header"
@@ -58,7 +8,15 @@
         <h2 class="title">
           <i  v-if="visibilityState['block1']" class="fal fa-chevron-down"></i>
           <i v-else class="fal fa-chevron-right"></i>
-          Параметры бота "Базовый шаблон"
+          Параметры
+
+          <div class="delete-bot" style="text-transform: none; font-weight: normal;">
+            <div class="delete-bot-button"
+                 @click.stop="deleteBot()">
+              <i class="fal fa-trash"></i>
+              Удалить «{{currentBot.name}}»
+            </div>
+          </div>
         </h2>
       </div>
 
@@ -123,6 +81,47 @@
 
       </div>
     </div>
+
+    <div class="meshbot-section">
+      <div class="meshbot-section-header"
+           @click="toggleBlock('block3')">
+        <h2 class="title">
+          <i v-if="visibilityState['block3']"  class="fal fa-chevron-down"></i>
+          <i v-else  class="fal fa-chevron-right"></i>
+          Торговля
+        </h2>
+      </div>
+
+      <div v-show="visibilityState.block3">
+        <div class="mesh-simulation-buttons" style="position: relative;">
+          <button class="btn" @click="!inProgress ? startSimulation() : stopSimulation()">
+            <i class="fal" :class="{'fa-pause': inProgress, 'fa-play': !inProgress}"></i>
+          </button>
+          <button class="btn" @click="resetState()">
+            <i class="fal fa-repeat"></i>
+          </button>
+
+          <label class="checkbox-simulator">
+            <input class="input" type="checkbox" v-model="isGenerateData"/>
+            <span class="name">Генерировать данные</span>
+          </label>
+
+          <label class="checkbox-simulator">
+            <input class="input" type="checkbox" v-model="isRealTrade" @change="toggleRealTrade"/>
+            <span class="name">Реальная торговля</span>
+          </label>
+
+          <div style="position: absolute; right: 10px; top: 20px;">
+            <strong>Прибыль:</strong> {{ settings.totalProfit.toFixed(2) }}
+          </div>
+        </div>
+
+        <div class="chart">
+          <canvas ref="chartCanvas" width="600" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
 
     <div class="meshbot-section">
 
@@ -434,29 +433,6 @@ export default {
       ordersStore,
       dataFabricStore,
     }
-    // ========== РЕАКТИВНЫЕ ДАННЫЕ ==========
-
-
-    // ========== МЕТОДЫ ==========
-
-    /*watch(
-        activeTab,
-        (newTab) => {
-          if (newTab === 1) {
-            // Если переходим на вкладку "График", создаём график
-            nextTick(() => {
-              if (!this.chartInstance) {
-                initChartInstance();
-                updateChart();
-              }
-            });
-          } else {
-            // Если уходим с вкладки "График", уничтожаем график
-            destroyChartInstance();
-          }
-        },
-        { immediate: true }
-    );*/
 
   },
 
@@ -1236,8 +1212,8 @@ export default {
 
     async cancelAllPreviousOrders() {
       if (this.settings.enableGridShift) {
-        await this.cancelAllOrders();  // Используем имеющийся метод
-        this.placedBuyOrders = []; // Сбрасываем массив с выставленными ордерами
+        await this.cancelAllOrders();
+        this.placedBuyOrders = [];
       }
     },
 
@@ -1508,7 +1484,6 @@ export default {
     resetState() {
       console.log("Сброс состояния вызван!");
 
-      // Если боты и активный бот индекс не установлены, выходим
       if (this.simulationStore.activeBotIndex === null || !this.simulationStore.bots[this.simulationStore.activeBotIndex]) {
         console.warn("Активный бот не найден. Сброс состояния не выполнен.");
         return;
@@ -1516,7 +1491,6 @@ export default {
 
       const botSettings = this.simulationStore.bots[this.simulationStore.activeBotIndex].settings;
 
-      // Сброс всех параметров бота
       Object.assign(botSettings, {
         currentPrice: botSettings.initialPrice,
         timeIndex: 0,
@@ -1532,19 +1506,16 @@ export default {
         remainingRestoreCount: botSettings.restoreCount,
       });
 
-      // Инициализация данных для графика
       botSettings.priceData.push(
           { x: 0, y: botSettings.initialPrice },
           { x: 1, y: botSettings.initialPrice }
       );
 
-      // Инициализация уровней лимиток
       this.initBuyOrders();
 
-      // Обновление графика для отображения сброшенного состояния
       this.updateChart();
 
-      console.log("Состояние сброшено. Симуляция продолжается.");
+      console.log("Состояние сброшено.");
     },
 
     initChartInstance() {

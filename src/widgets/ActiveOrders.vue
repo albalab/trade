@@ -294,8 +294,11 @@ export default {
   },
 
   mounted() {
-    this.fetchOrders();
-    this.connectToWebSocket();
+
+    if(this.$route.name !== 'workspace'){
+      this.fetchOrders();
+      this.connectToWebSocket();
+    }
 
     setTimeout(() => {
       //this.startTimer2();

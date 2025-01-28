@@ -1,9 +1,22 @@
 <template>
   <div class="mesh-bot">
 
-    <div class="meshbot-section" style="overflow: hidden;">
+    <div v-if="$route.name === 'meshbot'">
+      <DataFabric v-show="false"/>
+      <AlorTrades v-show="false"/>
+      <AlorCandles v-show="false"/>
+      <AlorOrderbooks v-show="false"/>
+      <AlorQuotes v-show="false"/>
+    </div>
+
+<!--    <div style="padding: 20px;">
+      Meshbot context: {{$route.name}}
+    </div>-->
+
+    <div class="meshbot-section meshbot-section-main">
 
       <div class="meshbot-section-header"
+           style="border-bottom: none;"
            @click="toggleBlock('block0')">
         <h2 class="title">
           <i  v-if="visibilityState['block0']" class="fal fa-chevron-down"></i>
@@ -104,6 +117,12 @@ import {getOrders, getPositions} from "@/modules/LimitOrderModule";
 import {useSimulationStore} from "@/stores/simulationStore";
 import SimulationComponent from "@/widgets/MeshBot/components/SimulationComponent.vue";
 
+import AlorOrderbooks from "@/components/AlorOrderbooks.vue";
+import AlorCandles from "@/components/AlorCandles.vue";
+import DataFabric from "@/components/DataFabric.vue";
+import AlorQuotes from "@/components/AlorQuotes.vue";
+import AlorTrades from "@/components/AlorTrades.vue";
+
 
 export default {
   name: "MeshBotTemplate",
@@ -118,6 +137,7 @@ export default {
   },
 
   components: {
+    AlorTrades, AlorQuotes, DataFabric, AlorCandles, AlorOrderbooks,
     SimulationComponent,
   },
 
@@ -142,7 +162,8 @@ export default {
   },
 
   methods: {
-//ACTIVE ORDERS
+
+
     processOrders(orders) {
       orders.forEach((order) => {
         const { id, status } = order;
@@ -168,7 +189,6 @@ export default {
         }
       });
     },
-
 
     async fetchPositions2() {
       try {
@@ -461,14 +481,16 @@ export default {
   },
 
   mounted () {
-    //ACTIVE ORDERS
-    this.fetchOrders();
-    this.connectToWebSocket();
 
-    //ACTIVE POSITIONS
-    this.fetchPositions2();
-    this.connectToWebSocket2();
+    if(this.$route.name === 'meshbot'){
+      //ACTIVE ORDERS
+      this.fetchOrders();
+      this.connectToWebSocket();
 
+      //ACTIVE POSITIONS
+      this.fetchPositions2();
+      this.connectToWebSocket2();
+    }
 
     if (this.simulationStore.bots.length > 0) {
 

@@ -23,6 +23,7 @@ const routes = [
         component: () => import('../widgets/MarkovStockSimulation.vue')
     },
     {
+        name: "meshbot",
         path: '/meshbot',
         component: () => import('../widgets/MeshBot/MeshBot.vue')
     },
@@ -39,8 +40,9 @@ const routes = [
         component: () => import('../widgets/IntervalsTemplate.vue')
     },
     {
-        path: '/mergedcomponent',
-        component: () => import('../components/MergedComponent.vue')
+        name: 'workspace',
+        path: '/workspace',
+        component: () => import('../components/WorkspaceComponent.vue')
     },
     {
         path: '/alororderbooks',

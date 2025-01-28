@@ -242,13 +242,13 @@ import { useCandlesStore } from '@/stores/candlesStore';
 import { useTradesStore } from '@/stores/tradesStore';
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useQuotesStore } from '@/stores/quotesStore';
-
+import { useOrdersStore } from '@/stores/ordersStore';
 
 //import SessionManager from './SessionManager';
 
 import {
   //sendLimitOrder,
-  cancelAllOrders,
+  cancelAllOrders, getOrders, getPositions,
   //sendGroupLimitOrders,
   //cancelGroupOrders
 } from '../modules/LimitOrderModule.js';
@@ -286,12 +286,20 @@ export default {
   name: 'MergedComponent',
 
   setup() {
+    const ordersStore = useOrdersStore();
     const dataFabricStore = useDataFabricStore();
     const tradesStore = useTradesStore();
     const candlesStore = useCandlesStore();
     const orderbooksStore = useOrderbooksStore();
     const quotesStore = useQuotesStore();
-    return { candlesStore, tradesStore, quotesStore, orderbooksStore, dataFabricStore, }
+    return {
+      candlesStore,
+      tradesStore,
+      quotesStore,
+      orderbooksStore,
+      dataFabricStore,
+      ordersStore,
+    }
   },
 
   components: {
@@ -619,6 +627,179 @@ export default {
   },
 
   methods: {
+
+    // Подключение и обработка активных ордеров и позиций
+    processOrders(orders) {
+      orders.forEach((order) => {
+        const { id, status } = order;
+
+        if (status === "working") {
+          const existingOrder = this.ordersStore.limitOrders.find(
+              (existing) => existing.data.id === id
+          );
+
+          if (!existingOrder) {
+            // Добавляем поле orderNumber, если его нет
+            const enrichedOrder = {
+              ...order,
+              orderNumber: order.id, // Используем id как orderNumber
+            };
+
+            this.ordersStore.limitOrders.push({ data: enrichedOrder });
+          }
+        } else if (status === "canceled" || status === "filled") {
+          this.ordersStore.limitOrders = this.ordersStore.limitOrders.filter(
+              (existing) => existing.data.id !== id
+          );
+        }
+      });
+    },
+
+    async fetchPositions2() {
+      try {
+        const positions = await getPositions('MOEX', 'D88141', 'Simple', false);
+
+        console.log(positions);
+
+        // Преобразуем полученные позиции и обновляем activePositions
+        const activePositions = {};
+
+        positions.forEach((position) => {
+          // Исключаем валюту (например, RUB) и пустые позиции
+          if (position.symbol !== 'RUB' && position.currentVolume !== 0) {
+            activePositions[position.symbol] = position;
+          }
+        });
+
+        // Обновляем activePositions
+        this.ordersStore.activePositions = activePositions;
+        //this.processPositions(positions);
+      } catch (error) {
+        console.error('Ошибка при загрузке позиций:', error.message);
+      }
+    },
+
+    connectToWebSocket2() {
+      const socket = new WebSocket("wss://signalfabric.com/positions/");
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          //console.log(data);
+
+          // Проверяем, что пришли данные о позициях
+          if (data && data.data) {
+
+            if( data.data.symbol === "RUB") return;
+
+            const activePositions = { ...this.ordersStore.activePositions };
+
+            if( data.data.currentVolume == 0 ){
+              delete activePositions[data.data.symbol];
+            } else {
+              activePositions[data.data.symbol] = data.data;
+            }
+
+            this.ordersStore.activePositions = activePositions;
+            /*//console.log(data.data)
+            const positions = { ...this.ordersStore.activePositions };
+
+
+              if( data.data.currentVolume !== 0 ){
+                positions[data.data.symbol] = data.data;
+              } else {
+                //delete positions[data.data.symbol];
+              }
+
+            this.ordersStore.activePositions = positions;*/
+
+          }
+        } catch (error) {
+          console.error("Error parsing WebSocket message:", error);
+        }
+      };
+
+      socket.onopen = () => {
+        console.log("Connected to WebSocket for positions");
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+      socket.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+    },
+
+    async fetchOrders() {
+      try {
+        const orders = await getOrders('MOEX', 'D88141', 'Simple');
+
+        console.log(orders.filter(order => order.status === 'working'));
+        //console.log('Полученные заявки:', orders.filter(order => order.type === 'filled'));
+
+        this.processOrders(orders);
+
+      } catch (error) {
+        console.error('Ошибка при загрузке заявок:', error.message);
+      }
+    },
+
+    connectToWebSocket() {
+      const socket = new WebSocket("wss://signalfabric.com/orders/");
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data && data.data) {
+            const { id, status } = data.data;
+
+            setTimeout(() => {
+              if (status === "working") {
+                const existingOrder = this.ordersStore.limitOrders.find(
+                    (order) => order.data.id === id
+                );
+
+                if (!existingOrder) {
+                  // Добавляем поле orderNumber, если его нет
+                  const enrichedData = {
+                    ...data.data,
+                    orderNumber: data.data.id, // Используем id как orderNumber
+                  };
+
+                  this.ordersStore.limitOrders.push({ data: enrichedData });
+                }
+              } else if (status === "canceled" || status === "filled") {
+                this.ordersStore.limitOrders = this.ordersStore.limitOrders.filter(
+                    (order) => order.data.id !== id
+                );
+              }
+            }, 0);
+          }
+        } catch (error) {
+          console.error("Error parsing WebSocket message:", error);
+        }
+      };
+
+      socket.onopen = () => {
+        console.log("Connected to WebSocket for orders");
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+      socket.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+    },
+
+
+
+
     normalizeValue(newValue) {
       // Инициализация minValue и maxValue при первом вызове
       if (this.minValue === null || this.maxValue === null) {
@@ -1161,6 +1342,16 @@ export default {
   },
 
   mounted() {
+
+
+    //ACTIVE ORDERS
+    this.fetchOrders();
+    this.connectToWebSocket();
+
+    //ACTIVE POSITIONS
+    this.fetchPositions2();
+    this.connectToWebSocket2();
+
 
     setInterval(() => {
       this.updateSummaryData();
