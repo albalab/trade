@@ -7,10 +7,6 @@ const routes = [
         component: () => import('../widgets/ChatTemplate.vue')
     },
     {
-        path: '/bot-example',
-        component: () => import('../widgets/MeshBot/components/TradeComponent2.vue')
-    },
-    {
         path: '/beacon2',
         component: () => import('../widgets/BeaconLanguage2.vue')
     },

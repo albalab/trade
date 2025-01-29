@@ -13,7 +13,6 @@
           <div class="delete-bot" style="text-transform: none; font-weight: normal;">
             <div class="delete-bot-button"
                  @click.stop="deleteBot()">
-              <i class="fal fa-trash"></i>
               Удалить «{{currentBot.name}}»
             </div>
           </div>
@@ -83,54 +82,13 @@
     </div>
 
     <div class="meshbot-section">
-      <div class="meshbot-section-header"
-           @click="toggleBlock('block3')">
-        <h2 class="title">
-          <i v-if="visibilityState['block3']"  class="fal fa-chevron-down"></i>
-          <i v-else  class="fal fa-chevron-right"></i>
-          Торговля
-        </h2>
-      </div>
-
-      <div v-show="visibilityState.block3">
-        <div class="mesh-simulation-buttons" style="position: relative;">
-          <button class="btn" @click="!inProgress ? startSimulation() : stopSimulation()">
-            <i class="fal" :class="{'fa-pause': inProgress, 'fa-play': !inProgress}"></i>
-          </button>
-          <button class="btn" @click="resetState()">
-            <i class="fal fa-repeat"></i>
-          </button>
-
-          <label class="checkbox-simulator">
-            <input class="input" type="checkbox" v-model="isGenerateData"/>
-            <span class="name">Генерировать данные</span>
-          </label>
-
-          <label class="checkbox-simulator">
-            <input class="input" type="checkbox" v-model="isRealTrade" @change="toggleRealTrade"/>
-            <span class="name">Реальная торговля</span>
-          </label>
-
-          <div style="position: absolute; right: 10px; top: 20px;">
-            <strong>Прибыль:</strong> {{ settings.totalProfit.toFixed(2) }}
-          </div>
-        </div>
-
-        <div class="chart">
-          <canvas ref="chartCanvas" width="600" height="300"></canvas>
-        </div>
-      </div>
-    </div>
-
-
-    <div class="meshbot-section">
 
       <div class="meshbot-section-header"
            @click="toggleBlock('block2')">
         <h2 class="title">
           <i v-if="visibilityState['block2']"  class="fal fa-chevron-down"></i>
           <i v-else  class="fal fa-chevron-right"></i>
-          Генератор данных
+          Данные
         </h2>
       </div>
 
@@ -177,9 +135,51 @@
       </div>
     </div>
 
-
-
     <div class="meshbot-section">
+      <div class="meshbot-section-header"
+           @click="toggleBlock('block3')">
+        <h2 class="title">
+          <i v-if="visibilityState['block3']"  class="fal fa-chevron-down"></i>
+          <i v-else  class="fal fa-chevron-right"></i>
+          Торговля
+        </h2>
+      </div>
+
+      <div v-show="visibilityState.block3">
+        <div class="mesh-simulation-buttons" style="position: relative;">
+          <button class="btn" @click="!isTrading ? startTrade() : stopTrade()">
+            <i class="fal" :class="{'fa-pause': isTrading, 'fa-play': !isTrading}"></i>
+          </button>
+          <button class="btn" @click="resetState()">
+            <i class="fal fa-repeat"></i>
+          </button>
+
+          <label class="checkbox-simulator">
+            <input class="input" type="checkbox" v-model="isGenerateData"/>
+            <span class="name">Генерировать данные</span>
+          </label>
+
+          <label class="checkbox-simulator">
+            <input class="input" type="checkbox" v-model="isRealTrade" @change="toggleRealTrade"/>
+            <span class="name">Реальная торговля</span>
+          </label>
+
+          <div style="position: absolute; right: 10px; top: 20px;">
+            <strong>Прибыль:</strong> {{ settings.totalProfit.toFixed(2) }}
+          </div>
+        </div>
+
+        <div class="chart">
+          <canvas ref="chartCanvas" width="600" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+<!--    <div class="meshbot-section">
       <div class="meshbot-section-header"
            @click="toggleBlock('block8')">
         <h2 class="title">
@@ -192,7 +192,7 @@
       <div v-show="visibilityState['block8']">
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; grid-gap: 20px; padding: 20px;">
 
-          <!--CREATE GROUP ORDERS-->
+          &lt;!&ndash;CREATE GROUP ORDERS&ndash;&gt;
           <div>
             <ul>
               <li v-for="(order, index) in groupOrders" :key="index" style="margin: 0 0 10px;">
@@ -219,7 +219,7 @@
             </div>
           </div>
 
-          <!-- ACTIVE ORDERS -->
+          &lt;!&ndash; ACTIVE ORDERS &ndash;&gt;
           <div>
             <div class="limit-orders">
               <div class="limit-orders-head"
@@ -304,11 +304,11 @@
             </div>
           </div>
 
-          <!--ACTIVE POSITIONS-->
+          &lt;!&ndash;ACTIVE POSITIONS&ndash;&gt;
           <div>
-            <!--    <button class="btn" @click="fetchPositions2">
+            &lt;!&ndash;    <button class="btn" @click="fetchPositions2">
       Загрузить позиции
-    </button>-->
+    </button>&ndash;&gt;
 
             <div v-for="p in ordersStore.activePositions" :key="p.guid" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; white-space: nowrap;">
               <span>{{p.symbol}} </span>
@@ -316,12 +316,12 @@
               <span style="margin-left: 10px;">{{p.qtyUnits}} шт</span>
 
 
-              <!--this.dataFabricStore.lastValues.data?.MTLR.oBestBidPrice-->
+              &lt;!&ndash;this.dataFabricStore.lastValues.data?.MTLR.oBestBidPrice&ndash;&gt;
 
               <span v-if="this.orderbooksStore.orderbooksMetrics">
                 <strong v-if="this.orderbooksStore.orderbooksMetrics[p.symbol]" style="margin-left: 10px;">
                     {{((this.orderbooksStore.orderbooksMetrics[p.symbol]?.orderbookBestAskPrice * p.qtyUnits) - p.volume).toFixed(2)}} руб
-                </strong><!--{{p.qtyUnits}}, {{p.avgPrice}}<br>-->
+                </strong>&lt;!&ndash;{{p.qtyUnits}}, {{p.avgPrice}}<br>&ndash;&gt;
               </span>
 
             </div>
@@ -331,7 +331,7 @@
 
         </div>
       </div>
-    </div>
+    </div>-->
 
     <div class="meshbot-section">
       <div class="meshbot-section-header"
@@ -404,14 +404,14 @@ import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
 import zoomPlugin from 'chartjs-plugin-zoom';
-import {useSimulationStore} from "@/stores/simulationStore";
+import {useBotsStore} from "@/stores/botsStore";
 
 Chart.register(zoomPlugin);
 
 
 
 export default {
-  name: "SimulationComponent",
+  name: "MeshbotInstance",
 
   components: {
     OrdersComponent,
@@ -425,10 +425,10 @@ export default {
     const orderbooksStore = useOrderbooksStore();
 
     const dataFabricStore = useDataFabricStore();
-    const simulationStore = useSimulationStore();
+    const botsStore = useBotsStore();
 
     return {
-      simulationStore,
+      botsStore,
       orderbooksStore,
       ordersStore,
       dataFabricStore,
@@ -510,7 +510,7 @@ export default {
 
 
 
-      simulationId: null,
+      tradingId: null,
       
       isGenerateData: false,
       isRealTrade: true,
@@ -533,7 +533,7 @@ export default {
       displayMode: "all", // Режим отображения графика
       latestWindowSize: 100,
 
-      inProgress: false,
+      isTrading: false,
 
       /*config:{
         priceStep: 1,
@@ -558,10 +558,10 @@ export default {
         maxOpenTrades: 10,
       },*/
 
-      /*simulationStore:{
+      /*botsStore:{
         remainingRestoreCount: 0,
         currentPrice: 100,
-        simulationId: null,
+        tradingId: null,
         timeIndex: 0,
 
         buyLevels: [],
@@ -586,27 +586,12 @@ export default {
 
       chartInstance: null,
 
-      gridShiftTimer: null,
+      shiftMeshTimer: null,
 
     };
   },
 
   methods: {
-
-
-
-    // CREATE GROUP ORDERS
-    updateGroupOrders() {
-      const groupOrders = [...this.templateGroupOrders];
-      //console.log(groupOrders);
-      groupOrders.forEach((order) => {
-        if(!this.orderbooksStore.orderbooksMetrics) return;
-        if(this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice){
-          order.price = this.orderbooksStore.orderbooksMetrics[order.instrument.symbol]?.orderbookBestBidPrice - 1;
-        }
-      });
-
-    },
 
     async sendGroupLimitOrders(orders) {
       try {
@@ -990,81 +975,66 @@ export default {
       }
     },
 
-    shiftGrid() {
+    shiftRealMesh() {
 
+      if(!this.isTrading) return;
       if(!this.settings) return;
+      if(!this.settings.enableGridShift) return;
 
-      if (!this.settings.enableGridShift) return;
+      console.log("Смещаем сетку в соответствии с текущей ценой...");
 
-      this.log("Смещаем сетку в соответствии с текущей ценой...");
+      // Отменяем реальные лимитки
+      this.cancelAllOrders().then( () => {
 
-      const oldPriceStart = this.settings.priceStart;
-      this.settings.priceStart = this.settings.currentPrice;
+        // Стираем старые лимитки с графика
+        this.settings.buyLevels = [];
+        this.settings.linesData = this.settings.linesData.filter(line => !line.id.startsWith("BUY_"));
 
-      // Если включено смещение TP, смещаем TP у открытых сделок
-      if (this.settings.enableTpShift) {
-        const shiftValue = this.settings.priceStart - oldPriceStart;
-        for (const ot of this.settings.openTrades) {
-          // Не меняем ot.buyPrice
-          ot.takeProfit += shiftValue;
-        }
-      }
+        // Очищаем данные об установленных лимитках
+        this.placedBuyOrders = [];
 
-      // 1) Перестраиваем BUY-ордера вокруг новой priceStart
+        // Ставим новые
+        //this.setRealBuyOrders();
+
+        // Обновляем график
+        this.updateChart();
+
+        // 3) Выбираем случайный интервал до следующего смещения
+        const randomIndex = Math.floor(Math.random() * this.settings.gridShiftIntervals.length);
+        const randomInterval = this.settings.gridShiftIntervals[randomIndex];
+        this.shiftMeshTimer = setTimeout(this.shiftSimulationMesh, randomInterval);
+        console.log(`Следующее смещение через ${randomInterval} мс`);
+
+      }).catch( err => {
+        console.log(err);
+      });
+
+
+    },
+
+    shiftSimulationMesh() {
+
+      if(!this.isTrading) return;
+      if(!this.settings) return;
+      if(!this.settings.enableGridShift) return;
+
+      console.log("Смещаем сетку в соответствии с текущей ценой...");
+
+      // Стираем старые лимитки с графика
       this.settings.buyLevels = [];
       this.settings.linesData = this.settings.linesData.filter(line => !line.id.startsWith("BUY_"));
 
-      for (let i = 1; i <= this.settings.levelsCount; i++) {
-
-        if (this.settings.buyLevels.length >= this.settings.levelsCount) {
-          this.log("Превышен лимит лимиток. Новые лимитки не будут выставлены.");
-          break;
-        }
-
-        if (this.isPositionLimitReached()) {
-          this.log("Превышен лимит позиций. Новые лимитки не будут выставлены.");
-          break;
-        }
-        const levelPrice = this.roundToStep(this.settings.priceStart - i * this.settings.gridStep, this.settings.priceStep);
-        this.settings.buyLevels.push({
-          price: levelPrice,
-          volume: this.settings.volume,
-        });
-        this.settings.linesData.push({
-          id: "BUY_" + levelPrice,
-          price: levelPrice,
-          color: "rgba(255,183,77,0.7)",
-        });
-      }
-
-      // 2) Пересоздаём SELL-ордера для (уже) открытых сделок
-      this.settings.linesData = this.settings.linesData.filter(line => !line.id.startsWith("SELL_"));
-      this.settings.sellOrders = [];
-
-      for (const ot of this.settings.openTrades) {
-        const so = {
-          price: ot.takeProfit,
-          volume: ot.volume,
-          linkBuy: ot.buyPrice,
-        };
-        this.settings.sellOrders.push(so);
-        this.settings.linesData.push({
-          id: "SELL_" + so.price,
-          price: so.price,
-          color: "#9B67DB",
-        });
-      }
+      // Ставим новые лимитки как при старте
+      this.initBuyOrders();
 
       this.updateChart();
 
       // 3) Выбираем случайный интервал до следующего смещения
-      if (this.settings.enableGridShift) {
-        const randomInterval = this.settings.gridShiftIntervals[
-            Math.floor(Math.random() * this.settings.gridShiftIntervals.length)
-            ];
-        this.gridShiftTimer = setTimeout(this.shiftGrid, randomInterval);
-        this.log(`Следующее смещение через ${randomInterval} мс`);
-      }
+      const randomIndex = Math.floor(Math.random() * this.settings.gridShiftIntervals.length);
+      const randomInterval = this.settings.gridShiftIntervals[randomIndex];
+      this.shiftMeshTimer = setTimeout(this.shiftSimulationMesh, randomInterval);
+      console.log(`Следующее смещение через ${randomInterval} мс`);
+
     },
 
     isPositionLimitReached() {
@@ -1072,39 +1042,43 @@ export default {
       return this.settings.openTrades.length + this.settings.buyLevels.length >= this.settings.maxOpenTrades;
     },
 
-    startSimulation() {
-      if (this.simulationId) {
-        this.log("Симуляция уже идёт!");
+    startTrade() {
+      if (this.tradingId) {
+        console.log("Симуляция уже идёт!");
         return;
       }
-      this.log("=== START ===");
+      console.log("=== START ===");
 
-      this.inProgress = true;
+      this.isTrading = true;
 
-      this.simulationId = setInterval(this.simulate, this.settings.interval);
+      // Таймер торговли
+      this.tradingId = setInterval(this.trade, this.settings.interval);
 
-      if (this.settings.enableGridShift) {
-        this.shiftGrid();
+      // Таймер смещения сетки
+      if(this.isRealTrade) {
+        this.shiftRealMesh();
+      } else {
+        this.shiftSimulationMesh();
       }
     },
 
-    stopSimulation() {
-      if (!this.simulationId) {
-        this.log("Симуляция не запущена!");
+    stopTrade() {
+      if (!this.tradingId) {
+        console.log("Симуляция не запущена!");
         return;
       }
 
-      this.inProgress = false;
+      this.isTrading = false;
 
-      clearInterval(this.simulationId);
-      this.simulationId = null;
+      clearInterval(this.tradingId);
+      this.tradingId = null;
 
-      if (this.gridShiftTimer) {
-        clearTimeout(this.gridShiftTimer);
-        this.gridShiftTimer = null;
+      if (this.shiftMeshTimer) {
+        clearTimeout(this.shiftMeshTimer);
+        this.shiftMeshTimer = null;
       }
 
-      this.log("=== STOP ===");
+      console.log("=== STOP ===");
     },
 
     initBuyOrders() {
@@ -1122,11 +1096,11 @@ export default {
 
       for (let i = 1; i <= this.settings.levelsCount; i++) {
         if (this.settings.buyLevels.length >= this.settings.levelsCount) {
-          this.log("Превышен лимит лимиток. Новые лимитки не будут выставлены.");
+          console.log("Превышен лимит лимиток. Новые лимитки не будут выставлены.");
           break;
         }
         if (this.isPositionLimitReached()) {
-          this.log("Превышен лимит позиций. Новые позиции не будут выставлены.");
+          console.log("Превышен лимит позиций. Новые позиции не будут выставлены.");
           break;
         }
 
@@ -1145,11 +1119,6 @@ export default {
         });
       }
 
-      //console.log("LinesData after initBuyOrders:", toRaw(this.settings.linesData));
-
-      this.updateChart();
-      /*console.log("Buy levels:", this.settings.buyLevels);
-      console.log("Lines data:", this.settings.linesData);*/
     },
 
     realTrade() {
@@ -1162,8 +1131,8 @@ export default {
 
       this.settings.priceData.push({ x: this.settings.timeIndex, y: this.settings.currentPrice });
 
-      this.checkRealBuyOrders();
-      this.checkRealSellOrders();
+      this.setRealBuyOrders();
+      this.setRealSellOrders();
 
       this.updateChart();
     },
@@ -1193,13 +1162,13 @@ export default {
 
       this.settings.priceData.push({ x: this.settings.timeIndex, y: this.settings.currentPrice });
 
-      this.checkBuyOrders();
-      this.checkSellOrders();
+      this.setBuyOrders();
+      this.setSellOrders();
 
       this.updateChart();
     },
 
-    simulate() {
+    trade() {
       if(!this.settings) return;
 
       if(this.isRealTrade) {
@@ -1207,17 +1176,10 @@ export default {
       } else {
         this.simulateTrade();
       }
-
+      
     },
 
-    async cancelAllPreviousOrders() {
-      if (this.settings.enableGridShift) {
-        await this.cancelAllOrders();
-        this.placedBuyOrders = [];
-      }
-    },
-
-    checkBuyOrders() {
+    setBuyOrders() {
 
       if(!this.settings) return;
 
@@ -1228,11 +1190,11 @@ export default {
 
         if (this.settings.currentPrice <= bo.price) {
           if (this.settings.openTrades.length >= this.settings.maxOpenTrades) {
-            this.log(`Лимит открытых позиций достигнут: ${this.settings.maxOpenTrades}`);
+            console.log(`Лимит открытых позиций достигнут: ${this.settings.maxOpenTrades}`);
             return; // Останавливаем добавление новых сделок
           }
 
-          this.log(`EXEC BUY @${bo.price.toFixed(2)}, vol=${bo.volume}`);
+          console.log(`EXEC BUY @${bo.price.toFixed(2)}, vol=${bo.volume}`);
 
           this.settings.buyLevels.splice(i, 1);
           i--;
@@ -1265,14 +1227,14 @@ export default {
       }
     },
 
-    checkSellOrders() {
+    setSellOrders() {
 
       if(!this.settings) return;
 
       for (let j = 0; j < this.settings.sellOrders.length; j++) {
         const so = this.settings.sellOrders[j];
         if (this.settings.currentPrice >= so.price) {
-          this.log(`EXEC SELL @${so.price.toFixed(2)}, vol=${so.volume}`);
+          console.log(`EXEC SELL @${so.price.toFixed(2)}, vol=${so.volume}`);
 
 
           this.settings.sellOrders.splice(j, 1);
@@ -1300,12 +1262,12 @@ export default {
             // Восстановление лимитки (если включено)
             if (this.settings.enableRestore && this.settings.remainingRestoreCount > 0) {
               if (this.isPositionLimitReached()) {
-                this.log("Превышен лимит позиций и лимиток. Восстановление отменено.");
+                console.log("Превышен лимит позиций и лимиток. Восстановление отменено.");
                 return;
               }
               // Новая проверка: лимит лимиток
               if (this.settings.buyLevels.length >= this.settings.levelsCount) {
-                this.log("Превышен лимит лимиток. Восстановление отменено.");
+                console.log("Превышен лимит лимиток. Восстановление отменено.");
                 continue;
               }
 
@@ -1319,7 +1281,7 @@ export default {
                 color: "rgba(255,183,77,0.7)",
               });
               this.settings.remainingRestoreCount--;
-              this.log(
+              console.log(
                   `Restored BUY limit @${tr.buyPrice.toFixed(
                       2
                   )}. Remaining: ${this.settings.remainingRestoreCount}`
@@ -1331,11 +1293,11 @@ export default {
       }
     },
 
-    checkRealBuyOrders() {
+    setRealBuyOrders() {
+      // суть проблемы в том, что trade вызывается каждый тик, есть массив с уровнями по которым должны быть выставлены лимитки,
+      // а есть реальные лимитки на сервере. Так вот если уже поставили лимитки, тогда новые по этим ценам ставить не надо!
 
       if(!this.settings) return;
-
-      this.cancelAllPreviousOrders();
 
       for (let i = 0; i < this.settings.buyLevels.length; i++) {
 
@@ -1344,7 +1306,7 @@ export default {
         const isOrderAlreadyPlaced = this.placedBuyOrders.includes(bo.price);
 
         if (this.settings.openTrades.length >= this.settings.maxOpenTrades) {
-          this.log(`Лимит открытых позиций достигнут: ${this.settings.maxOpenTrades}`);
+          console.log(`Лимит открытых позиций достигнут: ${this.settings.maxOpenTrades}`);
           return; // Останавливаем добавление новых сделок
         }
 
@@ -1378,11 +1340,11 @@ export default {
 
         if (this.settings.currentPrice <= bo.price) {
           if (this.settings.openTrades.length >= this.settings.maxOpenTrades) {
-            this.log(`Лимит открытых позиций достигнут: ${this.settings.maxOpenTrades}`);
+            console.log(`Лимит открытых позиций достигнут: ${this.settings.maxOpenTrades}`);
             return; // Останавливаем добавление новых сделок
           }
 
-          this.log(`EXEC BUY @${bo.price.toFixed(2)}, vol=${bo.volume}`);
+          console.log(`EXEC BUY @${bo.price.toFixed(2)}, vol=${bo.volume}`);
 
           this.settings.buyLevels.splice(i, 1);
           i--;
@@ -1415,14 +1377,14 @@ export default {
       }
     },
 
-    checkRealSellOrders() {
+    setRealSellOrders() {
 
       if(!this.settings) return;
 
       for (let j = 0; j < this.settings.sellOrders.length; j++) {
         const so = this.settings.sellOrders[j];
         if (this.settings.currentPrice >= so.price) {
-          this.log(`EXEC SELL @${so.price.toFixed(2)}, vol=${so.volume}`);
+          console.log(`EXEC SELL @${so.price.toFixed(2)}, vol=${so.volume}`);
 
 
           this.settings.sellOrders.splice(j, 1);
@@ -1450,12 +1412,12 @@ export default {
             // Восстановление лимитки (если включено)
             if (this.settings.enableRestore && this.settings.remainingRestoreCount > 0) {
               if (this.isPositionLimitReached()) {
-                this.log("Превышен лимит позиций и лимиток. Восстановление отменено.");
+                console.log("Превышен лимит позиций и лимиток. Восстановление отменено.");
                 return;
               }
               // Новая проверка: лимит лимиток
               if (this.settings.buyLevels.length >= this.settings.levelsCount) {
-                this.log("Превышен лимит лимиток. Восстановление отменено.");
+                console.log("Превышен лимит лимиток. Восстановление отменено.");
                 continue;
               }
 
@@ -1469,7 +1431,7 @@ export default {
                 color: "rgba(255,183,77,0.7)",
               });
               this.settings.remainingRestoreCount--;
-              this.log(
+              console.log(
                   `Restored BUY limit @${tr.buyPrice.toFixed(
                       2
                   )}. Remaining: ${this.settings.remainingRestoreCount}`
@@ -1484,12 +1446,14 @@ export default {
     resetState() {
       console.log("Сброс состояния вызван!");
 
-      if (this.simulationStore.activeBotIndex === null || !this.simulationStore.bots[this.simulationStore.activeBotIndex]) {
+      if (this.botsStore.activeBotIndex === null || !this.botsStore.bots[this.botsStore.activeBotIndex]) {
         console.warn("Активный бот не найден. Сброс состояния не выполнен.");
         return;
       }
 
-      const botSettings = this.simulationStore.bots[this.simulationStore.activeBotIndex].settings;
+      const botSettings = this.botsStore.bots[this.botsStore.activeBotIndex].settings;
+
+      //console.log('Bot Settings', botSettings);
 
       Object.assign(botSettings, {
         currentPrice: botSettings.initialPrice,
@@ -1674,12 +1638,6 @@ export default {
 
   mounted() {
 
-    //CREATE GROUP ORDERS
-    setInterval(() => {
-      this.updateGroupOrders();
-    }, 1000);
-
-
     this.initChartInstance();
 
     this.resetState();
@@ -1696,7 +1654,7 @@ export default {
   watch: {
 
     stopBotSimulationIndex() {
-      this.stopSimulation();
+      this.stopTrade();
     },
 
     displayMode() {
@@ -1734,7 +1692,7 @@ export default {
 
   computed: {
     currentBot() {
-      return this.simulationStore.bots[this.simulationStore.activeBotIndex];
+      return this.botsStore.bots[this.botsStore.activeBotIndex];
     },
     areAllSelected() {
       return (
@@ -1743,7 +1701,8 @@ export default {
       );
     },
     settings() {
-        return this.botId ? this.simulationStore.bots[this.botId].settings :
+        return this.botId !== null && this.botId !== undefined ?
+              this.botsStore.bots[this.botId].settings :
             {
               maxOpenTrades: 20,
               initialPrice: 10000,

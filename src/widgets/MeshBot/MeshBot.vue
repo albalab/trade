@@ -55,10 +55,10 @@
               <div class="dropdown-selector">
                 <span class="name">Скопировать параметры бота:</span>
                 <select v-model="dropdownSelectedBot">
-                  <option v-if="simulationStore.bots.length === 0" value="0" disabled>
+                  <option v-if="botsStore.bots.length === 0" value="0" disabled>
                     По умолчанию
                   </option>
-                  <option v-for="(item, index) in simulationStore.bots" :key="item.name" :value="index">
+                  <option v-for="(item, index) in botsStore.bots" :key="item.name" :value="index">
                     {{ item.name }}
                   </option>
                 </select>
@@ -81,25 +81,25 @@
 
     <div style="padding: 10px 0;"></div>
 
-    <div v-if="simulationStore.bots.length === 0" class="empty-message-bots">
+    <div v-if="botsStore.bots.length === 0" class="empty-message-bots">
       Список ботов пока пуст.
     </div>
 
     <div v-else class="tabs">
       <div
-          v-for="(bot, index) in simulationStore.bots"
+          v-for="(bot, index) in botsStore.bots"
           :key="index"
           class="bot-item"
-          :class="{ active: simulationStore.activeBotIndex === index }"
+          :class="{ active: botsStore.activeBotIndex === index }"
           @click="switchTab(index)"
       >
         {{ bot.name }}
       </div>
     </div>
 
-    <div v-for="(bot, index) in simulationStore.bots" :key="bot.name">
-      <div v-show="simulationStore.activeBotIndex === index">
-        <SimulationComponent
+    <div v-for="(bot, index) in botsStore.bots" :key="bot.name">
+      <div v-show="botsStore.activeBotIndex === index">
+        <MeshbotInstance
             :stopBotSimulationIndex="stopBotSimulationIndex"
             :botId="index"
             @delete-bot="deleteBot(index)" />
@@ -114,8 +114,8 @@ import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useOrdersStore } from '@/stores/ordersStore';
 import {getOrders, getPositions} from "@/modules/LimitOrderModule";
 
-import {useSimulationStore} from "@/stores/simulationStore";
-import SimulationComponent from "@/widgets/MeshBot/components/SimulationComponent.vue";
+import {useBotsStore} from "@/stores/botsStore";
+import MeshbotInstance from "@/widgets/MeshBot/components/MeshbotInstance.vue";
 
 import AlorOrderbooks from "@/components/AlorOrderbooks.vue";
 import AlorCandles from "@/components/AlorCandles.vue";
@@ -131,14 +131,14 @@ export default {
       const ordersStore = useOrdersStore();
       const orderbooksStore = useOrderbooksStore();
 
-    const simulationStore = useSimulationStore();
+    const botsStore = useBotsStore();
 
-    return { simulationStore, orderbooksStore, ordersStore, };
+    return { botsStore, orderbooksStore, ordersStore, };
   },
 
   components: {
     AlorTrades, AlorQuotes, DataFabric, AlorCandles, AlorOrderbooks,
-    SimulationComponent,
+    MeshbotInstance,
   },
 
   data() {
@@ -334,7 +334,7 @@ export default {
 
 
     getNextBotIndex(ticker) {
-      const botsWithTicker = this.simulationStore.bots.filter(bot => bot.ticker === ticker);
+      const botsWithTicker = this.botsStore.bots.filter(bot => bot.ticker === ticker);
       const indices = botsWithTicker.map(bot => {
         const match = bot.name.match(/\d+$/);
         return match ? parseInt(match[0], 10) : 0;
@@ -345,11 +345,11 @@ export default {
 
     switchTab(index) {
       this.stopBotSimulationIndex = index;
-      this.simulationStore.setActiveBotIndex(index);
+      this.botsStore.setActiveBotIndex(index);
     },
 
     deleteBot(index) {
-      if (index < 0 || index >= this.simulationStore.bots.length) return;
+      if (index < 0 || index >= this.botsStore.bots.length) return;
 
       this.stopBotSimulationIndex = null;
 
@@ -358,40 +358,40 @@ export default {
         this.stopBotSimulationIndex = index;
 
 
-        this.simulationStore.bots.splice(index, 1);
+        this.botsStore.bots.splice(index, 1);
 
-        if (this.simulationStore.activeBotIndex === index) {
-          if (this.simulationStore.bots.length > 0) {
+        if (this.botsStore.activeBotIndex === index) {
+          if (this.botsStore.bots.length > 0) {
             // Выбираем предыдущего или последнего, если удаляется последний
-            const newActiveIndex = Math.min(index, this.simulationStore.bots.length - 1);
-            this.simulationStore.activeBotIndex = newActiveIndex;
+            const newActiveIndex = Math.min(index, this.botsStore.bots.length - 1);
+            this.botsStore.activeBotIndex = newActiveIndex;
             this.switchTab(newActiveIndex);
           } else {
-            this.simulationStore.activeBotIndex = null;
+            this.botsStore.activeBotIndex = null;
           }
-        } else if (this.simulationStore.activeBotIndex > index) {
+        } else if (this.botsStore.activeBotIndex > index) {
           // Корректируем индекс активного бота, если он был смещён
-          this.simulationStore.activeBotIndex -= 1;
+          this.botsStore.activeBotIndex -= 1;
         }
 
         // Если остались боты, выделяем новый активный
-        if (this.simulationStore.bots.length > 0) {
-          const newActiveIndex = Math.min(index, this.simulationStore.bots.length - 1);
-          this.simulationStore.activeBotIndex = newActiveIndex;
+        if (this.botsStore.bots.length > 0) {
+          const newActiveIndex = Math.min(index, this.botsStore.bots.length - 1);
+          this.botsStore.activeBotIndex = newActiveIndex;
           this.switchTab(newActiveIndex); // Переходим на новый активный бот
         } else {
-          this.simulationStore.activeBotIndex = null;
+          this.botsStore.activeBotIndex = null;
         }
 
         // Если текущий выбранный бот в селекторе параметров удалён
-        if (this.dropdownSelectedBot === index || this.simulationStore.bots.length === 0) {
+        if (this.dropdownSelectedBot === index || this.botsStore.bots.length === 0) {
           this.dropdownSelectedBot = 0; // Переключаем на базовый шаблон
         } else if (this.dropdownSelectedBot > index) {
           this.dropdownSelectedBot -= 1; // Корректируем индекс
         }
 
         // Если ботов больше нет, гарантируем, что селектор параметров указывает на базовый шаблон
-        if (this.simulationStore.bots.length === 0) {
+        if (this.botsStore.bots.length === 0) {
           this.dropdownSelectedBot = 0; // Установить базовый шаблон
         }
       }, 0);
@@ -444,7 +444,7 @@ export default {
 
       // Получаем выбранные параметры из другого бота, если он выбран
       const selectedConfig = this.dropdownSelectedBot > 0
-          ? this.simulationStore.bots[this.dropdownSelectedBot - 1] // -1, чтобы учитывать, что первый элемент в списке - "по умолчанию"
+          ? this.botsStore.bots[this.dropdownSelectedBot - 1] // -1, чтобы учитывать, что первый элемент в списке - "по умолчанию"
           : null;
 
       // Устанавливаем параметры, используя выбранные, если есть, иначе по умолчанию
@@ -463,10 +463,10 @@ export default {
         name: botName,
         settings: newBotSettings,
       };
-      this.simulationStore.bots.push(newBot);
+      this.botsStore.bots.push(newBot);
       
-      this.simulationStore.activeBotIndex = this.simulationStore.bots.length - 1;  // Выделяем только что созданного бота
-      this.switchTab(this.simulationStore.activeBotIndex); // Переход на новую вкладку бота
+      this.botsStore.activeBotIndex = this.botsStore.bots.length - 1;  // Выделяем только что созданного бота
+      this.switchTab(this.botsStore.activeBotIndex); // Переход на новую вкладку бота
     },
 
     toggleBlock(blockId) {
@@ -476,7 +476,7 @@ export default {
 
   computed: {
     activeBotIndex() {
-      return this.simulationStore.bots[this.simulationStore.activeBotIndex];
+      return this.botsStore.bots[this.botsStore.activeBotIndex];
     }
   },
 
@@ -492,11 +492,14 @@ export default {
       this.connectToWebSocket2();
     }
 
-    if (this.simulationStore.bots.length > 0) {
+    if (this.botsStore.bots.length > 0) {
 
 
-      //this.simulationStore.activeBotIndex = 0;
+      //this.botsStore.activeBotIndex = 0;
     }
+
+    console.log('Selected bot', this.botsStore.activeBotIndex);
+
   },
 
 };

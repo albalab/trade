@@ -859,7 +859,7 @@ input:checked + .slider:before {
 }
 .mesh-bot .tabs .active{
     color: white;
-    background: #5f6c95;
+    background: #515d81;
 }
 .mesh-bot .bot-item{
     display: inline-block;
@@ -1072,7 +1072,7 @@ input:checked + .slider:before {
     position: relative;
     line-height: 12px;
     padding: 6px 10px 7px;
-    background: #5f6c95;
+    background: #515d81;
     cursor: pointer;
     margin-bottom: 1px;
     user-select: none;
@@ -1120,7 +1120,7 @@ input:checked + .slider:before {
 }
 .delete-bot-button{
     display: inline-block;
-    color: #FF9494;
+    color: #f99e9e;
     cursor: pointer;
     line-height: 20px;
     user-select: none;
