@@ -11,7 +11,12 @@
 
     <button class="btn"
             @click="sendGroupLimitOrders()">
-      Создать лимитки
+      sendGroupLimitOrders
+    </button>
+
+    <button class="btn"
+            @click="sendLimitOrder(7, 112, 'MTLR', 'MOEX', 'buy', 'D81141', 'MTLR 1' )">
+      sendLimitOrder
     </button>
 
     <div style="padding-top: 6px;">
@@ -30,7 +35,6 @@
 
 <script>
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
-import { sendGroupLimitOrders } from "@/modules/LimitOrderModule";
 import { useOrdersStore } from '@/stores/ordersStore';
 
 export default {
@@ -96,9 +100,13 @@ export default {
 
     },
 
+    async sendLimitOrder(volume, price, ticker, exchange, side, portfolio, extra ) {
+      await this.ordersStore.sendLimitOrder(volume, price, ticker, exchange, side, portfolio, extra );
+    },
+
     async sendGroupLimitOrders() {
       try {
-        const result = await sendGroupLimitOrders(this.groupOrders);
+        const result = await this.ordersStore.sendGroupLimitOrders(this.groupOrders);
 
         const newOrders = result.data.map((order, index) => {
           if (order.data?.message === "success" && order.data?.orderNumber) {

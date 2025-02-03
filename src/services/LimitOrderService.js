@@ -1,5 +1,12 @@
 'use strict';
 
+/**
+ * чистый сервис с набором функций для REST-запросов,
+ * только REST-запросы на бэкенд и никакой логики
+ * по обработке полученных данных
+ * (кроме самой простой валидации)
+ * */
+
 export async function getPositions(exchange, portfolio, format = 'Simple', withoutCurrency = false) {
     try {
         const response = await fetch('https://signalfabric.com/get-positions', {

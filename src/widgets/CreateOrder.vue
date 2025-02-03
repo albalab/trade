@@ -11,9 +11,19 @@
 </template>
 
 <script>
-import {sendLimitOrder} from "@/modules/LimitOrderModule";
+
+import { useOrdersStore } from '@/stores/ordersStore';
 
 export default {
+
+  setup(){
+    const ordersStore = useOrdersStore();
+
+    return {
+      ordersStore
+    }
+  },
+
   data(){return {
     sideOrder: 'buy',
     priceOrder: null,
@@ -23,8 +33,8 @@ export default {
   methods: {
     async sendLimitOrder(volume, price, ticker, exchange, side, portfolio) {
       try {
-        await sendLimitOrder(volume, price, ticker, exchange, side, portfolio);
-        //console.log("Лимитный ордер отправлен:", result);
+        const result = await this.ordersStore.sendLimitOrder(volume, price, ticker, exchange, side, portfolio);
+        console.log("Лимитный ордер отправлен:", result);
       } catch (error) {
         console.error("Ошибка при отправке лимитного ордера:", error.message);
       }

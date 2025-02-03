@@ -20,11 +20,13 @@
           <i class="fat fa-xmark"></i>
         </div>
       </div>
+
       <div
           v-for="item in ordersStore.limitOrders"
-          :key="item.data.id"
+          :key="item.data.orderNumber"
           class="limit-orders-row"
       >
+
         <div class="limit-order">
           <label class="checkbox-label">
 
@@ -34,13 +36,13 @@
                 <input
                     class="checkbox"
                     type="checkbox"
-                    :value="item.data?.orderNumber"
+                    :value="item.data.orderNumber"
                     v-model="selectedOrders"
                 />
               </div>
 
               <div>
-                {{ item?.data?.symbol }}
+                {{ item.data.orderNumber }}
               </div>
 
               <div style="white-space: nowrap;">
@@ -49,6 +51,10 @@
 
               <div style="padding: 0 20px; white-space: nowrap;">
                 {{item.data.qty}} шт
+              </div>
+
+              <div style="padding: 0 20px; white-space: nowrap;">
+                {{item.data.botId}}
               </div>
             </div>
 
@@ -86,15 +92,7 @@
 </template>
 
 <script>
-import {cancelGroupOrders, getOrders } from "@/modules/LimitOrderModule";
 import { useOrdersStore } from "@/stores/ordersStore";
-
-import {
-  //sendLimitOrder,
-  cancelAllOrders,
-  //sendGroupLimitOrders,
-  //cancelGroupOrders
-} from '../modules/LimitOrderModule.js';
 
 export default {
   name: "ActiveOrders",
@@ -144,7 +142,7 @@ export default {
 
     async fetchOrders() {
       try {
-        const orders = await getOrders('MOEX', 'D88141', 'Simple');
+        const orders = await this.ordersStore.getOrders('MOEX', 'D88141', 'Simple');
 
         console.log(orders.filter(order => order.status === 'working'));
         //console.log('Полученные заявки:', orders.filter(order => order.type === 'filled'));
@@ -160,7 +158,7 @@ export default {
       try {
         const exchange = 'MOEX'; // Укажите биржу
         const portfolio = 'D88141'; // Укажите портфель
-        await cancelAllOrders(exchange, portfolio).then(() => {
+        await this.ordersStore.cancelAllOrders(exchange, portfolio).then(() => {
           this.ordersStore.limitOrders = [];
         });
 
@@ -239,7 +237,7 @@ export default {
           stop: false,
         };
 
-        const response = await cancelGroupOrders(params);
+        const response = await this.ordersStore.cancelGroupOrders(params);
 
         if (response.success) {
           const ordersToRemove = response.data.map((order) => order.orderId);
@@ -295,14 +293,6 @@ export default {
 
   mounted() {
 
-    if(this.$route.name !== 'workspace'){
-      this.fetchOrders();
-      this.connectToWebSocket();
-    }
-
-    setTimeout(() => {
-      //this.startTimer2();
-    }, 5000);
   },
 
   computed: {

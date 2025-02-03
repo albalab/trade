@@ -17,6 +17,15 @@
       Meshbot context: {{$route.name}}
     </div>-->
 
+    <div>
+      <button @click='meshbotStore.placeBuyOrder(activeBot.name, 200, 10)'>placeBuyOrder</button>
+      <button @click='meshbotStore.cancelBotOrders(activeBot.name)'>cancelBotOrders</button>
+    </div>
+
+    <div>
+      {{meshbotStore.getBotBuyOrders(activeBot.name)}}
+    </div>
+
     <div class="meshbot-section meshbot-section-main">
 
       <div class="meshbot-section-header"
@@ -115,11 +124,12 @@
 </template>
 
 <script>
+import { v4 as uuidv4 } from 'uuid';
+
 import OrderManager from "@/components/OrderManager.vue";
 
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useOrdersStore } from '@/stores/ordersStore';
-//import {getOrders, getPositions} from "@/modules/LimitOrderModule";
 
 import {useMeshbotStore} from "@/stores/meshbotStore";
 import MeshbotInstance from "@/widgets/MeshBot/components/MeshbotInstance.vue";
@@ -144,6 +154,7 @@ const defaultSettingsBot = {
   enableTpShift: false,
   totalProfit: 0,
 
+  placedBuyOrdersIds: [],
   placedBuyOrders: [], //Реально размещенные на бирже актуальные ордера бота.
 
   buyLevels: [], //Уровни цен согласно логике сеточника
@@ -226,6 +237,7 @@ export default {
 
       const botName = `${this.selectedTicker} ${nextIndex}`;
       const newBot = {
+        id: uuidv4(),
         market: selectedConfig?.market || this.selectedMarket,
         board: selectedConfig?.board || this.selectedBoard,
         ticker: selectedConfig?.ticker || this.selectedTicker,
@@ -237,185 +249,6 @@ export default {
       this.meshbotStore.activeBotIndex = this.meshbotStore.bots.length - 1;  // Выделяем только что созданного бота
       this.switchTab(this.meshbotStore.activeBotIndex); // Переход на новую вкладку бота
     },
-
-    /*processOrders(orders) {
-      orders.forEach((order) => {
-        const { id, status } = order;
-
-        if (status === "working") {
-          const existingOrder = this.ordersStore.limitOrders.find(
-              (existing) => existing.data.id === id
-          );
-
-          if (!existingOrder) {
-            // Добавляем поле orderNumber, если его нет
-            const enrichedOrder = {
-              ...order,
-              orderNumber: order.id, // Используем id как orderNumber
-            };
-
-            this.ordersStore.limitOrders.push({ data: enrichedOrder });
-          }
-        } else if (status === "canceled" || status === "filled") {
-          this.ordersStore.limitOrders = this.ordersStore.limitOrders.filter(
-              (existing) => existing.data.id !== id
-          );
-        }
-      });
-    },
-
-    async fetchPositions() {
-      try {
-        const positions = await getPositions('MOEX', 'D88141', 'Simple', false);
-
-        console.log(positions);
-
-        // Преобразуем полученные позиции и обновляем activePositions
-        const activePositions = {};
-
-        positions.forEach((position) => {
-          // Исключаем валюту (например, RUB) и пустые позиции
-          if (position.symbol !== 'RUB' && position.currentVolume !== 0) {
-            activePositions[position.symbol] = position;
-          }
-        });
-
-        // Обновляем activePositions
-        this.ordersStore.activePositions = activePositions;
-        //this.processPositions(positions);
-      } catch (error) {
-        console.error('Ошибка при загрузке позиций:', error.message);
-      }
-    },
-
-    connectToWebSocketPositions() {
-      const socket = new WebSocket("wss://signalfabric.com/positions/");
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-
-          //console.log(data);
-
-          // Проверяем, что пришли данные о позициях
-          if (data && data.data) {
-
-            if( data.data.symbol === "RUB") return;
-
-            const activePositions = { ...this.ordersStore.activePositions };
-
-            if( data.data.currentVolume == 0 ){
-              delete activePositions[data.data.symbol];
-            } else {
-              activePositions[data.data.symbol] = data.data;
-            }
-
-            this.ordersStore.activePositions = activePositions;
-            /!*!//console.log(data.data)
-            const positions = { ...this.ordersStore.activePositions };
-
-
-              if( data.data.currentVolume !== 0 ){
-                positions[data.data.symbol] = data.data;
-              } else {
-                //delete positions[data.data.symbol];
-              }
-
-            this.ordersStore.activePositions = positions;*!/
-
-          }
-        } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
-        }
-      };
-
-      socket.onopen = () => {
-        console.log("Connected to WebSocket for positions");
-      };
-
-      socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-
-      socket.onclose = () => {
-        console.log("WebSocket connection closed");
-      };
-    },
-
-    async fetchAll() {
-      try {
-        const orders = await getOrders('MOEX', 'D88141', 'Simple');
-        const positions = await getPositions('MOEX', 'D88141', 'Simple', false);
-        return { orders, positions };
-      } catch (error) {
-        console.log(error);
-      }
-    },
-
-    async fetchOrders() {
-      try {
-        const orders = await getOrders('MOEX', 'D88141', 'Simple');
-
-        console.log(orders.filter(order => order.status === 'working'));
-        //console.log('Полученные заявки:', orders.filter(order => order.type === 'filled'));
-
-        this.processOrders(orders);
-
-      } catch (error) {
-        console.error('Ошибка при загрузке заявок:', error.message);
-      }
-    },
-
-    connectToWebSocketOrders() {
-      const socket = new WebSocket("wss://signalfabric.com/orders/");
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-
-          if (data && data.data) {
-            const { id, status } = data.data;
-
-            setTimeout(() => {
-              if (status === "working") {
-                const existingOrder = this.ordersStore.limitOrders.find(
-                    (order) => order.data.id === id
-                );
-
-                if (!existingOrder) {
-                  // Добавляем поле orderNumber, если его нет
-                  const enrichedData = {
-                    ...data.data,
-                    orderNumber: data.data.id, // Используем id как orderNumber
-                  };
-
-                  this.ordersStore.limitOrders.push({ data: enrichedData });
-                }
-              } else if (status === "canceled" || status === "filled") {
-                this.ordersStore.limitOrders = this.ordersStore.limitOrders.filter(
-                    (order) => order.data.id !== id
-                );
-              }
-            }, 0);
-          }
-        } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
-        }
-      };
-
-      socket.onopen = () => {
-        console.log("Connected to WebSocket for orders");
-      };
-
-      socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-
-      socket.onclose = () => {
-        console.log("WebSocket connection closed");
-      };
-    },*/
-
 
     getNextBotIndex(ticker) {
       const botsWithTicker = this.meshbotStore.bots.filter(bot => bot.ticker === ticker);
@@ -488,34 +321,12 @@ export default {
   },
 
   computed: {
-    activeBotIndex() {
+    activeBot() {
       return this.meshbotStore.bots[this.meshbotStore.activeBotIndex];
     }
   },
 
   mounted () {
-
-    /*this.fetchAll()
-        .then( result => {
-          console.log("Fetch all", result);
-        })
-        .catch( error => {
-          console.log(error);
-        });*/
-
-    /*if(this.$route.name === 'meshbot'){
-
-      this.fetchOrders();
-      this.connectToWebSocketOrders();
-      this.fetchPositions();
-      this.connectToWebSocketPositions();
-    }*/
-
-    if (this.meshbotStore.bots.length > 0) {
-
-
-      //this.meshbotStore.activeBotIndex = 0;
-    }
 
     console.log('Selected bot', this.meshbotStore.activeBotIndex);
 

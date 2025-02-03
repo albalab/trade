@@ -245,7 +245,7 @@ import OrdersComponent from "@/widgets/MeshBot/components/OrdersComponent.vue";
 import HistoryComponent from "@/widgets/MeshBot/components/HistoryComponent.vue";
 import ChartComponent from './ChartComponent.vue';
 
-import {sendGroupLimitOrders, cancelGroupOrders, cancelAllOrders } from "@/modules/LimitOrderModule";
+import {sendGroupLimitOrders, cancelGroupOrders, cancelAllOrders } from "@/services/LimitOrderService";
 
 
 export default {

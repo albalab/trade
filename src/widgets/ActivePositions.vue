@@ -25,9 +25,6 @@
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useOrdersStore } from '@/stores/ordersStore';
 
-import { getPositions } from "@/modules/LimitOrderModule";
-//import { getOrders } from '../modules/LimitOrderModule.js';
-
 export default {
 
   name: "ActivePositions",
@@ -47,7 +44,7 @@ export default {
 
     async fetchPositions2() {
       try {
-        const positions = await getPositions('MOEX', 'D88141', 'Simple', false);
+        const positions = await this.ordersStore.getPositions('MOEX', 'D88141', 'Simple', false);
 
         console.log(positions);
 
@@ -126,10 +123,7 @@ export default {
 
   },
   mounted() {
-    if(this.$route.name !== 'workspace') {
-      this.fetchPositions2();
-      this.connectToWebSocket2();
-    }
+
   },
 };
 </script>
