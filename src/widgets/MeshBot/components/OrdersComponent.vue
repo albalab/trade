@@ -33,8 +33,8 @@
           </thead>
           <tbody>
           <tr v-for="index in minRows" :key="'sell-' + index">
-            <td>{{ sellOrders[index - 1]?.price?.toFixed(2) || '' }}</td>
-            <td>{{ sellOrders[index - 1]?.volume || '' }}</td>
+            <td>{{ profitLevels[index - 1]?.price?.toFixed(2) || '' }}</td>
+            <td>{{ profitLevels[index - 1]?.volume || '' }}</td>
           </tr>
           </tbody>
         </table>
@@ -69,7 +69,7 @@
 export default {
   props: {
     buyLevels: Array,
-    sellOrders: Array,
+    profitLevels: Array,
     openTrades: Array,
   },
   computed: {
@@ -77,7 +77,7 @@ export default {
     minRows() {
       const maxRows = Math.max(
           this.buyLevels.length,
-          this.sellOrders.length,
+          this.profitLevels.length,
           this.openTrades.length
       );
       return Math.max(maxRows, 5); // Минимум 5 строк

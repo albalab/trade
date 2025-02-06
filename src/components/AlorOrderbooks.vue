@@ -13,7 +13,7 @@ import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { tickersSteps } from '../tickersSteps.js';
 import { tickers } from '../tickers.js';
 import StatisticRenderer from "@/components/StatisticRenderer.vue";
-import webSocketService from "@/services/WebSocketService";
+import webSocketService from "@/services/webSocketService";
 
 export default {
   name: 'alor-order-book',

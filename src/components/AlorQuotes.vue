@@ -13,7 +13,7 @@ import { useQuotesStore } from '@/stores/quotesStore';
 import {tickers} from "@/tickers";
 import {tickersSteps} from "@/tickersSteps";
 import StatisticRenderer from "@/components/StatisticRenderer.vue";
-import webSocketService from "@/services/WebSocketService";
+import webSocketService from "@/services/webSocketService";
 
 export default {
   name: "alor-quotes",

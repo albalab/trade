@@ -16,7 +16,7 @@
 import { useDataFabricStore } from '@/stores/dataFabricStore';
 
 //import { tickers, tickersSteps } from "@/tickers";
-import webSocketService from "@/services/WebSocketService";
+import webSocketService from "@/services/webSocketService";
 
 export default {
   name: "alor-data-fabric",

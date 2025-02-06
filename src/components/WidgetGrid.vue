@@ -13,10 +13,11 @@
 
     <div
         class="btn-settings"
+        :style="{background: !baseStore.isSidebarShow ? '#2b3041' : 'none'}"
         @click="baseStore.isSidebarShow = !baseStore.isSidebarShow;"
     >
-      <i v-if="!baseStore.isSidebarShow" class="fat fa-bars"></i>
-      <i v-else class="fat fa-xmark"></i>
+      <i v-if="!baseStore.isSidebarShow" class="fat fa-sidebar"></i>
+      <i v-else class="fat fa-sidebar"></i>
     </div>
 
     <div

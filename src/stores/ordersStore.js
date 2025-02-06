@@ -1,5 +1,10 @@
-/*
+
 import { defineStore } from 'pinia';
+import { useMeshbotStore } from '@/stores/meshbotStore';
+
+const meshbotStore = useMeshbotStore();
+
+import { v4 as uuidv4 } from 'uuid';
 
 import {
     getPositions,
@@ -12,136 +17,6 @@ import {
 
 export const useOrdersStore = defineStore('ordersStore', {
     state: () => ({
-        activePositions: [
-            /!*{
-                "volume": 11994.55,
-                "currentVolume": 11950,
-                "symbol": "EUTR",
-                "brokerSymbol": "MOEX:EUTR",
-                "portfolio": "D88141",
-                "exchange": "MOEX",
-                "avgPrice": 119.9455,
-                "qtyUnits": 100,
-                "openUnits": 0,
-                "lotSize": 1,
-                "shortName": "ЕвроТранс",
-                "qtyT0": 0,
-                "qtyT1": 100,
-                "qtyT2": 100,
-                "qtyTFuture": 100,
-                "qtyT0Batch": 0,
-                "qtyT1Batch": 100,
-                "qtyT2Batch": 100,
-                "qtyTFutureBatch": 100,
-                "qtyBatch": 100,
-                "openQtyBatch": 0,
-                "qty": 100,
-                "open": 0,
-                "dailyUnrealisedPl": 90,
-                "unrealisedPl": -34.55,
-                "isCurrency": false,
-                "existing": false
-            },
-            {
-                "SBER": {
-                    "volume": 2769.1,
-                    "currentVolume": 2769,
-                    "symbol": "SBER",
-                    "brokerSymbol": "MOEX:SBER",
-                    "portfolio": "D88141",
-                    "exchange": "MOEX",
-                    "avgPrice": 276.91,
-                    "qtyUnits": 10,
-                    "openUnits": 0,
-                    "lotSize": 10,
-                    "shortName": "Сбербанк",
-                    "qtyT0": 0,
-                    "qtyT1": 10,
-                    "qtyT2": 10,
-                    "qtyTFuture": 10,
-                    "qtyT0Batch": 0,
-                    "qtyT1Batch": 1,
-                    "qtyT2Batch": 1,
-                    "qtyTFutureBatch": 1,
-                    "qtyBatch": 1,
-                    "openQtyBatch": 0,
-                    "qty": 1,
-                    "open": 0,
-                    "dailyUnrealisedPl": 25.3,
-                    "unrealisedPl": -0.1,
-                    "isCurrency": false,
-                    "existing": false
-                }
-            },
-            {
-                "MTLR": {
-                    "volume": 103.18,
-                    "currentVolume": 103.17,
-                    "symbol": "MTLR",
-                    "brokerSymbol": "MOEX:MTLR",
-                    "portfolio": "D88141",
-                    "exchange": "MOEX",
-                    "avgPrice": 103.18,
-                    "qtyUnits": 1,
-                    "openUnits": 0,
-                    "lotSize": 1,
-                    "shortName": "Мечел ао",
-                    "qtyT0": 0,
-                    "qtyT1": 1,
-                    "qtyT2": 1,
-                    "qtyTFuture": 1,
-                    "qtyT0Batch": 0,
-                    "qtyT1Batch": 1,
-                    "qtyT2Batch": 1,
-                    "qtyTFutureBatch": 1,
-                    "qtyBatch": 1,
-                    "openQtyBatch": 0,
-                    "qty": 1,
-                    "open": 0,
-                    "dailyUnrealisedPl": 0,
-                    "unrealisedPl": 0,
-                    "isCurrency": false,
-                    "existing": false
-                }
-            },*!/
-        ],
-
-        limitOrders: [
-            /!*{
-          data: {
-            symbol: "SBER",
-            orderNumber: 3214543,
-          }
-        },
-        {
-          data: {
-            symbol: "LKOH",
-            orderNumber: 3214547,
-          }
-        }*!/
-        ]
-
-    }),
-});
-*/
-
-
-// src/stores/ordersStore.js
-
-import { defineStore } from 'pinia';
-import { v4 as uuidv4 } from 'uuid';
-
-import {
-    getPositions,
-    getOrders,
-    sendGroupLimitOrders,
-    cancelGroupOrders,
-    cancelAllOrders,
-    //sendLimitOrder,
-} from '@/services/LimitOrderService';
-
-export const useOrdersStore = defineStore('ordersStore', {
-    state: () => ({
         limitOrders: [],
         activePositions: {},
         // другие нужные поля...
@@ -150,12 +25,14 @@ export const useOrdersStore = defineStore('ordersStore', {
     }),
 
     actions: {
-        processOrders(orders) {
+        /*processOrders(orders) {
             orders.forEach((order) => {
                 const { id, status } = order;
 
                 if (status === 'working') {
-                    const existingOrder = this.limitOrders.find((o) => o.data.id === id);
+                    const existingOrder = this.limitOrders.find((o) => o.data.id === id || o.data.orderNumber === order.id);
+
+                    //const existingOrder = this.limitOrders.find((o) => o.data.id === id);
                     if (!existingOrder) {
                         const enrichedOrder = {
                             ...order,
@@ -164,7 +41,43 @@ export const useOrdersStore = defineStore('ordersStore', {
                         this.limitOrders.push({ data: enrichedOrder });
                     }
                 } else if (status === 'canceled' || status === 'filled') {
-                    this.limitOrders = this.limitOrders.filter((o) => o.data.id !== id);
+                    //this.limitOrders = this.limitOrders.filter((o) => o.data.id !== id);
+
+
+                    // Чтобы watcher увидел изменения и перерисовал график.
+                    // Найти существующий ордер
+                    /!*const idx = this.limitOrders.findIndex(o => o.data.id === id);
+                    if (idx > -1) {
+                        // Обновляем статус ордера (или добавляем флаг)
+                        this.limitOrders[idx].data.pendingToWatcherStatus = status;
+                        // После короткой задержки удаляем ордер (например, через 500 мс)
+                        setTimeout(() => {
+                            this.limitOrders = this.limitOrders.filter((o) => o.data.id !== id);
+                        }, 10);
+                    }*!/
+                }
+            });
+        },*/
+
+        processOrders(orders) {
+            orders.forEach((order) => {
+                const { id, status } = order;
+
+                if (status === 'working' || status === 'filled') {
+                    // Ищем существующий ордер
+                    const existingOrder = this.limitOrders.find(o => o.data.id === id || o.data.orderNumber === order.id);
+
+                    if (existingOrder) {
+                        // Обновляем только статус
+                        existingOrder.data.status = status;
+                    } else {
+                        // Если ордера нет – добавляем его с текущим статусом
+                        const enrichedOrder = {
+                            ...order,
+                            orderNumber: order.id,
+                        };
+                        this.limitOrders.push({ data: enrichedOrder });
+                    }
                 }
             });
         },
@@ -216,24 +129,108 @@ export const useOrdersStore = defineStore('ordersStore', {
             }
         },
 
-        // Методы для отправки/отмены ордеров
-        async sendGroupLimitOrders(orders) {
-            return await sendGroupLimitOrders(orders);
+
+        async sendGroupLimitOrders(orders, extra = {}) {
+            const response = await sendGroupLimitOrders(orders);
+
+            orders.forEach( order => {
+                //console.log('ORDER', order);
+
+                /*{
+                    "side": "buy",
+                    "quantity": 1,
+                    "price": 108.2,
+                    "instrument": {
+                    "symbol": "MTLR",
+                        "exchange": "MOEX",
+                        "instrumentGroup": "TQBR"
+                },
+                    "user": {
+                    "portfolio": "D88141"
+                },
+                    "timeInForce": "oneday"
+                }*/
+
+                const newOrder = {
+                    ...response.data,
+                    status: 'working',
+                    side: 'buy',
+                    quantity: 1,
+                    ticker: order.symbol,
+                    exchange: "MOEX",
+                    price: order.price,
+                    volume: 1,
+                    qty: 1,
+                    // ...можно добавить поле botId, если передали extra.botId
+                    botId: extra ?? null
+                };
+                this.limitOrders.push({ data: newOrder });
+
+            });
+            /*const newOrder = {
+                ...response.data,
+                status: 'working',
+                side,
+                ticker,
+                exchange,
+                price,
+                volume,
+                qty: 1,
+                // ...можно добавить поле botId, если передали extra.botId
+                botId: extra ?? null
+            };
+            this.limitOrders.push({ data: newOrder });*/
+
+            //console.log('orderStore: sendGroupLimitOrders', extra, response);
+            return response;
         },
 
-        async cancelAllOrders(exchange, portfolio) {
-            return await cancelAllOrders(exchange, portfolio);
-        },
         async sendLimitOrder(volume, price, ticker, exchange, side, portfolio, extra = {}) {
-            //const response = await sendLimitOrder(volume, price, ticker, exchange, side, portfolio);
+
+            //LimitOrderService.sendLimitOrder(volume, price, ticker, exchange, side, portfolio)
+            const response = await sendLimitOrder(volume, price, ticker, exchange, side, portfolio);
+
+            //console.log(response);
             // допустим, вернулся { success: true, data: { orderNumber: '12345', message: 'OK' } }
 
-            let response = { success: true, data: { orderNumber: uuidv4(), message: 'OK' } };
+            //let response = { success: true, data: { orderNumber: uuidv4(), message: 'OK' } };
 
-
+            if(!response?.data?.orderNumber) return;
 
             // 2) Сохраняем заявку в state (или дождёмся WebSocket?)
             // Но обычно сохраняем сразу с минимальным набором данных:
+            const newOrder = {
+                ...response.data,
+                status: 'working',
+                side,
+                ticker,
+                exchange,
+                price,
+                volume,
+                qty: 1,
+                botId: extra ?? null,
+                orderNumber: response?.data?.orderNumber || uuidv4()
+            };
+            if (!this.limitOrders.some(order => order.data.orderNumber === newOrder.orderNumber)) {
+                this.limitOrders.push({ data: newOrder });
+            }
+            //this.limitOrders.push({ data: newOrder });
+
+            const bot = meshbotStore.bots.find(b => b.name === extra);
+            if (bot && !bot.placedBuyOrdersIds.includes(newOrder.orderNumber)) {
+                bot.placedBuyOrdersIds.push(newOrder.orderNumber);
+            }
+
+            //console.log(extra);
+
+            return newOrder;
+        },
+
+        async sendLimitBuyOrder(volume, price, ticker, exchange, side, portfolio, extra = {}) {
+            const response = await sendLimitOrder(volume, price, ticker, exchange, side, portfolio);
+
+            if(!response?.data?.orderNumber) return;
+
             const newOrder = {
                     ...response.data,
                     status: 'working',
@@ -243,21 +240,72 @@ export const useOrdersStore = defineStore('ordersStore', {
                     price,
                     volume,
                     qty: 1,
-                    // ...можно добавить поле botId, если передали extra.botId
-                    botId: extra ?? null
+                    botId: extra ?? null,
+                    orderNumber: response?.data?.orderNumber || uuidv4()
             };
-            this.limitOrders.push({ data: newOrder });
+            if (!this.limitOrders.some(order => order.data.orderNumber === newOrder.orderNumber)) {
+                this.limitOrders.push({ data: newOrder });
+            }
+            //this.limitOrders.push({ data: newOrder });
 
-            console.log(extra);
+            const bot = meshbotStore.bots.find(b => b.name === extra);
+            if (newOrder.side === 'buy' && bot && !bot.placedBuyOrdersIds.includes(newOrder.orderNumber)) {
+                bot.placedBuyOrdersIds.push(newOrder.orderNumber);
+            }
+
+            //console.log(extra);
 
             return newOrder;
+        },
+
+        async cancelAllOrders(exchange, portfolio) {
+            this.limitOrders = [];
+            return await cancelAllOrders(exchange, portfolio);
+        },
+
+        async cancelBotBuyOrders(botName) {
+            const bot = meshbotStore.bots.find(b => b.name === botName);
+            if (!bot) return;
+
+            if (!bot.placedBuyOrdersIds?.length) return;
+
+            console.log('Meshbot: Cancel Bot Orders: ', bot.placedBuyOrdersIds);
+
+            await this.cancelGroupOrders({
+                orderIds: bot.placedBuyOrdersIds,
+                portfolio: 'D88141',
+                exchange: 'MOEX',
+                stop: false,
+            });
+
+            bot.placedBuyOrdersIds = [];
+
+        },
+
+        async cancelBotOrders(botName) {
+            const bot = meshbotStore.bots.find(b => b.name === botName);
+            if (!bot) return;
+
+            if (!bot.placedBuyOrdersIds?.length) return;
+
+            console.log('Meshbot: Cancel Bot Orders: ', bot.placedBuyOrdersIds);
+
+            await this.cancelGroupOrders({
+                orderIds: bot.placedBuyOrdersIds,
+                portfolio: 'D88141',
+                exchange: 'MOEX',
+                stop: false,
+            });
+
+            bot.placedBuyOrdersIds = [];
+
         },
 
         async cancelGroupOrders(payload) {
 
             const orderIds = [...payload.orderIds];
 
-            console.log(orderIds);
+            console.log('meshbotStore: cancelGroupOrders ', orderIds);
 
             const response = await cancelGroupOrders(payload);
 
@@ -291,7 +339,7 @@ export const useOrdersStore = defineStore('ordersStore', {
 
         },
 
-        // Подключение к WebSocket по заявкам
+
         connectToWebSocketOrders() {
 
             if (this.socketOrders) return;
@@ -323,7 +371,6 @@ export const useOrdersStore = defineStore('ordersStore', {
             };
         },
 
-        // Подключение к WebSocket по позициям
         connectToWebSocketPositions() {
 
             if (this.socketPositions) return;

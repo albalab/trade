@@ -15,7 +15,7 @@
     </button>
 
     <button class="btn"
-            @click="sendLimitOrder(7, 112, 'MTLR', 'MOEX', 'buy', 'D81141', 'MTLR 1' )">
+            @click="sendLimitOrder(1, 108.4, 'MTLR', 'MOEX', 'buy', 'D88141', 'MTLR 1' )">
       sendLimitOrder
     </button>
 
@@ -53,6 +53,7 @@ export default {
 
     groupOrders: [
       {
+        botId: 'MTLR 1',
         side: "buy",
         quantity: 1,
         price: null,

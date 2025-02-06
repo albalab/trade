@@ -8,7 +8,7 @@
 import { useCandlesStore } from '@/stores/candlesStore';
 
 import { tickers, tickersSteps } from "@/tickers";
-import webSocketService from "@/services/WebSocketService";
+import webSocketService from "@/services/webSocketService";
 
 export default {
   name: "alor-candles",

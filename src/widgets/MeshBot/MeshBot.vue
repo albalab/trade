@@ -17,15 +17,6 @@
       Meshbot context: {{$route.name}}
     </div>-->
 
-    <div>
-      <button @click='meshbotStore.placeBuyOrder(activeBot.name, 200, 10)'>placeBuyOrder</button>
-      <button @click='meshbotStore.cancelBotOrders(activeBot.name)'>cancelBotOrders</button>
-    </div>
-
-    <div>
-      {{meshbotStore.getBotBuyOrders(activeBot.name)}}
-    </div>
-
     <div class="meshbot-section meshbot-section-main">
 
       <div class="meshbot-section-header"
@@ -113,6 +104,8 @@
     <div v-for="(bot, index) in meshbotStore.bots" :key="bot.name">
       <div v-show="meshbotStore.activeBotIndex === index">
         <MeshbotInstance
+            :bot="bot"
+            :botName="bot.name"
             :isActiveBot="meshbotStore.activeBotIndex === index"
             :stopBotFromParentIndex="stopBotFromParentIndex"
             :botId="index"
@@ -124,7 +117,7 @@
 </template>
 
 <script>
-import { v4 as uuidv4 } from 'uuid';
+//import { v4 as uuidv4 } from 'uuid';
 
 import OrderManager from "@/components/OrderManager.vue";
 
@@ -132,7 +125,7 @@ import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useOrdersStore } from '@/stores/ordersStore';
 
 import {useMeshbotStore} from "@/stores/meshbotStore";
-import MeshbotInstance from "@/widgets/MeshBot/components/MeshbotInstance.vue";
+import MeshbotInstance from "@/widgets/MeshBot/MeshbotInstance.vue";
 
 import AlorOrderbooks from "@/components/AlorOrderbooks.vue";
 import AlorCandles from "@/components/AlorCandles.vue";
@@ -144,7 +137,7 @@ const defaultSettingsBot = {
   maxOpenTrades: 10,
   initialPrice: 10000,
   currentPrice: 10000,
-  gridStep: 5,
+  gridStep: 20,
   levelsCount: 3,
   volume: 1,
   takeProfitDistance: 10,
@@ -154,12 +147,11 @@ const defaultSettingsBot = {
   enableTpShift: false,
   totalProfit: 0,
 
-  placedBuyOrdersIds: [],
-  placedBuyOrders: [], //Реально размещенные на бирже актуальные ордера бота.
-
   buyLevels: [], //Уровни цен согласно логике сеточника
 
-  sellOrders: [],
+  placedProfitOrders: [],
+
+  profitLevels: [],
   openTrades: [],
   closedTrades: [],
 
@@ -170,12 +162,12 @@ const defaultSettingsBot = {
   remainingRestoreCount: 300,
   linesData: [],
 
-  gridShiftIntervals: [31000, 61000, 101000 ], // 11000, 31000, 61000, 101000
+  gridShiftIntervals: [19000, 31000 ], // 11000, 31000, 61000, 101000
 
   priceStep: 1,
   priceStepMultiplier: 10,
   volatility: 1,
-  interval: 50,
+  interval: 1000,
 
   priceStart: 10000,
 
@@ -236,14 +228,19 @@ export default {
       const nextIndex = this.getNextBotIndex(this.selectedTicker);
 
       const botName = `${this.selectedTicker} ${nextIndex}`;
+
       const newBot = {
-        id: uuidv4(),
+        //id: uuidv4(),
+
+        placedBuyOrdersIds: [],
+
         market: selectedConfig?.market || this.selectedMarket,
         board: selectedConfig?.board || this.selectedBoard,
         ticker: selectedConfig?.ticker || this.selectedTicker,
         name: botName,
         settings: newBotSettings,
       };
+
       this.meshbotStore.bots.push(newBot);
 
       this.meshbotStore.activeBotIndex = this.meshbotStore.bots.length - 1;  // Выделяем только что созданного бота
@@ -261,7 +258,7 @@ export default {
     },
 
     switchTab(index) {
-      this.stopBotFromParentIndex = index;
+      //this.stopBotFromParentIndex = index;
       this.meshbotStore.setActiveBotIndex(index);
     },
 
@@ -321,9 +318,7 @@ export default {
   },
 
   computed: {
-    activeBot() {
-      return this.meshbotStore.bots[this.meshbotStore.activeBotIndex];
-    }
+
   },
 
   mounted () {

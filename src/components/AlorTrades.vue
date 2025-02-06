@@ -18,7 +18,7 @@ import { useTradesStore } from '@/stores/tradesStore';
 import StatisticRenderer from "./StatisticRenderer.vue";
 import { tickersSteps } from '../tickersSteps.js';
 import LevelsRenderer from "./LevelsRenderer.vue";
-import webSocketService from "@/services/WebSocketService";
+import webSocketService from "@/services/webSocketService";
 
 export default {
   name: 'alor-trades',

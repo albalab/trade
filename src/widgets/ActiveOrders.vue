@@ -3,7 +3,7 @@
     
     <div class="limit-orders">
       <div class="limit-orders-head"
-           v-if="ordersStore.limitOrders.length"
+           v-if="activeLimitOrders.length"
            style="position: relative; min-height: 10px;">
         <label class="checkbox-label">
           <input
@@ -22,7 +22,7 @@
       </div>
 
       <div
-          v-for="item in ordersStore.limitOrders"
+          v-for="item in activeLimitOrders"
           :key="item.data.orderNumber"
           class="limit-orders-row"
       >
@@ -296,6 +296,10 @@ export default {
   },
 
   computed: {
+    activeLimitOrders() {
+      return this.ordersStore.limitOrders.filter(order => order.status === 'working');
+    },
+
     areAllSelected() {
       return (
           this.selectedOrders.length === this.ordersStore.limitOrders.length &&

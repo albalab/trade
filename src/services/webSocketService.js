@@ -1,4 +1,4 @@
-// services/WebSocketService.js
+// services/webSocketService.js
 
 import pako from "pako";
 import msgpack from 'msgpack-lite';

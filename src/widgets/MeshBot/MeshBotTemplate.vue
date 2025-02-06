@@ -123,7 +123,7 @@
                     </div>
                   </td>
                   <td>
-                    <div v-for="so in state.sellOrders" :key="so.price">
+                    <div v-for="so in state.profitLevels" :key="so.price">
                       @{{ so.price.toFixed(2) }} x {{ so.volume }}
                     </div>
                   </td>
@@ -214,7 +214,7 @@ export default {
       timeIndex: 0,
 
       buyLevels: [],
-      sellOrders: [],
+      profitLevels: [],
       openTrades: [],
       closedTrades: [],
       totalProfit: 0,
@@ -303,7 +303,7 @@ export default {
 
       // 2) Пересоздаём SELL-ордера для (уже) открытых сделок
       state.linesData = state.linesData.filter(line => !line.id.startsWith("SELL_"));
-      state.sellOrders = [];
+      state.profitLevels = [];
 
       for (const ot of state.openTrades) {
         const so = {
@@ -311,7 +311,7 @@ export default {
           volume: ot.volume,
           linkBuy: ot.buyPrice,
         };
-        state.sellOrders.push(so);
+        state.profitLevels.push(so);
         state.linesData.push({
           id: "SELL_" + so.price,
           price: so.price,
@@ -405,7 +405,7 @@ export default {
       state.timeIndex = 0;
 
       state.buyLevels = [];
-      state.sellOrders = [];
+      state.profitLevels = [];
       state.openTrades = [];
       state.closedTrades = [];
       state.totalProfit = 0;
@@ -449,7 +449,7 @@ export default {
       state.priceData.push({ x: state.timeIndex, y: state.currentPrice });
 
       checkBuyOrders();
-      checkSellOrders();
+      checkprofitLevels();
 
       updateChart();
     }
@@ -482,7 +482,7 @@ export default {
             volume: trade.volume,
             linkBuy: trade.buyPrice,
           };
-          state.sellOrders.push(so);
+          state.profitLevels.push(so);
 
           state.linesData.push({
             id: "SELL_" + so.price,
@@ -494,12 +494,12 @@ export default {
     }
 
 
-    function checkSellOrders() {
-      for (let j = 0; j < state.sellOrders.length; j++) {
-        const so = state.sellOrders[j];
+    function checkprofitLevels() {
+      for (let j = 0; j < state.profitLevels.length; j++) {
+        const so = state.profitLevels[j];
         if (state.currentPrice >= so.price) {
           log(`EXEC SELL @${so.price.toFixed(2)}, vol=${so.volume}`);
-          state.sellOrders.splice(j, 1);
+          state.profitLevels.splice(j, 1);
           j--;
           removeLine("SELL_" + so.price);
 

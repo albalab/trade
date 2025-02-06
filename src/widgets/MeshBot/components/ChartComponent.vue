@@ -364,7 +364,7 @@ export default defineComponent({
       const rawLines = toRaw(settings.linesData);
 
       const buyPrices = settings.buyLevels.map(level => level.price);
-      const sellPrices = settings.sellOrders.map(order => order.price);
+      const sellPrices = settings.profitLevels.map(order => order.price);
 
       // Применяем фильтр в зависимости от режима
       let filteredPriceData;
