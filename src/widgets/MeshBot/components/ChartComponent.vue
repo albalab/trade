@@ -269,11 +269,7 @@ export default defineComponent({
 
   data() {
     return {
-      interval: 500,
-      chartInstance: null,
-      chartUpdateTimer: null,
-      displayMode: 'all',
-      latestWindowSize: 100,
+
     };
   },
 
@@ -316,34 +312,34 @@ export default defineComponent({
         return;
       }
       const ctx = this.$refs.chartCanvas.getContext("2d");
-      this.chartInstance = markRaw(new Chart(ctx, chartConfig));
+      this.meshbotStore.chartInstance = markRaw(new Chart(ctx, chartConfig));
     },
     destroyChartInstance() {
-      if (this.chartInstance) {
-        this.chartInstance.destroy();
-        this.chartInstance = null;
+      if (this.meshbotStore.chartInstance) {
+        this.meshbotStore.chartInstance.destroy();
+        this.meshbotStore.chartInstance = null;
       }
     },
     updateChartSize() {
-      if (this.chartInstance) {
+      if (this.meshbotStore.chartInstance) {
         const canvas = this.$refs.chartCanvas;
         if (canvas) {
           canvas.width = canvas.parentElement.offsetWidth;
           canvas.height = canvas.parentElement.offsetHeight;
-          this.chartInstance.resize();
+          this.meshbotStore.chartInstance.resize();
         }
       }
     },
     startChartUpdate() {
       this.updateChart(); // Первоначальное обновление
-      if (!this.chartUpdateTimer) {
-        this.chartUpdateTimer = setInterval(this.updateChart, this.interval); // Интервал обновления графика
+      if (!this.meshbotStore.chartUpdateTimer) {
+        this.meshbotStore.chartUpdateTimer = setInterval(this.updateChart, this.meshbotStore.interval); // Интервал обновления графика
       }
     },
     stopChartUpdate() {
-      if (this.chartUpdateTimer) {
-        clearInterval(this.chartUpdateTimer);
-        this.chartUpdateTimer = null;
+      if (this.meshbotStore.chartUpdateTimer) {
+        clearInterval(this.meshbotStore.chartUpdateTimer);
+        this.meshbotStore.chartUpdateTimer = null;
       }
     },
     cleanUpChart() {
@@ -352,7 +348,7 @@ export default defineComponent({
     },
     updateChart() {
       // Проверяем, инициализирован ли график
-      if (!this.chartInstance) return;
+      if (!this.meshbotStore.chartInstance) return;
 
       const bots = this.meshbotStore.bots;
       const activeBotIndex = this.meshbotStore.activeBotIndex;
@@ -368,19 +364,19 @@ export default defineComponent({
 
       // Применяем фильтр в зависимости от режима
       let filteredPriceData;
-      if (this.displayMode === "latest") {
-        filteredPriceData = rawPriceData.slice(-this.latestWindowSize);
+      if (this.meshbotStore.displayMode === "latest") {
+        filteredPriceData = rawPriceData.slice(-this.meshbotStore.latestWindowSize);
       } else {
         filteredPriceData = rawPriceData;
       }
 
-      this.chartInstance.data.datasets[0].data = filteredPriceData;
+      this.meshbotStore.chartInstance.data.datasets[0].data = filteredPriceData;
 
       // Устанавливаем границы оси X
       const xMin = filteredPriceData.length > 0 ? filteredPriceData[0].x : 0;
       const xMax = filteredPriceData.length > 0 ? filteredPriceData[filteredPriceData.length - 1].x : 0;
-      this.chartInstance.options.scales.x.min = xMin;
-      this.chartInstance.options.scales.x.max = xMax;
+      this.meshbotStore.chartInstance.options.scales.x.min = xMin;
+      this.meshbotStore.chartInstance.options.scales.x.max = xMax;
 
       const visibleYValues = [
         ...filteredPriceData.map(p => p.y),
@@ -392,8 +388,8 @@ export default defineComponent({
       // Расчёт минимального и максимального значения Y
       const yMin = Math.min(...visibleYValues) - 1; // Padding в 1 пункт
       const yMax = Math.max(...visibleYValues) + 1;
-      this.chartInstance.options.scales.y.min = yMin;
-      this.chartInstance.options.scales.y.max = yMax;
+      this.meshbotStore.chartInstance.options.scales.y.min = yMin;
+      this.meshbotStore.chartInstance.options.scales.y.max = yMax;
 
       const verticalTrades = [];
 
@@ -409,9 +405,9 @@ export default defineComponent({
       linesPoints.push({x: settings.timeIndex + 5, y: settings.currentPrice, customColor: "white"});
       linesPoints.push({x: null, y: null});
 
-      this.chartInstance.data.datasets[1].data = linesPoints;
+      this.meshbotStore.chartInstance.data.datasets[1].data = linesPoints;
       // Привязываем цвет каждой линии к её значению
-      this.chartInstance.data.datasets[1].segment = {
+      this.meshbotStore.chartInstance.data.datasets[1].segment = {
         borderColor: ctx => {
           const lineData = ctx.p1.raw;
           return lineData?.customColor || "rgba(146,30,255,0.7)";
@@ -431,8 +427,8 @@ export default defineComponent({
         verticalTrades.push({x: null, y: null});
       }
 
-      this.chartInstance.data.datasets[4].data = verticalTrades;
-      this.chartInstance.data.datasets[4].segment = {
+      this.meshbotStore.chartInstance.data.datasets[4].data = verticalTrades;
+      this.meshbotStore.chartInstance.data.datasets[4].segment = {
         borderColor: ctx => {
           const lineData = ctx.p1.raw;
           return lineData?.customColor || "gray";
@@ -444,7 +440,7 @@ export default defineComponent({
       };
 
       // Обновляем график
-      this.chartInstance.update();
+      this.meshbotStore.chartInstance.update();
     },
   },
 });

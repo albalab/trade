@@ -4,6 +4,12 @@ import { defineStore } from "pinia";
 export const useMeshbotStore = defineStore("meshbot", {
     state: () => ({
 
+        interval: 500,
+        chartInstance: null,
+        chartUpdateTimer: null,
+        displayMode: 'all',
+        latestWindowSize: 100,
+
         activeBotIndex: null,
 
 
