@@ -4,7 +4,7 @@ import { useMeshbotStore } from '@/stores/meshbotStore';
 
 const meshbotStore = useMeshbotStore();
 
-import { v4 as uuidv4 } from 'uuid';
+//import { v4 as uuidv4 } from 'uuid';
 
 import {
     getPositions,
@@ -23,6 +23,12 @@ export const useOrdersStore = defineStore('ordersStore', {
         socketOrders: null,
         socketPositions: null,
     }),
+
+    getters: {
+        limitOrdersWorking(state) {
+            return state.limitOrders.filter(order => order.data.status === 'working')
+        },
+    },
 
     actions: {
         /*processOrders(orders) {
@@ -61,11 +67,22 @@ export const useOrdersStore = defineStore('ordersStore', {
 
         processOrders(orders) {
             orders.forEach((order) => {
-                const { id, status } = order;
+
+                // Нормализуем - добавляем orderNumber из id
+                if (!order.orderNumber && order.id) {
+                    order.orderNumber = order.id;
+                }
+                // Если по-прежнему нет orderNumber — пропускаем этот ордер
+                if (!order.orderNumber) return;
+
+                const { orderNumber, status } = order;
 
                 if (status === 'working' || status === 'filled') {
-                    // Ищем существующий ордер
-                    const existingOrder = this.limitOrders.find(o => o.data.id === id || o.data.orderNumber === order.id);
+
+                    const existingOrder = this.limitOrders.find(o => o.data.orderNumber === orderNumber);
+                    if (!existingOrder && !order.botId) {
+                        return;
+                    }
 
                     if (existingOrder) {
                         // Обновляем только статус
@@ -74,10 +91,15 @@ export const useOrdersStore = defineStore('ordersStore', {
                         // Если ордера нет – добавляем его с текущим статусом
                         const enrichedOrder = {
                             ...order,
-                            orderNumber: order.id,
+                            orderNumber: orderNumber,
                         };
                         this.limitOrders.push({ data: enrichedOrder });
                     }
+                } else if (status === 'canceled') {
+                    // Удаляем ордер с canceled статусом
+                    this.limitOrders = this.limitOrders.filter(o =>
+                        o.data.orderNumber !== orderNumber
+                    );
                 }
             });
         },
@@ -134,22 +156,6 @@ export const useOrdersStore = defineStore('ordersStore', {
             const response = await sendGroupLimitOrders(orders);
 
             orders.forEach( order => {
-                //console.log('ORDER', order);
-
-                /*{
-                    "side": "buy",
-                    "quantity": 1,
-                    "price": 108.2,
-                    "instrument": {
-                    "symbol": "MTLR",
-                        "exchange": "MOEX",
-                        "instrumentGroup": "TQBR"
-                },
-                    "user": {
-                    "portfolio": "D88141"
-                },
-                    "timeInForce": "oneday"
-                }*/
 
                 const newOrder = {
                     ...response.data,
@@ -161,44 +167,23 @@ export const useOrdersStore = defineStore('ordersStore', {
                     price: order.price,
                     volume: 1,
                     qty: 1,
-                    // ...можно добавить поле botId, если передали extra.botId
                     botId: extra ?? null
                 };
                 this.limitOrders.push({ data: newOrder });
 
             });
-            /*const newOrder = {
-                ...response.data,
-                status: 'working',
-                side,
-                ticker,
-                exchange,
-                price,
-                volume,
-                qty: 1,
-                // ...можно добавить поле botId, если передали extra.botId
-                botId: extra ?? null
-            };
-            this.limitOrders.push({ data: newOrder });*/
 
-            //console.log('orderStore: sendGroupLimitOrders', extra, response);
             return response;
         },
 
         async sendLimitOrder(volume, price, ticker, exchange, side, portfolio, extra = {}) {
 
-            //LimitOrderService.sendLimitOrder(volume, price, ticker, exchange, side, portfolio)
             const response = await sendLimitOrder(volume, price, ticker, exchange, side, portfolio);
 
-            //console.log(response);
-            // допустим, вернулся { success: true, data: { orderNumber: '12345', message: 'OK' } }
-
-            //let response = { success: true, data: { orderNumber: uuidv4(), message: 'OK' } };
+            // Пример response { success: true, data: { orderNumber: '12345', message: 'OK' } }
 
             if(!response?.data?.orderNumber) return;
 
-            // 2) Сохраняем заявку в state (или дождёмся WebSocket?)
-            // Но обычно сохраняем сразу с минимальным набором данных:
             const newOrder = {
                 ...response.data,
                 status: 'working',
@@ -208,20 +193,18 @@ export const useOrdersStore = defineStore('ordersStore', {
                 price,
                 volume,
                 qty: 1,
-                botId: extra ?? null,
-                orderNumber: response?.data?.orderNumber || uuidv4()
+                botId: extra ?? null
             };
             if (!this.limitOrders.some(order => order.data.orderNumber === newOrder.orderNumber)) {
                 this.limitOrders.push({ data: newOrder });
-            }
-            //this.limitOrders.push({ data: newOrder });
 
-            const bot = meshbotStore.bots.find(b => b.name === extra);
-            if (bot && !bot.placedBuyOrdersIds.includes(newOrder.orderNumber)) {
-                bot.placedBuyOrdersIds.push(newOrder.orderNumber);
-            }
+                /*const bot = meshbotStore.bots.find(b => b.name === extra);
+                if(!bot) return;
+                if (!bot.placedBuyOrdersIds.includes(newOrder.orderNumber)) {
+                    bot.placedBuyOrdersIds.push(newOrder.orderNumber);
+                }*/
 
-            //console.log(extra);
+            }
 
             return newOrder;
         },
@@ -241,19 +224,18 @@ export const useOrdersStore = defineStore('ordersStore', {
                     volume,
                     qty: 1,
                     botId: extra ?? null,
-                    orderNumber: response?.data?.orderNumber || uuidv4()
+                    orderNumber: response.data.orderNumber
             };
             if (!this.limitOrders.some(order => order.data.orderNumber === newOrder.orderNumber)) {
                 this.limitOrders.push({ data: newOrder });
-            }
-            //this.limitOrders.push({ data: newOrder });
 
-            const bot = meshbotStore.bots.find(b => b.name === extra);
-            if (newOrder.side === 'buy' && bot && !bot.placedBuyOrdersIds.includes(newOrder.orderNumber)) {
-                bot.placedBuyOrdersIds.push(newOrder.orderNumber);
-            }
+                /*const bot = meshbotStore.bots.find(b => b.name === extra);
+                if(!bot) return;
+                if (newOrder.side === 'buy' && !bot.placedBuyOrdersIds.includes(newOrder.orderNumber)) {
+                    bot.placedBuyOrdersIds.push(newOrder.orderNumber);
+                }*/
 
-            //console.log(extra);
+            }
 
             return newOrder;
         },
@@ -267,18 +249,30 @@ export const useOrdersStore = defineStore('ordersStore', {
             const bot = meshbotStore.bots.find(b => b.name === botName);
             if (!bot) return;
 
-            if (!bot.placedBuyOrdersIds?.length) return;
+            //if (!bot.placedBuyOrdersIds?.length) return;
 
-            console.log('Meshbot: Cancel Bot Orders: ', bot.placedBuyOrdersIds);
+            const myBuyOrderNumbers = this.limitOrders
+                .filter(o =>
+                    o.data.botId === botName &&
+                    o.data.side === 'buy' &&
+                    o.data.status === 'working')
+                .map(o => o.data.orderNumber);
+
+             if(!myBuyOrderNumbers.length) {
+                   console.log('Нет ордеров на покупку для бота:', botName);
+                   return;
+             }
+
+            console.log('Meshbot: Cancel Bot Orders: ', myBuyOrderNumbers);
 
             await this.cancelGroupOrders({
-                orderIds: bot.placedBuyOrdersIds,
+                orderIds: myBuyOrderNumbers,
                 portfolio: 'D88141',
                 exchange: 'MOEX',
                 stop: false,
             });
 
-            bot.placedBuyOrdersIds = [];
+            //bot.placedBuyOrdersIds = [];
 
         },
 
@@ -286,18 +280,27 @@ export const useOrdersStore = defineStore('ordersStore', {
             const bot = meshbotStore.bots.find(b => b.name === botName);
             if (!bot) return;
 
-            if (!bot.placedBuyOrdersIds?.length) return;
+            //if (!bot.placedBuyOrdersIds?.length) return;
 
-            console.log('Meshbot: Cancel Bot Orders: ', bot.placedBuyOrdersIds);
+            const myOrderNumbers = this.limitOrders
+                .filter(o =>
+                    o.data.botId === botName &&
+                    o.data.status === 'working'
+                )
+                .map(o => o.data.orderNumber);
+
+            if (!myOrderNumbers.length) return;
+
+            console.log('Meshbot: Cancel Bot Orders: ', myOrderNumbers);
 
             await this.cancelGroupOrders({
-                orderIds: bot.placedBuyOrdersIds,
+                orderIds: myOrderNumbers,
                 portfolio: 'D88141',
                 exchange: 'MOEX',
                 stop: false,
             });
 
-            bot.placedBuyOrdersIds = [];
+            //bot.placedBuyOrdersIds = [];
 
         },
 

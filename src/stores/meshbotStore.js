@@ -1,12 +1,41 @@
 import { defineStore } from "pinia";
 //import { useOrdersStore } from '@/stores/ordersStore';
 
+const defaultSettingsBot = {
+    maxOpenTrades: 10,
+    initialPrice: 10000,
+    currentPrice: 10000,
+    gridStep: 20,
+    levelsCount: 3,
+    volume: 1,
+    takeProfitDistance: 10,
+    enableRestore: true,
+    restoreCount: 300,
+    enableGridShift: true,
+    enableTpShift: false,
+    totalProfit: 0,
+    buyLevels: [],
+    placedProfitOrders: [],
+    profitLevels: [],
+    openTrades: [],
+    closedTrades: [],
+    timeIndex: 0,
+    buyPoints: [],
+    sellPoints: [],
+    remainingRestoreCount: 300,
+    linesData: [],
+    gridShiftIntervals: [19000, 31000],
+    priceStep: 1,
+    priceStepMultiplier: 10,
+    volatility: 1,
+    interval: 1000,
+    priceStart: 10000,
+    priceData: [],
+};
+
 export const useMeshbotStore = defineStore("meshbot", {
     state: () => ({
 
-        interval: 500,
-        chartInstance: null,
-        chartUpdateTimer: null,
         displayMode: 'all',
         latestWindowSize: 100,
 
@@ -51,10 +80,49 @@ export const useMeshbotStore = defineStore("meshbot", {
             this.activeBotIndex = index;
         },
 
-        createBot(botData) {
+        createBot({ market, board, ticker }) {
+            // Генерируем имя нового бота
+            const botsWithTicker = this.bots.filter(bot => bot.ticker === ticker);
+            const indices = botsWithTicker.map(bot => {
+                const match = bot.name.match(/\d+$/);
+                return match ? parseInt(match[0], 10) : 0;
+            });
+            const nextIndex = indices.length ? Math.max(...indices) + 1 : 1;
+            const name = `${ticker} ${nextIndex}`;
+
+            // Если copySettings переданы, можно их использовать
+            /*const settings = copySettings
+                ? { ...defaultSettingsBot, ...copySettings }
+                : JSON.parse(JSON.stringify(defaultSettingsBot));*/
+            //const settings = JSON.parse(JSON.stringify(copySettings || defaultSettingsBot));
+
+            const settings = { ...defaultSettingsBot };
+            //console.log(settings);
+
+            const newBot = {
+                market,
+                board,
+                ticker,
+                name,
+                settings,
+            };
+
+            // Обновляем массив новым объектом
+            this.bots = [...this.bots, newBot];
+            this.activeBotIndex = this.bots.length - 1;
+
+            /*localStorage.setItem('meshbot', JSON.stringify({
+                bots: this.bots,
+                activeBotIndex: this.activeBotIndex
+            }));*/
+
+            return newBot;
+        },
+
+        /*createBot(botData) {
             this.bots.push(botData);
             this.setActiveBotIndex(this.bots.length - 1);
-        },
+        },*/
 
         deleteBot(index) {
             this.bots.splice(index, 1);
@@ -66,6 +134,8 @@ export const useMeshbotStore = defineStore("meshbot", {
 
     },
 
-    persist: true,
+    persist: {
+        paths: ['bots', 'activeBotIndex']
+    },
 
 });

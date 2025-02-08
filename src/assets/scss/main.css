@@ -108,7 +108,8 @@ a{
     background: rgba(255,255,255,0.02);
 }
 .btn-bot-add{
-    margin-top: 10px;
+    margin-top: -2px;
+    margin-left: 24px;
 }
 .btn-bot-add:hover{
 
@@ -1194,9 +1195,7 @@ input:checked + .slider:before {
     text-transform: uppercase;
     border-bottom: solid 1px #444b60;
 }
-.bots-selector-button{
-    text-align: right;
-}
+
 .empty-message-bots{
     text-align: center;
     color: rgba(209, 214, 247, 0.8);

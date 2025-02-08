@@ -1,6 +1,9 @@
 <template>
-  <div class="meshbot-simulator">
+  <div class="meshbot-simulator" v-show="isActive">
 
+<!--    {{settings}}<br>
+    {{meshbotStore.visibilityState}}<br>
+    {{meshbotStore.bots[botIndex].settings}}-->
         <div>
           <div class="meshbot-section-header"
                @click="toggleBlock('block6')">
@@ -30,7 +33,7 @@
           <div class="delete-bot" style="text-transform: none; font-weight: normal;">
             <div class="delete-bot-button"
                  @click.stop="deleteBot()">
-              Удалить «{{botName}}»
+              Удалить «{{bot.name}}»
             </div>
           </div>
         </h2>
@@ -113,27 +116,23 @@
 
         <div class="settings-items">
           <div class="item">
-            <div style="margin: 0 0 8px;">
-              Режим отображения графика:
-            </div>
-            <select v-model="meshbotStore.displayMode" style="margin: 0 0 12px; display: block;">
-              <option value="all">Все данные</option>
-              <option value="latest">Последние данные</option>
+            <select v-model="meshbotStore.displayMode" style="width: 120px; margin: 0 0 12px; display: inline-block;">
+              <option value="all">Сохранять историю</option>
+              <option value="latest">Скользящее окно</option>
             </select>
 
-            <label v-if="meshbotStore.displayMode === 'latest'">
-              Количество последних данных:
+            <label style="position: absolute; display: inline-block; margin-left: 10px;" v-if="meshbotStore.displayMode === 'latest'">
               <input type="number" v-model.number="meshbotStore.latestWindowSize" />
             </label>
           </div>
 
           <div class="item">
-            Стартовая цена:
+            Цена:
             <input type="number"
                    v-model.number="settings.initialPrice" step="1"
                    @change="resetState()"/>
 
-            <p v-if="tradeTimer">Текущая цена: {{ settings.currentPrice }}</p>
+<!--            <p :style="{'visibility': !tradeTimer ? 'hidden' : null}">Текущая цена: {{ settings.currentPrice }}</p>-->
 
             <!--            <div>
                           <span class="name">Множитель волатильности (>1)</span>
@@ -147,7 +146,7 @@
           </div>
 
           <div class="item">
-            <span class="name">Период тиков (ms)</span>
+            <span class="name" style="display: inline-block; width: 120px; ">Период тиков (ms)</span>
             <input type="number" v-model.number="settings.interval" />
           </div>
         </div>
@@ -167,9 +166,24 @@
       <div v-show="meshbotStore.visibilityState.block3">
 
         <div>
-          <div>
-            placedBuyOrdersIds: {{currentBot.placedBuyOrdersIds}}
+
+          <div style="height: 50px; overflow: auto; ">
+            <div style="padding: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr;">
+              <div>
+                <div>Active BUY orders:</div>
+                <div v-for="ord in botBuyOrders" :key="ord.data.orderNumber">
+                  • Order #{{ ord.data.orderNumber }} @{{ ord.data.price }} ({{ ord.data.status }})
+                </div>
+              </div>
+              <div>
+                <div>Filled BUY orders + takeShift = rprofit:</div>
+                <div v-for="ord in botBuyOrdersFilled" :key="ord.data.orderNumber">
+                  • Order #{{ ord.data.orderNumber }} @{{ ord.data.price }} ({{ ord.data.status }})
+                </div>
+              </div>
+            </div>
           </div>
+
           <button class="btn" @click='ordersStore.sendLimitBuyOrder(1, 105, currentBot.ticker, "MOEX", "buy", "D88141", currentBot.name)'>sendLimitBuyOrder</button>
           <button class="btn" @click='ordersStore.cancelBotBuyOrders(currentBot.name)'>cancelBotBuyOrders</button>
         </div>
@@ -177,8 +191,8 @@
 
         <div class="mesh-simulation-buttons" style="position: relative;">
           <button class="btn"
-                  @click="!tradeTimer ? startTradeTimers() : stopTradeTimers()">
-            <i class="fal" :class="{'fa-stop': tradeTimer, 'fa-play': !tradeTimer}"></i>
+                  @click="!isTradeEnabled ? startTradeTimers() : stopTradeTimers()">
+            <i class="fal" :class="{'fa-stop': isTradeEnabled, 'fa-play': !isTradeEnabled}"></i>
           </button>
           <button class="btn" @click="resetState()">
             <i class="fal fa-repeat"></i>
@@ -195,11 +209,11 @@
           </label>
 
           <div style="position: absolute; right: 10px; top: 20px;">
-            <strong>Прибыль:</strong> {{ settings.totalProfit.toFixed(2) }}
+            <strong>Прибыль:</strong> {{ parseFloat(settings.totalProfit.toFixed(2)) }}
           </div>
         </div>
 
-        <ChartComponent :isActiveBot="isActiveBot"/>
+        <ChartComponent :isActive="isActive"/>
 <!--        <div class="chart">
           <canvas ref="chartCanvas" width="600" height="300"></canvas>
         </div>-->
@@ -284,10 +298,7 @@ export default {
 
   props: {
     bot: Object,
-    botName: String,
-    isActiveBot: Boolean,
-    stopBotFromParentIndex: Number,
-    botId: Number,
+    isActive: Boolean,
   },
 
   data() {
@@ -337,10 +348,11 @@ export default {
 
       selectedOrders: [],
 
+      isTradeEnabled: false,
       tradeTimer: null,
       
-      isGenerateData: false,
-      isRealTrade: true,
+      isGenerateData: true,
+      isRealTrade: false,
 
       forwardPadding: 10,
 
@@ -355,32 +367,27 @@ export default {
   methods: {
 
     startRealPriceTimer() {
-      // Если уже запущен, второй раз не запускаем
+
       if (this.timerRealPrice) return;
 
       this.timerRealPrice = setInterval(() => {
-        // проверяем, включена ли реальная торговля
         if (!this.isRealTrade) return;
 
-        // Достаём данные из dataFabric
         const dataFabric = this.dataFabricStore.lastValues.data;
         if (!dataFabric) return;
 
-        // Ищем нужного бота и читаем у него тикер
-        const bot = this.bots.find(b => b.name === this.botName);
+        const bot = this.meshbotStore.bots.find(b => b.name === this.bot.name);
         if (!bot) return;
-
-        // Проверяем, есть ли в dataFabric нужный тикер
         if (!dataFabric[bot.ticker]) return;
 
-        // Берём лучшую цену BID и домножаем на 100 (как в примере)
         const newPrice = dataFabric[bot.ticker].oBestBidPrice * 100;
 
-        // Обновляем "Стартовую цену" в настройках
-        if (this.settings) {
-          this.settings.initialPrice = newPrice.toFixed(0);
-        }
-      }, 1000); // интервал можно менять при необходимости
+        if (!this.settings) return;
+
+        this.settings.initialPrice = Number(newPrice.toFixed(0));
+
+      }, 500);
+
     },
 
     stopRealPriceTimer() {
@@ -391,12 +398,9 @@ export default {
     },
 
     toggleRealTrade() {
-      // Этот метод уже вешается у вас на @change чекбокса
       if (this.isRealTrade) {
-        // Включаем таймер, если выбираем «Реальная торговля»
         this.startRealPriceTimer();
       } else {
-        // Выключаем таймер
         this.stopRealPriceTimer();
       }
     },
@@ -410,16 +414,20 @@ export default {
 
     async shiftRealMesh() {
 
-      if(!this.tradeTimer) return;
       if(!this.settings) return;
       if(!this.settings.enableGridShift) return;
 
-      console.log("Смещаем сетку в соответствии с текущей ценой...");
+      console.log("Смещаем сетку...");
+
+      const dataFabric = this.dataFabricStore.lastValues.data;
+      const bot = this.meshbotStore.bots.find(b => b.name === this.bot.name);
+      if (dataFabric && bot && dataFabric[bot.ticker]) {
+        const newPrice = dataFabric[bot.ticker].oBestBidPrice * 100;
+        this.settings.currentPrice = newPrice.toFixed(0);
+      }
 
       // Отменяем реальные лимитки
-      //await this.ordersStore.cancelAllOrders('MOEX', 'D88141');
-      await this.ordersStore.cancelBotBuyOrders(this.botName);
-
+      await this.ordersStore.cancelBotBuyOrders(this.bot.name);
 
       // Стираем старые лимитки с графика
       this.settings.buyLevels = [];
@@ -427,14 +435,12 @@ export default {
 
       // Очищаем данные об установленных лимитках
 
-      const bot = this.bots.find(bot => bot.name === this.botName);
-
-      bot.placedBuyOrdersIds = [];
-
-      bot.placedBuyOrders = [];
+      //const bot = this.meshbotStore.bots.find(bot => bot.name === this.bot.name);
+      //bot.placedBuyOrdersIds = [];
+      //bot.placedBuyOrders = [];
 
       // Ставим новые
-      this.initBuyOrders();
+      this.initBuyLevels();
       this.setRealBuyOrders();
 
       // 3) Выбираем случайный интервал до следующего смещения
@@ -447,7 +453,6 @@ export default {
 
     shiftSimulationMesh() {
 
-      if(!this.tradeTimer) return;
       if(!this.settings) return;
       if(!this.settings.enableGridShift) return;
 
@@ -458,7 +463,7 @@ export default {
       this.settings.linesData = this.settings.linesData.filter(line => !line.id.startsWith("BUY_"));
 
       // Ставим новые лимитки как при старте
-      this.initBuyOrders();
+      this.initBuyLevels();
 
       //this.updateChart();
 
@@ -485,14 +490,13 @@ export default {
     },
 
     startTradeTimers() {
-      if (this.tradeTimer) return;
-      
-      console.log("=== START TRADE TIMER ===");
+      if (this.isTradeEnabled) return;
+      this.isTradeEnabled = true;
 
-      // Таймер торговли
-      this.tradeTimer = setInterval(this.trade, this.settings.interval);
+      this.resetState();
 
-      // Таймер смещения сетки
+      this.tradeTimer = setTimeout(this.trade, this.settings.interval);
+
       this.startShiftMeshTimer();
 
     },
@@ -501,20 +505,24 @@ export default {
 
       this.ordersStore.cancelBotBuyOrders(this.currentBot.name);
 
-      if (!this.tradeTimer) return;
+      //if (!this.isTradeEnabled) return;
 
-      clearInterval(this.tradeTimer);
-      this.tradeTimer = null;
+      if(this.tradeTimer){
+        clearInterval(this.tradeTimer);
+        this.tradeTimer = null;
+      }
 
       if (this.shiftMeshTimer) {
         clearTimeout(this.shiftMeshTimer);
         this.shiftMeshTimer = null;
       }
 
+      this.isTradeEnabled = false;
+
       console.log("=== STOP ===");
     },
 
-    initBuyOrders() {
+    initBuyLevels() {
 
       if(!this.settings) return;
 
@@ -570,6 +578,9 @@ export default {
 
     trade() {
 
+
+      if (!this.isTradeEnabled) return;
+
       if(!this.settings) return;
 
       this.settings.timeIndex++;
@@ -580,22 +591,21 @@ export default {
         const dataFabric = this.dataFabricStore.lastValues.data;
         if(!dataFabric) return;
 
-        const bot = this.bots.find(bot => bot.name === this.botName);
+        const bot = this.meshbotStore.bots.find(bot => bot.name === this.bot.name);
+        if(!bot) return;
 
         if(dataFabric[bot.ticker]){
           const newPrice = dataFabric[bot.ticker].oBestBidPrice * 100;
 
-          //console.log('New Price', newPrice);
-
-          this.settings.initialPrice = newPrice;
-          this.settings.currentPrice = newPrice;
+          this.settings.initialPrice = Number(newPrice.toFixed(0));
+          this.settings.currentPrice = Number(newPrice.toFixed(0));
 
           this.settings.priceData.push({ x: this.settings.timeIndex, y: this.settings.currentPrice });
 
           this.trimTradeHistory();
 
           this.setRealBuyOrders();
-          this.setRealProfitOrders();
+          //this.setRealProfitOrders();
 
         }
 
@@ -609,7 +619,7 @@ export default {
           const data = this.dataFabricStore.lastValues.data;
           if(!data) return;
 
-          const bot = this.bots.find(bot => bot.name === this.botName);
+          const bot = this.meshbotStore.bots.find(bot => bot.name === this.bot.name);
 
           if(data[bot.ticker]){
             newPrice = data[bot.ticker].oBestBidPrice * 100;
@@ -628,8 +638,11 @@ export default {
 
         this.setSimulateBuyOrders();
         this.setSimulateprofitLevels();
+
+        if (this.isTradeEnabled) {
+          this.tradeTimer = setTimeout(this.trade, this.settings.interval);
+        }
       }
-      //this.updateChart();
     },
 
     setSimulateBuyOrders() {
@@ -641,7 +654,7 @@ export default {
         const bo = this.settings.buyLevels[i];
 
 
-        // Здеь судя по всему происходит собатиы = "Покупка по уровню сетки"
+        // Здеь судя по всему происходит событие = "Покупка по уровню сетки"
         if (this.settings.currentPrice <= bo.price) {
 
           /*if (this.settings.openTrades.length >= this.settings.maxOpenTrades) {
@@ -649,7 +662,7 @@ export default {
             return; // Останавливаем добавление новых сделок
           }*/
 
-          console.log(`EXEC BUY @${bo.price.toFixed(2)}, vol=${bo.volume}`);
+          console.log(`EXEC BUY @${parseFloat(bo.price.toFixed(2))}, vol=${bo.volume}`);
 
           //Убираем уровень сработавшей заявки и очищаем горизонтальную линию
           this.settings.buyLevels.splice(i, 1);
@@ -692,7 +705,7 @@ export default {
       for (let j = 0; j < this.settings.profitLevels.length; j++) {
         const so = this.settings.profitLevels[j];
         if (this.settings.currentPrice >= so.price) {
-          console.log(`EXEC SELL @${so.price.toFixed(2)}, vol=${so.volume}`);
+          console.log(`EXEC SELL @${parseFloat(so.price.toFixed(2))}, vol=${so.volume}`);
 
 
           this.settings.profitLevels.splice(j, 1);
@@ -739,11 +752,7 @@ export default {
                 color: "rgba(255,183,77,0.7)",
               });
               this.settings.remainingRestoreCount--;
-              console.log(
-                  `Restored BUY limit @${tr.buyPrice.toFixed(
-                      2
-                  )}. Remaining: ${this.settings.remainingRestoreCount}`
-              );
+              console.log(`Restored BUY limit @${tr.buyPrice.toFixed(2)}. Remaining: ${this.settings.remainingRestoreCount}`);
             }
           }
 
@@ -753,39 +762,50 @@ export default {
 
     setRealBuyOrders() {
 
+      if(!this.isTradeEnabled) return;
       if(!this.settings) return;
 
       for (let i = 0; i < this.settings.buyLevels.length; i++) {
 
         const bo = this.settings.buyLevels[i]
 
-        const bot = this.bots.find(bot => bot.name === this.botName);
+        //const bot = this.meshbotStore.bots.find(bot => bot.name === this.bot.name);
+        //const isOrderAlreadyPlaced = bot.placedBuyOrders.includes(bo.price);
 
-        const isOrderAlreadyPlaced = bot.placedBuyOrders.includes(bo.price);
+        /*const isOrderAlreadyPlaced = this.ordersStore.limitOrders.some(order =>
+          order.data.botId === this.bot.name &&
+          order.data.side === 'buy' &&
+          Math.round(order.data.price * 100) === bo.price && // учтём множитель 100
+          order.data.status === 'working'
+        );*/
 
         if (this.settings.openTrades.length >= this.settings.maxOpenTrades) {
           console.log(`Лимит открытых позиций достигнут: ${this.settings.maxOpenTrades}`);
           return; // Останавливаем добавление новых сделок
         }
 
-        if (this.settings.currentPrice >= bo.price && !isOrderAlreadyPlaced) {
-          console.log('Set buy limit, current price', this.settings.currentPrice/100, ', Buy Level price', bo.price/100, ', Volume', bo.volume);
+        if (this.settings.currentPrice >= bo.price) { // && !isOrderAlreadyPlaced
+          console.log('Set buy limit, current price: ', this.settings.currentPrice/100, ', Buy Level price: ', bo.price/100, ', Volume', bo.volume);
 
-          const bot = this.bots.find(bot => bot.name === this.botName);
+          const bot = this.meshbotStore.bots.find(bot => bot.name === this.bot.name);
+          if(!bot) return;
+
           this.ordersStore.sendLimitBuyOrder(1, bo.price/100, bot.ticker, 'MOEX', 'buy', 'D88141', bot.name );
 
-          bot.placedBuyOrders.push(bo.price);
+          //bot.placedBuyOrders.push(bo.price);
 
           // Удаляем линии чтобы повторно не отправлять
           this.settings.buyLevels.splice(i, 1);
           i--;
 
+          this.tradeTimer = setTimeout(this.trade, this.settings.interval);
+
           // Помечаем цветом pending (вроде необязательно)
-          const lineIndex = this.settings.linesData.findIndex(line => line.id === "BUY_" + bo.price);
+          /*const lineIndex = this.settings.linesData.findIndex(line => line.id === "BUY_" + bo.price);
           if (lineIndex !== -1) {
             this.settings.linesData[lineIndex].pending = true;
-            this.settings.linesData[lineIndex].color = "rgba(0, 0, 255, 0.7)"; // синий цвет для ожидающей заявки
-          }
+            this.settings.linesData[lineIndex].color = "rgba(0, 0, 255, 0.7)";
+          }*/
         }
 
       }
@@ -793,11 +813,11 @@ export default {
 
     // Метод для выставления лимитного ордера на профит (sell order)
     // Он вызывается автоматически после исполнения входной лимитки
-    setRealProfitOrders() {
+    /*setRealProfitOrders() {
       if (!this.settings) return;
       for (let j = 0; j < this.settings.profitLevels.length; j++) {
         const so = this.settings.profitLevels[j];
-        const bot = this.bots.find(bot => bot.name === this.botName);
+        const bot = this.meshbotStore.bots.find(bot => bot.name === this.bot.name);
         const isProfitAlreadyPlaced = bot.placedProfitOrders && bot.placedProfitOrders.includes(so.price);
         if (this.settings.currentPrice >= so.price && !isProfitAlreadyPlaced) {
           console.log('Placing real profit (sell) order at', so.price);
@@ -814,7 +834,7 @@ export default {
           }
         }
       }
-    },
+    },*/
 
     resetState() {
       console.log("Сброс состояния вызван!");
@@ -824,7 +844,9 @@ export default {
         return;
       }
 
-      const bot = this.bots.find(bot => bot.name === this.botName);
+      const bot = this.meshbotStore.bots.find(bot => bot.name === this.bot.name);
+
+      this.ordersStore.cancelBotBuyOrders(this.bot.name);
 
       const botSettings = bot.settings;
 
@@ -850,11 +872,11 @@ export default {
           { x: 1, y: botSettings.initialPrice }
       );
 
-      this.initBuyOrders();
+      this.initBuyLevels();
 
       //this.updateChart();
 
-      console.log("Состояние сброшено.");
+      //console.log("Состояние сброшено.");
     },
 
     deleteBot(){
@@ -872,7 +894,7 @@ export default {
   },
 
   mounted() {
-    this.resetState();
+    //this.resetState();
 
     if(this.isRealTrade) this.startRealPriceTimer();
   },
@@ -882,90 +904,89 @@ export default {
   },
 
   watch: {
-    // При получении сигнала от родителя (например, остановка бота)
-    stopBotFromParentIndex() {
-      this.stopTradeTimers();
-    },
-    // Отслеживание изменений в ordersStore.limitOrders для обновления статусов ордеров
-    /*'ordersStore.limitOrders': {
+
+    'ordersStore.limitOrders': {
       handler(newOrders) {
-        console.log('WATCHER NEW ORDERS', newOrders);
+
+        console.log('WATCHER NEW ORDERS', JSON.parse(JSON.stringify(newOrders.filter(o => o.data.botId))));
+
         newOrders.forEach(order => {
-          if (order.data.botId === this.botName) {
-            const orderPrice = order.data.price * 100;
+          if (order.data.botId === this.bot.name) {
+            const orderPrice = Number((order.data.price * 100).toFixed(0));
 
-            // Обработка ордеров на покупку (buy orders)
-            if (order.data.side === 'buy') {
-              if (order.data.status === 'filled') {
-                console.log(`Buy order filled at ${orderPrice}`);
-                this.removeLine("BUY_" + orderPrice);
-                this.settings.buyPoints.push({ x: this.settings.timeIndex, y: orderPrice });
+            if (order.data._setted) return;
 
-                // Выставляем лимитку на профит
-                const profitPrice = orderPrice + this.settings.takeProfitDistance;
-                if (!this.settings.profitLevels.find(p => p.price === profitPrice)) {
-                  this.settings.profitLevels.push({
-                    price: profitPrice,
-                    volume: this.settings.volume,
-                    linkBuy: orderPrice
-                  });
-                  this.settings.linesData.push({
-                    id: "SELL_" + profitPrice,
-                    price: profitPrice,
-                    color: "rgba(255,183,77,0.7)"
-                  });
-                }
-              } else if (order.data.status === 'canceled') {
-                console.log(`Buy order canceled at ${orderPrice}`);
-                this.removeLine("BUY_" + orderPrice);
+            // 1) Если buy-ордер исполнен:
+            if (order.data.side === 'buy' && order.data.status === 'filled') {
+              console.log(`Buy order filled at ${orderPrice}`);
 
-                // Опционально: вернуть лимитку на покупку в список buyLevels
-                if (!this.settings.buyLevels.find(b => b.price === orderPrice)) {
-                  this.settings.buyLevels.push({ price: orderPrice, volume: 1 });
-                  this.settings.linesData.push({
-                    id: "BUY_" + orderPrice,
-                    price: orderPrice,
-                    color: "rgba(255,183,77,0.7)"
-                  });
-                }
-              }
+              order.data._setted = true;
+
+              // • Удаляем линию
+              this.removeLine("BUY_" + orderPrice);
+              // • Отмечаем точку на графике
+              this.settings.buyPoints.push({ x: this.settings.timeIndex, y: orderPrice });
+
+              // • Считаем takeProfitPrice
+              const profitPriceLevel = orderPrice + this.settings.takeProfitDistance;
+
+              // • Добавляем «логическую» запись в profitLevels (для графика, аналитики)
+              this.settings.profitLevels.push({
+                price: profitPriceLevel,
+                volume: this.settings.volume,
+                linkBuy: orderPrice
+              });
+
+              // • Рисуем SELL-линию на графике (чтобы видеть уровень тейка)
+              this.settings.linesData.push({
+                id: "SELL_" + profitPriceLevel,
+                price: profitPriceLevel,
+                color: "rgba(255,183,77,0.7)"
+              });
+
+              // переводим обратно из пунктов в «рыночную» цену
+              const profitPrice = parseFloat((profitPriceLevel / 100).toFixed(2));
+
+              console.log('Send limit order from bot: ', this.bot.name, profitPrice);
+
+              // • Отправляем реальный лимит на продажу
+              this.ordersStore.sendLimitOrder(
+                  this.settings.volume,
+                  profitPrice,
+                  order.data.ticker,
+                  'MOEX',
+                  'sell',               // направление — продажа
+                  'D88141',
+                  this.bot.name
+              );
             }
 
-            // Обработка профитных лимиток (sell orders)
-            if (order.data.side === 'sell') {
-              if (order.data.status === 'filled') {
-                console.log(`Sell order filled at ${orderPrice}`);
-                this.removeLine("SELL_" + orderPrice);
-                this.settings.sellPoints.push({ x: this.settings.timeIndex, y: orderPrice });
-              } else if (order.data.status === 'canceled') {
-                console.log(`Sell order canceled at ${orderPrice}`);
-                this.removeLine("SELL_" + orderPrice);
+            // 2) Если sell-ордер исполнен:
+            if (order.data.side === 'sell' && order.data.status === 'filled') {
+              console.log(`Sell order filled at ${orderPrice}`);
 
-                // Опционально: вернуть лимитку на профит
-                if (!this.settings.profitLevels.find(p => p.price === orderPrice)) {
-                  this.settings.profitLevels.push({
-                    price: orderPrice,
-                    volume: this.settings.volume,
-                    linkBuy: null
-                  });
-                  this.settings.linesData.push({
-                    id: "SELL_" + orderPrice,
-                    price: orderPrice,
-                    color: "rgba(255,183,77,0.7)"
-                  });
-                }
-              }
+              order.data._setted = true;
+
+              // Удаляем линию:
+              this.removeLine("SELL_" + orderPrice);
+              // Ставим точку продажи
+              this.settings.sellPoints.push({ x: this.settings.timeIndex, y: orderPrice });
+              // ... если нужно, считаем финальный профит и т.д.
             }
           }
         });
       },
       deep: true
-    },*/
+    }
+  },
+
+  /*watch: {
+
     'ordersStore.limitOrders': {
       handler(newOrders) {
         console.log('WATCHER NEW ORDERS', newOrders);
         newOrders.forEach(order => {
-          if (order.data.botId === this.botName) {
+          if (order.data.botId === this.bot.name) {
             const orderPrice = order.data.price * 100;
 
             // Обработка для buy-ордеров
@@ -979,7 +1000,7 @@ export default {
                 const profitPrice = orderPrice + this.settings.takeProfitDistance;
 
                 // Проверяем, нет ли уже ордера на этот уровень профита
-                if (!this.settings.profitLevels.find(p => p.price === profitPrice)) {
+                //if (!this.settings.profitLevels.find(p => p.price === profitPrice)) {
                   // Добавляем уровень профита
                   this.settings.profitLevels.push({
                     price: profitPrice,
@@ -1002,9 +1023,9 @@ export default {
                       'MOEX',
                       'sell',                // направление меняем на 'sell'
                       'D88141',
-                      this.botName
+                      this.bot.name
                   );
-                }
+                //}
               }
             }
 
@@ -1021,25 +1042,42 @@ export default {
       },
       deep: true
     },
-  },
+  },*/
 
   computed: {
+    botBuyOrdersFilled() {
+      return this.ordersStore.limitOrders.filter(o =>
+          o.data.botId === this.currentBot.name &&
+          o.data.side === 'buy' &&
+          o.data.status === 'filled' &&
+          !o.data._setted
+      )
+    },
+
+    botBuyOrders() {
+      return this.ordersStore.limitOrders.filter(o =>
+          o.data.botId === this.currentBot.name
+          && o.data.side === 'buy'
+          && o.data.status === 'working'
+      )
+    },
+
     bots() {
       return this.meshbotStore.bots;
     },
     currentBotString() {
-      const bot = this.bots.find(bot => bot.name === this.botName);
+      const bot = this.meshbotStore.bots.find(bot => bot.name === this.bot.name);
       return JSON.stringify(bot, null, 2);
     },
     currentBot() {
       return this.meshbotStore.bots[this.meshbotStore.activeBotIndex];
     },
     settings() {
-      if(this.botId !== null && this.botId !== undefined){
-        return this.meshbotStore.bots[this.botId].settings;
-      } else {
+      //if(this.botIndex !== null && this.botIndex !== undefined){
+      return this.bot.settings;
+      /*} else {
         return null
-      }
+      }*/
     },
     remainingBuyLimits() {
       if(this.settings){

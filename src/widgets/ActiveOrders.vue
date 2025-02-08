@@ -1,9 +1,9 @@
 <template>
   <div>
-    
+<!--    {{ordersStore.limitOrdersWorking}}-->
     <div class="limit-orders">
       <div class="limit-orders-head"
-           v-if="activeLimitOrders.length"
+           v-if="ordersStore.limitOrdersWorking.length"
            style="position: relative; min-height: 10px;">
         <label class="checkbox-label">
           <input
@@ -15,14 +15,14 @@
           />
           <div style="padding: 4px 0 4px 20px;">Выбрать все</div>
         </label>
-        <div @click="cancelAllOrders()"
+        <div @click="ordersStore.cancelAllOrders()"
              class="close-order">
           <i class="fat fa-xmark"></i>
         </div>
       </div>
 
       <div
-          v-for="item in activeLimitOrders"
+          v-for="item in ordersStore.limitOrdersWorking"
           :key="item.data.orderNumber"
           class="limit-orders-row"
       >
@@ -41,37 +41,38 @@
                 />
               </div>
 
-              <div>
+              <div style="padding: 0 6px;">
                 {{ item.data.orderNumber }}
               </div>
 
-              <div style="white-space: nowrap;">
+<!--              <div style="white-space: nowrap;">
                 {{item.data.volume}} руб
-              </div>
+              </div>-->
 
               <div style="padding: 0 20px; white-space: nowrap;">
                 {{item.data.qty}} шт
               </div>
 
               <div style="padding: 0 20px; white-space: nowrap;">
-                {{item.data.botId}}
+                <span v-if="item.data.botId">{{item.data.botId}}</span>
+                <span v-else>-</span>
               </div>
             </div>
 
           </label>
         </div>
         <div class="close-button">
-          <button @click="cancelOrders([item.data?.orderNumber])">
+          <button @click="ordersStore.cancelGroupOrders([item.data?.orderNumber])">
             <i class="fat fa-xmark" style="font-size: 12px"></i>
           </button>
         </div>
       </div>
 
-      <div v-if="ordersStore.limitOrders.length"
+      <div v-if="ordersStore.limitOrdersWorking.length"
            class="limit-orders-buttons">
         <button class="btn"
                 :class="{'disabled': selectedOrders.length === 0}"
-                @click="(selectedOrders.length > 0) ? cancelOrders(selectedOrders) : null">
+                @click="(selectedOrders.length > 0) ? ordersStore.cancelGroupOrders(selectedOrders) : null">
           Снять
         </button>
       </div>
@@ -114,109 +115,6 @@ export default {
 
   methods: {
 
-    processOrders(orders) {
-      orders.forEach((order) => {
-        const { id, status } = order;
-
-        if (status === "working") {
-          const existingOrder = this.ordersStore.limitOrders.find(
-              (existing) => existing.data.id === id
-          );
-
-          if (!existingOrder) {
-            // Добавляем поле orderNumber, если его нет
-            const enrichedOrder = {
-              ...order,
-              orderNumber: order.id, // Используем id как orderNumber
-            };
-
-            this.ordersStore.limitOrders.push({ data: enrichedOrder });
-          }
-        } else if (status === "canceled" || status === "filled") {
-          this.ordersStore.limitOrders = this.ordersStore.limitOrders.filter(
-              (existing) => existing.data.id !== id
-          );
-        }
-      });
-    },
-
-    async fetchOrders() {
-      try {
-        const orders = await this.ordersStore.getOrders('MOEX', 'D88141', 'Simple');
-
-        console.log(orders.filter(order => order.status === 'working'));
-        //console.log('Полученные заявки:', orders.filter(order => order.type === 'filled'));
-
-        this.processOrders(orders);
-
-      } catch (error) {
-        console.error('Ошибка при загрузке заявок:', error.message);
-      }
-    },
-
-    async cancelAllOrders() {
-      try {
-        const exchange = 'MOEX'; // Укажите биржу
-        const portfolio = 'D88141'; // Укажите портфель
-        await this.ordersStore.cancelAllOrders(exchange, portfolio).then(() => {
-          this.ordersStore.limitOrders = [];
-        });
-
-        //console.log("Все ордера успешно отменены:", result);
-      } catch (error) {
-        console.error("Ошибка при отмене всех ордеров:", error.message);
-      }
-    },
-
-    connectToWebSocket() {
-      const socket = new WebSocket("wss://signalfabric.com/orders/");
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-
-          if (data && data.data) {
-            const { id, status } = data.data;
-
-            setTimeout(() => {
-              if (status === "working") {
-                const existingOrder = this.ordersStore.limitOrders.find(
-                    (order) => order.data.id === id
-                );
-
-                if (!existingOrder) {
-                  // Добавляем поле orderNumber, если его нет
-                  const enrichedData = {
-                    ...data.data,
-                    orderNumber: data.data.id, // Используем id как orderNumber
-                  };
-
-                  this.ordersStore.limitOrders.push({ data: enrichedData });
-                }
-              } else if (status === "canceled" || status === "filled") {
-                this.ordersStore.limitOrders = this.ordersStore.limitOrders.filter(
-                    (order) => order.data.id !== id
-                );
-              }
-            }, 0);
-          }
-        } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
-        }
-      };
-
-      socket.onopen = () => {
-        console.log("Connected to WebSocket for orders");
-      };
-
-      socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-
-      socket.onclose = () => {
-        console.log("WebSocket connection closed");
-      };
-    },
 
     toggleAll(event) {
       if (event.target.checked) {
@@ -228,32 +126,6 @@ export default {
       }
     },
 
-    async cancelOrders(orderIds) {
-      try {
-        const params = {
-          orderIds: orderIds,
-          portfolio: "D88141",
-          exchange: "MOEX",
-          stop: false,
-        };
-
-        const response = await this.ordersStore.cancelGroupOrders(params);
-
-        if (response.success) {
-          const ordersToRemove = response.data.map((order) => order.orderId);
-
-          if (ordersToRemove.length > 0) {
-            this.ordersStore.limitOrders = this.ordersStore.limitOrders.filter(
-                (order) => !ordersToRemove.includes(order.data.orderNumber)
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Ошибка при отмене ордеров:", error.message);
-      }
-    },
-
-
     startTimer2() {
       const updateTimer = () => {
         if (!this.isTimerRunning2) {
@@ -263,7 +135,7 @@ export default {
 
         this.count2 = this.count2 > 0 ? this.count2 - 1 : this.defaultCount2;
         if (this.count2 === 0) {
-          this.cancelAllOrders();
+          this.ordersStore.cancelAllOrders('MOEX', 'D88141');
         }
 
         // Планируем следующий вызов через 1 секунду
@@ -296,14 +168,11 @@ export default {
   },
 
   computed: {
-    activeLimitOrders() {
-      return this.ordersStore.limitOrders.filter(order => order.status === 'working');
-    },
 
     areAllSelected() {
       return (
-          this.selectedOrders.length === this.ordersStore.limitOrders.length &&
-          this.ordersStore.limitOrders.length > 0
+          this.selectedOrders.length === this.ordersStore.limitOrdersWorking.length &&
+          this.ordersStore.limitOrdersWorking.length > 0
       );
     },
   },

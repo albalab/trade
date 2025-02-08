@@ -1,9 +1,10 @@
 <template>
   <div>
     <!-- Если надо что-то отобразить из хранилища (стора) -->
-    <div style="padding: 10px; position: fixed; right: 0; bottom: 0; z-index: 10000; background: rgba(0,0,0,0.2);">
-      <p>Активных заявок: {{ ordersStore.limitOrders.length }}</p>
+    <div style="padding: 10px 20px; position: fixed; right: 0; bottom: 0; z-index: 10000; background: rgba(0,0,0,0.2); border-top-left-radius: 8px;">
+      <p>Активных заявок: {{ ordersStore.limitOrdersWorking.length }}</p>
       <p>Открытых позиций: {{ Object.keys(ordersStore.activePositions).length }}</p>
+      <button class="btn" @click="this.ordersStore.cancelAllOrders('MOEX', 'D88141')">Cancel all orders</button>
     </div>
   </div>
 </template>
@@ -41,6 +42,7 @@ export default {
       ordersStore,
     };
   },
+
 };
 </script>
 
