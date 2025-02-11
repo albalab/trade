@@ -416,7 +416,7 @@ export default {
         { name: 'Cancel all', param: 0, type: 14 },
         { name: 'Виджет 15', param: 0, type: 15, gridRow: 'span 2' },
         { name: 'Timelines items', param: 0, type: 16, gridRow: 'span 3' },
-        { name: 'Meshbot', param: 0, type: 21, gridColumn: 'span 3', gridRow: 'span 5' },
+        { name: 'Meshbot', param: 0, type: 21, gridColumn: 'span 2', gridRow: 'span 5' },
         { name: 'Chat AI', param: 0, type: 22, gridColumn: 'span 2', gridRow: 'span 4' },
         { name: 'Trading Sectors', param: 0, type: 23, gridColumn: 'span 2', gridRow: 'span 2' },
       ],

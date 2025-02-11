@@ -24,7 +24,7 @@ const defaultSettingsBot = {
     sellPoints: [],
     remainingRestoreCount: 300,
     linesData: [],
-    gridShiftIntervals: [7, 11, 17], //секунды
+    gridShiftIntervals: [ 11, 17, 47], //секунды
     priceStep: 1,
     priceStepMultiplier: 10,
     volatility: 1,
@@ -146,7 +146,7 @@ export const useMeshbotStore = defineStore("meshbot", {
             const index = this.bots.findIndex(bot => bot.name === botName);
             if (index !== -1) {
                 this.bots.splice(index, 1);
-                if (index >= 1) {
+                if (this.bots.length > 0) {
                     this.activeBotName = this.bots[Math.max(index - 1, 0)].name;
                 } else {
                     this.activeBotName = null;

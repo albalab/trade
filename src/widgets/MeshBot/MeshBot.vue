@@ -1,7 +1,6 @@
 <template>
   <div class="mesh-bot">
 
-  activeBotName: {{meshbotStore.activeBotName}}
     <div v-if="$route.name === 'meshbot'">
 
       <OrderManager />
@@ -79,12 +78,21 @@
       >
         {{ bot.name }}
       </div>
+
     </div>
 
-    <div v-for="bot in meshbotStore.bots" :key="bot.name">
+    <div v-for="bot in meshbotStore.bots" :key="bot.name" style="position: relative;">
         <MeshbotInstance
             :bot="bot"
             :isActive="meshbotStore.activeBotName === bot.name"/>
+
+      <div v-if="meshbotStore.activeBotName === bot.name"
+           class="delete-bot">
+        <div class="delete-bot-button"
+             @click.stop="meshbotStore.deleteBot(bot.name)">
+          Удалить «{{bot.name}}»
+        </div>
+      </div>
     </div>
 
   </div>

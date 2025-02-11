@@ -1,9 +1,6 @@
 <template>
   <div class="meshbot-simulator" v-show="isActive">
 
-    {{gridShiftCounter}}<br>
-    {{targetGridShiftInterval}}<br>
-
 <!--    {{settings}}<br>
     {{meshbotStore.visibilityState}}<br>
     {{meshbotStore.bots[botIndex].settings}}-->
@@ -32,13 +29,6 @@
           <i  v-if="meshbotStore.visibilityState['block1']" class="fal fa-chevron-down"></i>
           <i v-else class="fal fa-chevron-right"></i>
           Параметры
-
-          <div class="delete-bot" style="text-transform: none; font-weight: normal;">
-            <div class="delete-bot-button"
-                 @click.stop="meshbotStore.deleteBot(this.bot.name)">
-              Удалить «{{bot.name}}»
-            </div>
-          </div>
         </h2>
       </div>
 
@@ -169,26 +159,15 @@
       <div v-show="meshbotStore.visibilityState.block3">
 
         <div>
-
-          <div style="height: 50px; overflow: auto; ">
-            <div style="padding: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr;">
-              <div>
-                <div>Active BUY orders:</div>
-                <div v-for="ord in botBuyOrders" :key="ord.data.orderNumber">
-                  • Order #{{ ord.data.orderNumber }} @{{ ord.data.price }} ({{ ord.data.status }})
-                </div>
-              </div>
-              <div>
-                <div>Filled BUY orders + takeShift = rprofit:</div>
-                <div v-for="ord in botBuyOrdersFilled" :key="ord.data.orderNumber">
-                  • Order #{{ ord.data.orderNumber }} @{{ ord.data.price }} ({{ ord.data.status }})
-                </div>
-              </div>
-            </div>
+          <div style="padding: 10px 20px 0;">
+            Смещение через: {{targetGridShiftInterval - gridShiftCounter}}сек
           </div>
 
-          <button class="btn" @click='ordersStore.sendLimitBuyOrder(1, 105, selectedBot.ticker, "MOEX", "buy", "D88141", selectedBot.name)'>sendLimitBuyOrder</button>
-          <button class="btn" @click='ordersStore.cancelBotBuyOrders(selectedBot.name)'>cancelBotBuyOrders</button>
+          <div style="padding: 10px 20px;">
+            <button class="btn" @click='ordersStore.sendLimitBuyOrder(1, 105, selectedBot.ticker, "MOEX", "buy", "D88141", selectedBot.name)'>sendLimitBuyOrder</button>
+            <button class="btn" @click='ordersStore.cancelBotBuyOrders(selectedBot.name)'>cancelBotBuyOrders</button>
+          </div>
+
         </div>
 
 
@@ -218,6 +197,23 @@
 
         <div>
           <ChartComponent :isActiveBot="isActive"/>
+        </div>
+
+        <div style="height: 50px; overflow: auto; ">
+          <div style="padding: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr;">
+            <div>
+              <div>Active BUY orders:</div>
+              <div v-for="ord in botBuyOrders" :key="ord.data.orderNumber">
+                • Order #{{ ord.data.orderNumber }} @{{ ord.data.price }} ({{ ord.data.status }})
+              </div>
+            </div>
+            <div>
+              <div>Filled BUY orders + takeShift = rprofit:</div>
+              <div v-for="ord in botBuyOrdersFilled" :key="ord.data.orderNumber">
+                • Order #{{ ord.data.orderNumber }} @{{ ord.data.price }} ({{ ord.data.status }})
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -328,7 +324,7 @@ export default {
 
   data() {
     return {
-
+      isFirstStartFilled: false,
 
       priceMonitor: null,
 
@@ -509,6 +505,7 @@ export default {
         this.tradeTimer = null;
       }
       this.isTradingEnabled = false;
+      this.isFirstStartFilled = false;
       console.log("=== STOP ===");
     },
 
@@ -541,7 +538,8 @@ export default {
       this.settings.timeIndex++;
 
       // --- Торговая логика ---
-      if (this.isRealTrading) {
+      if (this.isRealTrading && !this.isFirstStartFilled) {
+        this.isFirstStartFilled = true;
         const dataFabric = this.dataFabricStore.lastValues.data;
         if (!dataFabric) return;
         const bot = this.meshbotStore.bots.find(bot => bot.name === this.bot.name);
@@ -794,7 +792,7 @@ export default {
       }
     },
 
-    submitRealBuyOrders() {
+    async submitRealBuyOrders() {
 
       if(!this.isTradingEnabled) return;
       if(!this.settings) return;
@@ -814,7 +812,7 @@ export default {
           const bot = this.meshbotStore.bots.find(bot => bot.name === this.bot.name);
           if(!bot) return;
 
-          this.ordersStore.sendLimitBuyOrder(1, bo.price/100, bot.ticker, 'MOEX', 'buy', 'D88141', bot.name );
+          await this.ordersStore.sendLimitBuyOrder(1, bo.price/100, bot.ticker, 'MOEX', 'buy', 'D88141', bot.name );
 
           //bot.placedBuyOrders.push(bo.price);
 
@@ -835,6 +833,7 @@ export default {
 
   mounted() {
     this.startPriceMonitor();
+    this.meshbotStore.resetBotState(this.bot.name);
   },
 
   beforeUnmount() {
