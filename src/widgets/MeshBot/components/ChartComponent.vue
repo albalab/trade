@@ -10,7 +10,7 @@ import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 import zoomPlugin from 'chartjs-plugin-zoom';
 Chart.register(zoomPlugin);
-import { useMeshbotStore } from '@/stores/meshbotStore';
+import {useMeshbotStore} from "@/widgets/MeshBot/stores/meshbotStore";
 
 
 const chartConfig = {
@@ -272,6 +272,8 @@ export default defineComponent({
       intervalChartUpdate: 50,
       chartInstance: null,
       chartTimer: null,
+      forwardPadding: 10,
+
     };
   },
 
@@ -353,9 +355,9 @@ export default defineComponent({
       if (!this.chartInstance) return;
 
       const bots = this.meshbotStore.bots;
-      const activeBotIndex = this.meshbotStore.activeBotIndex;
-      if (!bots || activeBotIndex === null) return;
-      const settings = bots[activeBotIndex].settings;
+      const activeBotName = this.meshbotStore.activeBotName;
+      if (!bots) return;
+      const settings = bots.filter(i => i.name === activeBotName)[0].settings;
       if (!settings) return;
 
       const rawPriceData = toRaw(settings.priceData);

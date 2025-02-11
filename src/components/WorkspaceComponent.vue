@@ -93,6 +93,10 @@
           <ChatTemplate />
         </div>
 
+        <div v-if="widget.type === 23" :data="widget">
+          <TradingSectors />
+        </div>
+
         <div v-if="widget.type === 9" :data="widget">
             <AlorStatsDiagram
                 :totalItemsStats="buyFrequency"
@@ -258,6 +262,7 @@ import {
 
 import WidgetGrid from './WidgetGrid.vue';
 
+import TradingSectors from '@//widgets/TradingSectors.vue';
 import ChatTemplate from '@//widgets/ChatTemplate.vue';
 import MeshBot from '@//widgets/MeshBot/MeshBot.vue';
 import CardioTemplateWide from '@/widgets/CardioTemplateWide.vue';
@@ -306,6 +311,7 @@ export default {
 
   components: {
     OrderManager,
+    TradingSectors,
     ChatTemplate,
     MeshBot,
     IntervalsTemplate,
@@ -412,6 +418,7 @@ export default {
         { name: 'Timelines items', param: 0, type: 16, gridRow: 'span 3' },
         { name: 'Meshbot', param: 0, type: 21, gridColumn: 'span 3', gridRow: 'span 5' },
         { name: 'Chat AI', param: 0, type: 22, gridColumn: 'span 2', gridRow: 'span 4' },
+        { name: 'Trading Sectors', param: 0, type: 23, gridColumn: 'span 2', gridRow: 'span 2' },
       ],
 
 

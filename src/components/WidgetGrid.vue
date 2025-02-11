@@ -1,11 +1,10 @@
 <template>
   <div class="main-container">
 
-    <div class="toolbar"
-         :style="{ borderWidth: baseStore.isSidebarShow ? '200px' : '40px' }">
-      <div class="main-logo" style="padding-top: 5px;">
+    <div class="toolbar">
+      <div class="main-logo">
         <a href="/#/mergedcomponent">
-          <img src="@/assets/main-logo.png" style="height: 21px;"/>
+          <img src="@/assets/main-logo.png"/>
         </a>
 
       </div>
@@ -16,8 +15,8 @@
         :style="{background: !baseStore.isSidebarShow ? '#2b3041' : 'none'}"
         @click="baseStore.isSidebarShow = !baseStore.isSidebarShow;"
     >
-      <i v-if="!baseStore.isSidebarShow" class="fat fa-sidebar"></i>
-      <i v-else class="fat fa-sidebar"></i>
+      <i v-if="!baseStore.isSidebarShow" class="fat fa-chevron-left"></i>
+      <i v-else class="fat fa-chevron-right"></i>
     </div>
 
     <div
@@ -25,7 +24,7 @@
         id="settingsPane"
         :style="{
           boxShadow: !baseStore.isSidebarShow ? 'none' : null,
-          transform: !baseStore.isSidebarShow ? `translateX(-180px)` : null
+          transform: !baseStore.isSidebarShow ? `translateX(200px)` : null
         }">
 
       <div class="settings-pane-scroll">
@@ -150,7 +149,6 @@
          :class="{ 'main-view-setup': baseStore.isSidebarShow }"
          :style="{
           transform: `scale(${zoomValue})`, //baseStore.isSidebarShow ? `scale(${zoomValue})` : null,
-          marginLeft: baseStore.isSidebarShow ? '200px' : '10px',
          }">
       <div class="lines-grid"
            :class="{'boost': baseStore.isSidebarShow}"
@@ -188,15 +186,12 @@
 
 
           <div class="widget-title-block">
-            <h3 class="widget-title"
-                :style="{
-                   paddingLeft: baseStore.isSidebarShow ? '24px' : '12px'
-                }">
+            <h3 class="widget-title">
               {{blockItem.name}}
             </h3>
 
             <div
-                v-if="baseStore.isSidebarShow"
+
                 class="drag-handle"
                 draggable="true"
                 :data-block-id="blockItem.id"

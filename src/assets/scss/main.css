@@ -228,7 +228,7 @@ a{
     width: 100%;
 }
 .main-view {
-    margin: 10px 0 120px;
+    margin: 10px 10px 120px;
     position: relative;
     transform-origin: left top;
     width: fit-content;
@@ -245,10 +245,11 @@ a{
     user-select: none;
     margin-bottom: 20px;
     display: block;
-    /*transition: transform 0.2s cubic-bezier(0.19, 1, 0.22, 1), margin 0.2s cubic-bezier(0.19, 1, 0.22, 1);*/
+    transition: transform 0.2s cubic-bezier(0.19, 1, 0.22, 1), margin 0.2s cubic-bezier(0.19, 1, 0.22, 1);
     width: 180px;
     height: 100vh;
     position: fixed;
+    right: 0;
     top: 0;
     bottom: 0;
     z-index: 200;
@@ -319,10 +320,10 @@ a{
     margin-right: 6px;
 }
 .btn-settings{
-    font-size: 18px;
+    font-size: 14px;
     margin: 0;
     position: fixed;
-    left: 0;
+    right: 0;
     top: 0;
     padding: 0 12px;
     z-index: 300;
@@ -330,9 +331,18 @@ a{
     user-select: none;
     line-height: 30px;
     text-transform: uppercase;
-    font-weight: 600;
     background: #3a3f55;
     color: rgba(255, 255, 255, 0.7);
+}
+
+.fixed-widget{
+    padding: 10px 20px;
+    position: fixed;
+    right: 0px;
+    bottom: 0;
+    z-index: 100;
+    background: rgba(0,0,0,0.2);
+    border-top-left-radius: 8px;
 }
 /*.btn-settings .arrow{
   font-size: 14px;
@@ -352,13 +362,15 @@ a{
     box-sizing: border-box;
 }
 .main-logo{
-    padding-left: 10px;
+    margin-left: 12px;
+    padding-top: 5px;
 }
 
 .main-logo a{
     color: #9A5FF0;
 }
 .main-logo img{
+    height: 21px;
     filter: saturate(80%) brightness(110%) hue-rotate(-10deg);
 }
 
@@ -737,7 +749,7 @@ input[type=range]{
 }
 .toggle-socket{
     position: fixed;
-    right: 0;
+    left: 200px;
     top: 8px;
     z-index: 300
 }
@@ -1067,7 +1079,7 @@ input:checked + .slider:before {
 }
 .meshbot-section{
     border-top: none;
-    background: #2b2f41;
+    background: #2e3444;
 }
 .meshbot-section-header{
     position: relative;

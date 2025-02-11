@@ -1,7 +1,7 @@
 <template>
   <div class="mesh-bot">
 
-
+  activeBotName: {{meshbotStore.activeBotName}}
     <div v-if="$route.name === 'meshbot'">
 
       <OrderManager />
@@ -31,14 +31,11 @@
 
       <div class="meshbot-content"
            v-if="meshbotStore.visibilityState['block0']">
-
         <div class="bots-selector-container">
-
           <div class="bots-selector">
             <div class="bots-selector-wrapper">
 
               <div class="context-selector">
-<!--                <span class="name">Задать контекст бота:</span>-->
                 <select v-model="selectedMarket">
                   <option v-for="market in markets" :key="market" :value="market">
                     {{ market }}
@@ -55,21 +52,18 @@
                   </option>
                 </select>
                 <button class="btn btn-bot-add"
-                        @click="handleCreateBot">
+                        @click="createBot">
                   Создать бота «{{ selectedTicker }}»
                 </button>
               </div>
 
             </div>
-
           </div>
-
         </div>
-
       </div>
     </div>
 
-    <div style="padding: 10px 0;"></div>
+<!--    <div style="padding: 10px 0;"></div>-->
 
     <div v-if="meshbotStore.bots.length === 0" class="empty-message-bots">
       Список ботов пока пуст.
@@ -77,23 +71,20 @@
 
     <div v-else class="tabs">
       <div
-          v-for="(bot, index) in meshbotStore.bots"
-          :key="index"
+          v-for="bot in meshbotStore.bots"
+          :key="bot.name"
           class="bot-item"
-          :class="{ active: meshbotStore.activeBotIndex === index }"
-          @click="switchTab(index)"
+          :class="{ active: meshbotStore.activeBotName === bot.name }"
+          @click="switchTab(bot.name)"
       >
         {{ bot.name }}
       </div>
     </div>
 
-    <div v-for="(bot, index) in meshbotStore.bots" :key="bot.name">
-
+    <div v-for="bot in meshbotStore.bots" :key="bot.name">
         <MeshbotInstance
             :bot="bot"
-            :isActive="meshbotStore.activeBotIndex === index"
-            @delete-bot="deleteBot(index)" />
-
+            :isActive="meshbotStore.activeBotName === bot.name"/>
     </div>
 
   </div>
@@ -107,7 +98,7 @@ import OrderManager from "@/components/OrderManager.vue";
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useOrdersStore } from '@/stores/ordersStore';
 
-import {useMeshbotStore} from "@/stores/meshbotStore";
+import {useMeshbotStore} from "@/widgets/MeshBot/stores/meshbotStore";
 import MeshbotInstance from "@/widgets/MeshBot/MeshbotInstance.vue";
 
 import AlorOrderbooks from "@/components/AlorOrderbooks.vue";
@@ -141,7 +132,7 @@ export default {
       
       markets: ['MOEX', 'SPBEX'],
       boards: ['TQBR', 'TQTF'],
-      tickers: ['Шаблон 1', 'SBER', 'LKOH', 'GAZP', 'MTLR', 'VTBR'],
+      tickers: ['Шаблон 1', 'SBER', 'LKOH', 'GAZP', 'MTLR', 'VTBR', 'FESH', 'AFLT'],
       selectedMarket: 'MOEX',
       selectedBoard: 'TQBR',
       selectedTicker: 'LKOH',
@@ -151,23 +142,19 @@ export default {
 
   methods: {
 
-    handleCreateBot() {
+    createBot() {
       this.meshbotStore.createBot({
         market: this.selectedMarket,
         board: this.selectedBoard,
         ticker: this.selectedTicker
       });
-      this.switchTab(this.meshbotStore.activeBotIndex);
+      this.switchTab(this.meshbotStore.activeBotName);
     },
 
-    switchTab(index) {
-      this.meshbotStore.setActiveBotIndex(index);
+    switchTab(botName) {
+      this.meshbotStore.setActiveBotName(botName);
     },
 
-    deleteBot(index) {
-      this.meshbotStore.deleteBot(index);
-    },
-    
     toggleBlock(blockId) {
       this.meshbotStore.visibilityState[blockId] = !this.meshbotStore.visibilityState[blockId];
     },
@@ -179,7 +166,7 @@ export default {
 
   mounted () {
 
-    console.log('Selected bot', this.meshbotStore.activeBotIndex);
+    console.log('Selected bot', this.meshbotStore.activeBotName);
 
   },
 
