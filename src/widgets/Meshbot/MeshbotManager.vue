@@ -106,8 +106,8 @@ import OrderManager from "@/components/OrderManager.vue";
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useOrdersStore } from '@/stores/ordersStore';
 
-import {useMeshbotStore} from "@/widgets/MeshBot/stores/meshbotStore";
-import MeshbotInstance from "@/widgets/MeshBot/MeshbotInstance.vue";
+import {useMeshbotStore} from "@/widgets/Meshbot/stores/meshbotStore";
+import MeshbotInstance from "@/widgets/Meshbot/MeshbotInstance.vue";
 
 import AlorOrderbooks from "@/components/AlorOrderbooks.vue";
 import AlorCandles from "@/components/AlorCandles.vue";
@@ -116,7 +116,7 @@ import AlorQuotes from "@/components/AlorQuotes.vue";
 import AlorTrades from "@/components/AlorTrades.vue";
 
 export default {
-  name: "MeshBotTemplate",
+  name: "MeshbotManager",
 
   setup() {
       const ordersStore = useOrdersStore();

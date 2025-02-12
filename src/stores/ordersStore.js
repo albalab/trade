@@ -1,6 +1,6 @@
 
 import { defineStore } from 'pinia';
-import {useMeshbotStore} from "@/widgets/MeshBot/stores/meshbotStore";
+import {useMeshbotStore} from "@/widgets/Meshbot/stores/meshbotStore";
 
 const meshbotStore = useMeshbotStore();
 

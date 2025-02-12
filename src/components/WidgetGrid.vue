@@ -135,10 +135,8 @@
         </div>
 
         <div class="sidebar-footer">
-        <div
-            class="btn"
-            @click="baseStore.isSidebarShow = !baseStore.isSidebarShow;"
-        >Закрыть</div>
+        <div class="btn"
+            @click="baseStore.isSidebarShow = !baseStore.isSidebarShow;">Закрыть</div>
       </div>
       </div>
 
@@ -201,8 +199,8 @@
               <i class="fat fa-thin fa-arrows-up-down-left-right"></i>
             </div>
 
+            <!--v-if="baseStore.isSidebarShow"-->
             <div class="close-block"
-                 v-if="baseStore.isSidebarShow"
                  @click="removeBlock(blockItem.id)">
               <i class="fat fa-xmark"></i>
             </div>

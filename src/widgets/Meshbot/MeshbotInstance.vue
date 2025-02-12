@@ -263,19 +263,19 @@
 //import { useOrderProcessing } from '@/widgets/MeshBot/composables/useOrderProcessing';
 
 //import { useGridShift } from '@/widgets/MeshBot/composables/useGridShift';
-import { usePriceUtils } from '@/widgets/MeshBot/composables/usePriceUtils';
-import usePriceMonitor from '@/widgets/MeshBot/composables/usePriceMonitor';
+import { usePriceUtils } from '@/widgets/Meshbot/composables/usePriceUtils';
+import usePriceMonitor from '@/widgets/Meshbot/composables/usePriceMonitor';
 
-import { useTradeHistory } from '@/widgets/MeshBot/composables/useTradeHistory';
+import { useTradeHistory } from '@/widgets/Meshbot/composables/useTradeHistory';
 
-import {useMeshbotStore} from "@/widgets/MeshBot/stores/meshbotStore";
+import {useMeshbotStore} from "@/widgets/Meshbot/stores/meshbotStore";
 import { useDataFabricStore } from '@/stores/dataFabricStore';
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useOrdersStore } from '@/stores/ordersStore';
 
-import OrdersComponent from "@/widgets/MeshBot/components/OrdersComponent.vue";
-import HistoryComponent from "@/widgets/MeshBot/components/HistoryComponent.vue";
-import ChartComponent from '@/widgets/MeshBot/components/ChartComponent.vue';
+import OrdersComponent from "@/widgets/Meshbot/components/OrdersComponent.vue";
+import HistoryComponent from "@/widgets/Meshbot/components/HistoryComponent.vue";
+import ChartComponent from '@/widgets/Meshbot/components/ChartComponent.vue';
 
 export default {
   name: "MeshbotInstance",

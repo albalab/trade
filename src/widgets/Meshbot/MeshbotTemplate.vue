@@ -182,7 +182,7 @@ import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
 export default {
-  name: "MeshBotTemplate",
+  name: "MeshbotTemplate",
 
   setup() {
     // ========== РЕАКТИВНЫЕ ДАННЫЕ ==========

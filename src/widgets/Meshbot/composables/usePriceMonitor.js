@@ -1,5 +1,5 @@
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useMeshbotStore } from '@/widgets/MeshBot/stores/meshbotStore';
+import { useMeshbotStore } from '@/widgets/Meshbot/stores/meshbotStore';
 import { useDataFabricStore } from '@/stores/dataFabricStore';
 
 export default function usePriceMonitor(botName) {

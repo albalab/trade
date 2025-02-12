@@ -10,7 +10,7 @@ import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 import zoomPlugin from 'chartjs-plugin-zoom';
 Chart.register(zoomPlugin);
-import {useMeshbotStore} from "@/widgets/MeshBot/stores/meshbotStore";
+import {useMeshbotStore} from "@/widgets/Meshbot/stores/meshbotStore";
 
 
 const chartConfig = {

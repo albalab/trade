@@ -1,5 +1,5 @@
 import { computed } from 'vue';
-import {useCounterStore} from "@/widgets/MeshBot/stores/counter";
+import {useCounterStore} from "@/widgets/Meshbot/stores/counter";
 
 export default function useCounter() {
     const counterStore = useCounterStore();

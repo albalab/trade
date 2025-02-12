@@ -86,7 +86,7 @@
         </div>
 
         <div v-if="widget.type === 21" :data="widget">
-          <MeshBot />
+          <MeshbotManager />
         </div>
 
         <div v-if="widget.type === 22" :data="widget">
@@ -264,7 +264,7 @@ import WidgetGrid from './WidgetGrid.vue';
 
 import TradingSectors from '@//widgets/TradingSectors.vue';
 import ChatTemplate from '@//widgets/ChatTemplate.vue';
-import MeshBot from '@//widgets/MeshBot/MeshBot.vue';
+import MeshbotManager from '@//widgets/Meshbot/MeshbotManager.vue';
 import CardioTemplateWide from '@/widgets/CardioTemplateWide.vue';
 import CardioTemplate from '@/widgets/CardioTemplate.vue';
 import IntervalsTemplate from '@/widgets/IntervalsTemplate.vue';
@@ -313,7 +313,7 @@ export default {
     OrderManager,
     TradingSectors,
     ChatTemplate,
-    MeshBot,
+    MeshbotManager,
     IntervalsTemplate,
     CardioTemplate,
     CardioTemplateWide,

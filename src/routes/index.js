@@ -21,11 +21,11 @@ const routes = [
     {
         name: "meshbot",
         path: '/meshbot',
-        component: () => import('../widgets/MeshBot/MeshBot.vue')
+        component: () => import('../widgets/Meshbot/MeshbotManager.vue')
     },
     {
         path: '/meshbottemplate',
-        component: () => import('../widgets/MeshBot/MeshBotTemplate.vue')
+        component: () => import('../widgets/Meshbot/MeshbotTemplate.vue')
     },
     {
         path: '/grid',
