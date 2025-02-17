@@ -591,7 +591,7 @@ export default {
         });
       }
 
-      return entries.splice(0,10);
+      return entries; //.splice(0,10);
     },
 
     buyFrequency() {

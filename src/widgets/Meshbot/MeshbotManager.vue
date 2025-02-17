@@ -1,20 +1,15 @@
 <template>
   <div class="mesh-bot">
 
+
     <div v-if="$route.name === 'meshbot'">
-
       <OrderManager />
-
       <DataFabric v-show="false"/>
       <AlorTrades v-show="false"/>
       <AlorCandles v-show="false"/>
       <AlorOrderbooks v-show="false"/>
       <AlorQuotes v-show="false"/>
     </div>
-
-<!--    <div style="padding: 20px;">
-      Meshbot context: {{$route.name}}
-    </div>-->
 
     <div class="meshbot-section meshbot-section-main">
 
@@ -33,6 +28,10 @@
         <div class="bots-selector-container">
           <div class="bots-selector">
             <div class="bots-selector-wrapper">
+
+              Некоторые базовые настройки - интерфейс для ИИ по сути.<br>
+              - Число лимиток в сетке (1-10)<br>
+              - Количество лотов (1-5)<br>
 
               <div class="context-selector">
                 <select v-model="selectedMarket">
@@ -55,6 +54,7 @@
                   Создать бота «{{ selectedTicker }}»
                 </button>
               </div>
+              Bottom
 
             </div>
           </div>

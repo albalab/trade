@@ -44,7 +44,7 @@
 
             <label>
               <input type="number" v-model.number="volume" />
-              <span class="name">Объём позиций</span>
+              <span class="name">Объём каждой лимитки</span>
             </label>
           </div>
 
@@ -273,9 +273,9 @@ import { useDataFabricStore } from '@/stores/dataFabricStore';
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useOrdersStore } from '@/stores/ordersStore';
 
-import OrdersComponent from "@/widgets/Meshbot/components/OrdersComponent.vue";
-import HistoryComponent from "@/widgets/Meshbot/components/HistoryComponent.vue";
-import ChartComponent from '@/widgets/Meshbot/components/ChartComponent.vue';
+import OrdersComponent from "@/widgets/Meshbot/components/OrdersComponent";
+import HistoryComponent from "@/widgets/Meshbot/components/HistoryComponent";
+import ChartComponent from '@/widgets/Meshbot/components/ChartComponent';
 
 export default {
   name: "MeshbotInstance",

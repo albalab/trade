@@ -3,6 +3,8 @@
 
     <div class="openai">
 
+      dataFabric: {{dataFabric}}
+
       <div>
         <input v-model="openaiStore.apiKey" placeholder="apiKey"/>
       </div>
@@ -51,16 +53,19 @@
 </template>
 
 <script>
+import { useDataFabricStore } from '@/stores/dataFabricStore';
 import { useOpenaiStore } from '@/stores/openaiStore';
 import OpenAI from 'openai';
 
 export default {
 
   setup() {
+    const dataFabric = useDataFabricStore();
     const openaiStore = useOpenaiStore();
 
     return {
       openaiStore,
+      dataFabric,
     }
   },
   data() {
