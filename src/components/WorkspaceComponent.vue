@@ -65,8 +65,8 @@
               </div>
             </div>
             <div class="table-row"
-                 :class="{'selected': item[0] === selectedRow}"
-                 @click="selectedRow=item[0]"
+                 :class="{'selected': selectedRows.includes(item[0])}"
+                 @click="toggleSelection(item[0])"
                  v-for="item in sortedSummaryData"
                  :key="item[0]">
 
@@ -428,8 +428,8 @@ export default {
       //[],
 
 
-
-      selectedRow: null,
+      selectedRows: [],
+      //selectedRow: null,
 
       currentSortField: 'Ticker',
       currentSortDirection: 'asc',
@@ -556,6 +556,13 @@ export default {
       // Проверяем, выбрано ли поле для сортировки
       if (this.currentSortField) {
         entries.sort((a, b) => {
+
+          // Группируем выделенные строки в начало
+          const aSelected = this.selectedRows.includes(a[0]);
+          const bSelected = this.selectedRows.includes(b[0]);
+          if (aSelected && !bSelected) return -1;
+          if (!aSelected && bSelected) return 1;
+
           let valA, valB;
 
           // Если сортировка по 'ticker', используем a[0] и b[0]
@@ -637,6 +644,15 @@ export default {
   },
 
   methods: {
+
+    toggleSelection(rowId) {
+      const index = this.selectedRows.indexOf(rowId);
+      if (index > -1) {
+        this.selectedRows.splice(index, 1);
+      } else {
+        this.selectedRows.push(rowId);
+      }
+    },
 
     normalizeValue(newValue) {
       // Инициализация minValue и maxValue при первом вызове

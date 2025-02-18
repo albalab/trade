@@ -11,11 +11,7 @@
       <strong>{{p.volume.toFixed(2)}} руб</strong>
       <span style="margin-left: 10px;">{{p.qtyUnits}} шт</span>
 
-      <span v-if="this.orderbooksStore.orderbooksMetrics">
-        <strong v-if="this.orderbooksStore.orderbooksMetrics[p.symbol]" style="margin-left: 10px;">
-            {{((this.orderbooksStore.orderbooksMetrics[p.symbol]?.orderbookBestAskPrice * p.qtyUnits) - p.volume).toFixed(2)}} руб
-        </strong><!--{{p.qtyUnits}}, {{p.avgPrice}}<br>-->
-      </span>
+      <strong v-if="dataFabric.lastValues.data">{{(dataFabric.lastValues.data[p.symbol].oBestAskPrice * p.qtyUnits - p.volume).toFixed(2)}} Руб</strong>
 
     </div>
   </div>
@@ -24,6 +20,7 @@
 <script>
 import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useOrdersStore } from '@/stores/ordersStore';
+import { useDataFabricStore } from '@/stores/dataFabricStore';
 
 export default {
 
@@ -32,7 +29,8 @@ export default {
   setup() {
     const ordersStore = useOrdersStore();
     const orderbooksStore = useOrderbooksStore();
-    return { orderbooksStore, ordersStore }
+    const dataFabric = useDataFabricStore();
+    return { orderbooksStore, ordersStore, dataFabric }
   },
 
   data() {

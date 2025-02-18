@@ -545,7 +545,7 @@ input[type=range]{
     background: rgba(234, 229, 255, 0.1);
 }
 .table-trade .table-row.selected .table-cell{
-    background: rgba(124, 41, 186, 0.69);
+    background: rgba(120, 75, 223, 0.25);
 }
 .table-trade .table-row:first-child .table-cell{
     padding-top: 10px;
