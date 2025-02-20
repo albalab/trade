@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 
 // Определяем маршруты
 const routes = [
+
     {
         path: '/chat',
         component: () => import('../widgets/ChatTemplate.vue')
@@ -26,6 +27,12 @@ const routes = [
     {
         path: '/meshbottemplate',
         component: () => import('../widgets/Meshbot/MeshbotTemplate.vue')
+    },
+
+    {
+        name: 'tradesList',
+        path: '/trades',
+        component: () => import('../components/TradesList.vue')
     },
     {
         path: '/grid',
