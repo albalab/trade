@@ -3,8 +3,6 @@
 
     <div class="openai">
 
-      dataFabric: {{dataFabric}}
-
       <div>
         <input v-model="openaiStore.apiKey" placeholder="apiKey"/>
       </div>

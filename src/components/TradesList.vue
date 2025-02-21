@@ -8,12 +8,6 @@
       </button>
     </div>
 
-    <!-- Кнопка сброса, вызывающая метод resetTickerData -->
-    <div class="reset-button" style="padding: 10px 0;">
-      <button @click="resetTickerData">Сброс тикера</button>
-      <button @click="resetGlobalData">Сброс сумм</button>
-    </div>
-
     <!-- Поле ввода тикера -->
     <div id="ticker-input-container">
       <input
@@ -85,6 +79,13 @@
         <span class="amount amount-sell">{{ Math.round(globalAccumulatedSell).toLocaleString('ru-RU') }} Р</span>
       </div>
     </div>
+
+    <!-- Кнопка сброса, вызывающая метод resetTickerData -->
+    <div class="reset-button" style="padding: 10px 0;">
+      <button @click="resetTickerData">Сброс тикера</button>
+      <button @click="resetGlobalData">Сброс сумм</button>
+    </div>
+
   </div>
 </template>
 
