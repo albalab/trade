@@ -2,6 +2,11 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 
 // Определяем маршруты
 const routes = [
+    {
+        name: 'index',
+        path: '/',
+        component: () => import('../components/WorkspaceComponent.vue')
+    },
 
     {
         path: '/chat',
