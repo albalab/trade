@@ -9,6 +9,12 @@ const routes = [
     },
 
     {
+        name: 'candlesChart',
+        path: '/candleschart',
+        component: () => import('../components/CandlesChart.vue')
+    },
+
+    {
         path: '/chat',
         component: () => import('../widgets/ChatTemplate.vue')
     },

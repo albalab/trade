@@ -1,6 +1,12 @@
 <template>
   <div class="trades-list">
 
+    <div v-if="isElectron">
+      <div style="width: 20px; height: 27px; position: fixed; left: 0; width: 100%; top: 0px; z-index: 250; background: red; opacity: 0.1; -webkit-app-region: drag;"></div>
+
+      <div>{{ wsData?.sourceCounts?.sourceCandlesCount }}</div>
+    </div>
+
     <!-- Кнопка для переключения между режимами -->
     <div class="toggle-mode">
       <button @click="toggleDataMode">
@@ -110,6 +116,13 @@ export default {
 
   data() {
     return {
+
+      isElectron: false,
+
+      wsData: null,
+      // Сохраним ссылку на обработчик, чтобы потом отписаться
+      wsHandler: null,
+
       tickersLots,
       // Текущий выбранный тикер, по умолчанию 'FLOT'
       selectedTicker: 'FLOT',
@@ -333,6 +346,19 @@ export default {
   },
 
   mounted() {
+
+    if (typeof window !== 'undefined' && window.electronAPI) {
+      this.isElectron = true;
+    }
+
+    // Определяем обработчик, который обновляет реактивное свойство
+    this.wsHandler = (event, data) => {
+      this.wsData = data
+    }
+    // Подписываемся на IPC-сообщения
+    window.electronAPI?.onWebSocketData(this.wsHandler)
+
+
     /***** Константы анимации *****/
     const ROW_HEIGHT = 20;
     const BUFFER_ROWS = 500;
@@ -456,6 +482,12 @@ export default {
   },
 
   beforeUnmount() {
+    // Если в preload.js экспортировали функцию для удаления слушателя,
+    // можно её вызвать здесь. Например, если она называется removeWebSocketDataListener:
+    if (window.electronAPI?.removeWebSocketDataListener) {
+      window.electronAPI?.removeWebSocketDataListener(this.wsHandler)
+    }
+
     this.running = false;
     if (this.tradeTimeout) {
       clearTimeout(this.tradeTimeout);

@@ -9,5 +9,10 @@ module.exports = defineConfig({
         url: false
       }
     }
+  },
+  pluginOptions: {
+    electronBuilder: {
+      preload: 'src/preload.js'
+    }
   }
 })

@@ -21,6 +21,13 @@
       <AlorQuotes v-show="false"/>
     </div>
 
+    <div v-if="isElectron">
+    <!--    <div style="width: 20px; height: 27px; position: fixed; left: 0; width: 100%; top: 0px; z-index: 250; background: red; opacity: 0.05; -webkit-app-region: drag;"></div>-->
+        <button style="position: fixed; left: 20px; top: 40px; z-index: 10000" @click="resizeWindow(800, 600)">Изменить размер окна</button>
+        <button style="position: fixed; left: 20px; top: 80px; z-index: 10000" @click="resizeWindow(300, 200)">Изменить размер окна</button>
+        <button style="position: fixed; left: 20px; top: 100px; z-index: 10000" @click="openPopup">Открыть попап</button>
+    </div>
+
     <WidgetGrid :widgetsProps="widgets">
       <template #default="{ widget }">
 
@@ -344,6 +351,8 @@ export default {
   data() {
     return {
 
+      isElectron: false,
+
       minValue: null,
       maxValue: null,
 
@@ -644,6 +653,14 @@ export default {
   },
 
   methods: {
+
+    resizeWindow(w, h) {
+      window.electronAPI?.resizeWindow(w, h);
+    },
+
+    openPopup() {
+      window.electronAPI?.openPopup();
+    },
 
     toggleSelection(rowId) {
       const index = this.selectedRows.indexOf(rowId);
@@ -1196,6 +1213,10 @@ export default {
   },
 
   mounted() {
+
+    if (typeof window !== 'undefined' && window.electronAPI) {
+      this.isElectron = true;
+    }
 
     setInterval(() => {
       this.updateSummaryData();

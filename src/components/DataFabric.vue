@@ -65,6 +65,7 @@ export default {
 
       Object.assign(this.dataFabricStore, dataFabricStoreData);
 
+      window.electronAPI?.sendWebSocketData(dataFabricStoreData);
     },
   },
   mounted() {

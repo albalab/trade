@@ -1,9 +1,12 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import path from 'path'
+
+import { app, protocol, BrowserWindow, ipcMain } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
+
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -13,27 +16,86 @@ protocol.registerSchemesAsPrivileged([
 async function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    //titleBarStyle: 'hidden',
+    //frame: false,
+    width: 600,
+    height: 400,
     webPreferences: {
-      
+
+      preload: path.join(__dirname, 'preload.js'),
+
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
+      nodeIntegration: false,
+      contextIsolation: true
     }
   })
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-    if (!process.env.IS_TEST) win.webContents.openDevTools()
+    //if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
     createProtocol('app')
     // Load the index.html when not in development
     win.loadURL('app://./index.html')
   }
 }
+
+let popupWindow;
+function createPopup() {
+  popupWindow = new BrowserWindow({
+    titleBarStyle: 'hidden',
+    width: 220,
+    height: 500,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      // Рекомендуется оставлять эти настройки для безопасности
+      nodeIntegration: false,
+      contextIsolation: true
+    }
+  })
+
+  // Загружаем HTML для попапа (например, popup.html)
+  if (process.env.WEBPACK_DEV_SERVER_URL) {
+    popupWindow.loadURL(`${process.env.WEBPACK_DEV_SERVER_URL}#/trades`)
+  } else {
+    popupWindow.loadURL('app://./index.html#/trades')
+  }
+
+  popupWindow.on('closed', () => {
+    popupWindow = null;
+  });
+
+  // После загрузки содержимого отправляем сообщение в попап
+  popupWindow.webContents.on('did-finish-load', () => {
+    popupWindow.webContents.send('message-from-main', { message: 'Привет, попап!' })
+  })
+}
+
+ipcMain.on('open-popup', () => {
+  createPopup()
+})
+
+// Получаем сообщение от главного окна и пересылаем в попап, если он открыт
+ipcMain.on('custom-message', (event, data) => {
+  if (popupWindow) {
+    popupWindow.webContents.send('custom-message', data);
+  }
+});
+
+ipcMain.on('resize-window', (event, args) => {
+  const win = BrowserWindow.fromWebContents(event.sender)
+  if (win) {
+    win.setSize(args.width, args.height)
+  }
+})
+
+ipcMain.on('ws-data', (event, data) => {
+  if (popupWindow && !popupWindow.isDestroyed()) {
+    popupWindow.webContents.send('ws-data', data);
+  }
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
