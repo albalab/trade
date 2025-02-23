@@ -50,7 +50,6 @@ function createPopup() {
     height: 500,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      // Рекомендуется оставлять эти настройки для безопасности
       nodeIntegration: false,
       contextIsolation: true
     }
@@ -68,32 +67,25 @@ function createPopup() {
   });
 
   // После загрузки содержимого отправляем сообщение в попап
-  popupWindow.webContents.on('did-finish-load', () => {
+  /*popupWindow.webContents.on('did-finish-load', () => {
     popupWindow.webContents.send('message-from-main', { message: 'Привет, попап!' })
-  })
+  })*/
 }
 
-ipcMain.on('open-popup', () => {
+ipcMain.on('electron-open-popup', () => {
   createPopup()
 })
 
-// Получаем сообщение от главного окна и пересылаем в попап, если он открыт
-ipcMain.on('custom-message', (event, data) => {
-  if (popupWindow) {
-    popupWindow.webContents.send('custom-message', data);
-  }
-});
-
-ipcMain.on('resize-window', (event, args) => {
+ipcMain.on('electron-resize-window', (event, args) => {
   const win = BrowserWindow.fromWebContents(event.sender)
   if (win) {
     win.setSize(args.width, args.height)
   }
 })
 
-ipcMain.on('ws-data', (event, data) => {
+ipcMain.on('electron-ws-data', (event, data) => {
   if (popupWindow && !popupWindow.isDestroyed()) {
-    popupWindow.webContents.send('ws-data', data);
+    popupWindow.webContents.send('electron-ws-data', data);
   }
 });
 

@@ -353,10 +353,10 @@ export default {
 
     // Определяем обработчик, который обновляет реактивное свойство
     this.wsHandler = (event, data) => {
-      this.wsData = data
+      this.wsData = data;
     }
     // Подписываемся на IPC-сообщения
-    window.electronAPI?.onWebSocketData(this.wsHandler)
+    window.electronAPI?.onWebSocketData(this.wsHandler);
 
 
     /***** Константы анимации *****/
@@ -482,8 +482,7 @@ export default {
   },
 
   beforeUnmount() {
-    // Если в preload.js экспортировали функцию для удаления слушателя,
-    // можно её вызвать здесь. Например, если она называется removeWebSocketDataListener:
+
     if (window.electronAPI?.removeWebSocketDataListener) {
       window.electronAPI?.removeWebSocketDataListener(this.wsHandler)
     }
