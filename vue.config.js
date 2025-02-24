@@ -12,7 +12,14 @@ module.exports = defineConfig({
   },
   pluginOptions: {
     electronBuilder: {
-      preload: 'src/preload.js'
+      preload: 'src/preload.js',
+
+      // Указываем, что эти модули не нужно бандлить
+      externals: [
+        'node-telegram-bot-api',
+        '@cypress/request',
+        'tough-cookie'
+      ]
     }
   }
 })

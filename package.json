@@ -19,6 +19,7 @@
     "core-js": "^3.8.3",
     "lightweight-charts": "^5.0.2",
     "msgpack-lite": "^0.1.26",
+    "node-telegram-bot-api": "^0.66.0",
     "openai": "^4.80.1",
     "pako": "^2.1.0",
     "pinia": "^2.2.6",

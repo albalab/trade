@@ -20,4 +20,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Удаление подписки на поток данных из основного процесса
     removeWebSocketDataListener: (callback) => ipcRenderer.removeListener('electron-ws-data', callback),
 
+    sendTelegramMessage: (message) => ipcRenderer.send('electron-telegram-send', message)
 })

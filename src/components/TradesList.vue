@@ -90,6 +90,7 @@
     <div class="reset-button" style="padding: 10px 0;">
       <button @click="resetTickerData">Сброс тикера</button>
       <button @click="resetGlobalData">Сброс сумм</button>
+      <button @click="sendTelegramMessage(Math.random())">Сообщение в телегу</button>
     </div>
 
   </div>
@@ -244,6 +245,10 @@ export default {
   },
 
   methods: {
+    sendTelegramMessage() {
+      window.electronAPI?.sendTelegramMessage(Math.random());
+    },
+
     resetGlobalData() {
       this.globalAccumulatedBuy = 0;
       this.globalAccumulatedSell = 0;
@@ -357,7 +362,6 @@ export default {
     }
     // Подписываемся на IPC-сообщения
     window.electronAPI?.onWebSocketData(this.wsHandler);
-
 
     /***** Константы анимации *****/
     const ROW_HEIGHT = 20;

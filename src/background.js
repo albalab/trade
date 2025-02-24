@@ -5,6 +5,8 @@ import path from 'path'
 import { app, protocol, BrowserWindow, ipcMain } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
+import sendTelegramMessage from './telegramBot.js'  // Импорт модуля для работы с Telegram
+
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 
@@ -62,6 +64,7 @@ function createPopup() {
     popupWindow.loadURL('app://./index.html#/trades')
   }
 
+
   popupWindow.on('closed', () => {
     popupWindow = null;
   });
@@ -87,6 +90,10 @@ ipcMain.on('electron-ws-data', (event, data) => {
   if (popupWindow && !popupWindow.isDestroyed()) {
     popupWindow.webContents.send('electron-ws-data', data);
   }
+});
+
+ipcMain.on('electron-telegram-send', (event, message) => {
+  sendTelegramMessage(message);
 });
 
 // Quit when all windows are closed.
