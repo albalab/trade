@@ -1,7 +1,17 @@
 // Для работы с Telegram Bot API устанавливаем пакет:
 // npm install node-telegram-bot-api
+
+import path from 'path'
 import dotenv from 'dotenv';
-dotenv.config({ path: '../.env' });
+
+const envPath =
+    process.env.NODE_ENV === 'development'
+        ? path.join(process.cwd(), 'src', '.env')
+        : path.join(process.resourcesPath, '.env');
+
+dotenv.config({ path: envPath });
+
+//dotenv.config({ path: path.join(process.cwd(), 'src', '.env') });
 
 import TelegramBot from 'node-telegram-bot-api';
 

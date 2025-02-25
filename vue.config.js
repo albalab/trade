@@ -19,7 +19,15 @@ module.exports = defineConfig({
         'node-telegram-bot-api',
         '@cypress/request',
         'tough-cookie'
-      ]
+      ],
+      builderOptions: {
+        extraResources: [
+          {
+            from: "src/.env",
+            to: "."
+          }
+        ]
+      }
     }
   }
 })
