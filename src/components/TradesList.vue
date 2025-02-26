@@ -3,14 +3,43 @@
 
     <div v-if="isElectron">
       <div style="width: 20px; height: 27px; position: fixed; left: 0; width: 100%; top: 0px; z-index: 250; background: red; opacity: 0.1; -webkit-app-region: drag;"></div>
-
-      <div>{{ wsData?.sourceCounts?.sourceCandlesCount }}</div>
     </div>
 
+    <div style="padding-top: 30px;">
+
+      <CandlesChart
+          exchange="MOEX"
+          :timeframe="60"
+          :from="Math.floor(Date.now() / 1000) - 27600"
+          :to="Math.floor(Date.now() / 1000)"
+          :targetTicker="selectedTicker"
+      />
+    </div>
+
+    <div>{{ oBestBidPrice }}</div>
+    <div>{{ wsData?.sourceCounts?.sourceCandlesCount }}</div>
+
     <!-- Кнопка для переключения между режимами -->
-    <div class="toggle-mode">
+<!--    <div class="toggle-mode">
       <button @click="toggleDataMode">
         {{ useFakeData ? 'Switch to Real Trades' : 'Switch to Fake Data' }}
+      </button>
+    </div>-->
+
+    <input
+        id="threshold"
+        v-model.number="threshold"
+        type="number"
+        placeholder="Введите порог"
+    />
+
+    <!-- Кнопки управления отслеживанием -->
+    <div>
+      <button @click="startTracking" :disabled="trackingActive">
+        Start Tracking
+      </button><br>
+      <button :disabled="!trackingActive" @click="stopTracking">
+        Stop Tracking
       </button>
     </div>
 
@@ -97,15 +126,18 @@
 </template>
 
 <script>
+
 import { tickersLots } from '../tickersLots.js';
 //import { useOrderbooksStore } from '@/stores/orderbooksStore';
 import { useTradesStore } from '@/stores/tradesStore';
 import AlorTrades from "@/components/AlorTrades.vue";
+import CandlesChart from "@/components/CandlesChart.vue";
 //import AlorOrderbooks from "@/components/AlorOrderbooks.vue";
 
 export default {
   name: 'TradesList',
   components: {
+    CandlesChart,
     //AlorOrderbooks,
     AlorTrades
   },
@@ -117,6 +149,14 @@ export default {
 
   data() {
     return {
+
+      trackingActive: false,
+      threshold: 105.4,          // Пороговое значение
+      notificationSent: false, // Флаг отправки уведомления
+      initialValue: undefined, // Значение при первой загрузке (первое не undefined)
+      eligible: false,         // Флаг: можно отправлять уведомление (true, если начальное значение ниже порога и не было снижения)
+      maxValue: undefined,
+
 
       isElectron: false,
 
@@ -159,6 +199,10 @@ export default {
   },
 
   computed: {
+    oBestBidPrice() {
+      return this.wsData?.lastValues?.data?.[this.selectedTicker]?.oBestBidPrice;
+    },
+
     totalSum() {
       return this.accumulatedBuy + this.accumulatedSell;
     },
@@ -180,6 +224,16 @@ export default {
   },
 
   watch: {
+    oBestBidPrice(newVal) {
+
+      if (this.trackingActive && this.threshold !== null && newVal >= this.threshold) {
+        window.electronAPI?.sendTelegramMessage(`${this.selectedTicker}: ${newVal}`);
+        // Выключаем отслеживание после отправки уведомления
+        this.trackingActive = false;
+      }
+
+    },
+
     'tradesStore.newTrades': {
       handler(newTrades) {
         if (newTrades && Array.isArray(newTrades)) {
@@ -245,6 +299,22 @@ export default {
   },
 
   methods: {
+    startTracking() {
+      if (this.threshold === null) {
+        console.warn("Пороговое значение должно быть задано!");
+        return;
+      }
+      this.trackingActive = true;
+      // Если уже сейчас цена выше порога, отправляем уведомление сразу
+      if (this.bestBidPrice !== undefined && this.bestBidPrice >= this.threshold) {
+        this.sendNotification();
+        this.trackingActive = false;
+      }
+    },
+    // Метод остановки отслеживания
+    stopTracking() {
+      this.trackingActive = false;
+    },
     sendTelegramMessage() {
       window.electronAPI?.sendTelegramMessage(Math.random());
     },

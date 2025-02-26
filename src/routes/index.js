@@ -9,6 +9,16 @@ const routes = [
     },
 
     {
+        name: 'candlesHistory',
+        path: '/candleshistory',
+        component: () => import('../components/CandlesHistory.vue')
+    },
+    {
+        name: 'candlesCharts',
+        path: '/candlescharts',
+        component: () => import('../components/CandlesCharts.vue')
+    },
+    {
         name: 'candlesChart',
         path: '/candleschart',
         component: () => import('../components/CandlesChart.vue')
