@@ -2,7 +2,7 @@
 
 import path from 'path'
 
-import { app, protocol, BrowserWindow, ipcMain } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain, screen } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
 import sendTelegramMessage from './telegramBot.js'  // Импорт модуля для работы с Telegram
@@ -16,12 +16,18 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 async function createWindow() {
+
+  const { workAreaSize } = screen.getPrimaryDisplay();
+  const dynamicWidth = Math.floor(workAreaSize.width * 0.9);
+  const dynamicHeight = Math.floor(workAreaSize.height * 0.95);
+
   // Create the browser window.
   const win = new BrowserWindow({
     //titleBarStyle: 'hidden',
     //frame: false,
-    width: 600,
-    height: 400,
+    //title: "Signal fabric",
+    width: dynamicWidth,
+    height: dynamicHeight,
     webPreferences: {
 
       preload: path.join(__dirname, 'preload.js'),
