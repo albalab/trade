@@ -21,13 +21,6 @@
       <AlorQuotes v-show="false"/>
     </div>
 
-    <div v-if="isElectron">
-    <!--    <div style="width: 20px; height: 27px; position: fixed; left: 0; width: 100%; top: 0px; z-index: 250; background: red; opacity: 0.05; -webkit-app-region: drag;"></div>-->
-        <button style="position: fixed; left: 20px; top: 40px; z-index: 10000" @click="electronResizeWindow(800, 600)">Изменить размер окна</button>
-        <button style="position: fixed; left: 20px; top: 80px; z-index: 10000" @click="electronResizeWindow(300, 200)">Изменить размер окна</button>
-        <button style="position: fixed; left: 20px; top: 100px; z-index: 10000" @click="electronOpenPopup">Открыть попап</button>
-    </div>
-
     <WidgetGrid :widgetsProps="widgets">
       <template #default="{ widget }">
 
@@ -196,6 +189,10 @@
               @select-ticker="selectTicker"
           />
         </div>
+
+        <div v-if="widget.type === 24" :data="widget">
+          <ElectronAPI />
+        </div>
       </template>
     </WidgetGrid>
 
@@ -280,6 +277,7 @@ import CreateGroupOrders from '@/widgets/CreateGroupOrders.vue';
 import ActivePositions from '@/widgets/ActivePositions.vue';
 import CreateOrder from "@/widgets/CreateOrder.vue";
 import TopDeals from "@/widgets/TopDeals.vue";
+import ElectronAPI from "@/widgets/ElectronAPI.vue";
 
 import AlorStatsDiagram from './AlorStatsDiagram.vue';
 //import AlorAdvantageousDeals from './AlorAdvantageousDeals.vue';
@@ -337,7 +335,7 @@ export default {
     CreateGroupOrders,
     ActivePositions,
     CreateOrder,
-
+    ElectronAPI,
     //SessionManager,
     //AlorTradesPlus,
     //AlorOrderbooksPlus,
@@ -350,8 +348,6 @@ export default {
 
   data() {
     return {
-
-      isElectron: false,
 
       minValue: null,
       maxValue: null,
@@ -428,6 +424,7 @@ export default {
         { name: 'Meshbot', param: 0, type: 21, gridColumn: 'span 2', gridRow: 'span 5' },
         { name: 'Chat AI', param: 0, type: 22, gridColumn: 'span 2', gridRow: 'span 4' },
         { name: 'Trading Sectors', param: 0, type: 23, gridColumn: 'span 2', gridRow: 'span 2' },
+        { name: 'Electron API', param: 0, type: 24, gridColumn: 'span 1', gridRow: 'span 1' },
       ],
 
 
@@ -653,14 +650,6 @@ export default {
   },
 
   methods: {
-
-    electronResizeWindow(w, h) {
-      window.electronAPI?.resizeWindow(w, h);
-    },
-
-    electronOpenPopup() {
-      window.electronAPI?.openPopup();
-    },
 
     toggleSelection(rowId) {
       const index = this.selectedRows.indexOf(rowId);
@@ -1213,10 +1202,6 @@ export default {
   },
 
   mounted() {
-
-    if (typeof window !== 'undefined' && window.electronAPI) {
-      this.isElectron = true;
-    }
 
     setInterval(() => {
       this.updateSummaryData();
