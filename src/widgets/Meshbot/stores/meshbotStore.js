@@ -98,7 +98,7 @@ export const useMeshbotStore = defineStore("meshbot", {
             this.activeBotName = botName;
         },
 
-        createBot({ market, board, ticker }) {
+        createBot({ market, board, ticker, customSettings }) {
             // Генерируем имя нового бота
             const botsWithTicker = this.bots.filter(bot => bot.ticker === ticker);
             const indices = botsWithTicker.map(bot => {
@@ -114,7 +114,13 @@ export const useMeshbotStore = defineStore("meshbot", {
                 : JSON.parse(JSON.stringify(defaultSettingsBot));*/
             //const settings = JSON.parse(JSON.stringify(copySettings || defaultSettingsBot));
 
-            const settings = { ...defaultSettingsBot };
+            // Создаем глубокую копию настроек:
+            const settings = JSON.parse(JSON.stringify({
+                ...defaultSettingsBot,
+                ...(customSettings || {}),
+                isTradingActive: false // Флаг активности по умолчанию
+            }));
+
             //console.log(settings);
 
             const newBot = {

@@ -4,7 +4,7 @@
 <!--    {{settings}}<br>
     {{meshbotStore.visibilityState}}<br>
     {{meshbotStore.bots[botIndex].settings}}-->
-        <div>
+        <div class="meshbot-section">
           <div class="meshbot-section-header"
                @click="toggleSectionVisibility('block6')">
             <h2 class="title">
@@ -14,7 +14,7 @@
             </h2>
           </div>
 
-          <div v-show="meshbotStore.visibilityState['block6']">
+          <div class="section-raw" v-show="meshbotStore.visibilityState.block6">
 
             <textarea v-model="selectedBotString" style="margin: 20px; width: 80%; height: 300px;"> </textarea>
 
@@ -479,6 +479,8 @@ export default {
       if (this.isTradingEnabled) return;
       this.isTradingEnabled = true;
 
+      this.meshbotStore.updateBotSetting(this.bot.name, 'isTradingActive', true);
+
       //this.meshbotStore.resetBotState(this.bot.name);
 
       // Инициализируем счетчик и целевой интервал для сдвига сетки
@@ -506,6 +508,8 @@ export default {
       }
       this.isTradingEnabled = false;
       this.isFirstStartFilled = false;
+
+      this.meshbotStore.updateBotSetting(this.bot.name, 'isTradingActive', false);
       console.log("=== STOP ===");
     },
 
