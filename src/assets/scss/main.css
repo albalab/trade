@@ -122,11 +122,25 @@ a{
     right: 2px;
     top: 2px;
     border-radius: 100%;
-    background: #bf5a5b;
+    background: #bfb75a;
 }
 .bot-activity.activated{
-    background: #5abf69;
+    background: #22c687;
+    animation: pulse 1.5s infinite;
 }
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
 .btn.btn-bot-delete-all{
     background: #bf5a5b;
 }
