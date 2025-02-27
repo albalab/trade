@@ -116,17 +116,6 @@
                   Создать ботов по списку
                 </button>
 
-                <button class="btn" @click="activateAllBots">
-                  Запустить всех ботов
-                </button>
-
-                <button class="btn" @click="deactivateAllBots">
-                  Остановить всех ботов
-                </button>
-
-                <button class="btn btn-bot-delete-all" @click="deleteAllBots">
-                  Удалить всех
-                </button>
               </div>
 
             </div>
@@ -141,18 +130,34 @@
       Список ботов пока пуст.
     </div>
 
-    <div v-else class="tabs">
-      <div
-          v-for="bot in meshbotStore.bots"
-          :key="bot.name"
-          class="bot-item"
-          :class="{ active: meshbotStore.activeBotName === bot.name }"
-          @click="switchTab(bot.name)"
-      >
-        {{ bot.name }}
-        <span class="bot-activity" :class="{ activated: bot.settings.isTradingActive }"></span>
+    <div v-else>
+
+      <div style="padding: 20px 0 10px;">
+        <button class="btn" @click="activateAllBots">
+          Запустить всех ботов
+        </button>
+
+        <button class="btn" @click="deactivateAllBots">
+          Остановить всех ботов
+        </button>
+
+        <button class="btn btn-bot-delete-all" @click="deleteAllBots">
+          Удалить всех ботов
+        </button>
       </div>
 
+      <div class="tabs">
+        <div
+            v-for="bot in meshbotStore.bots"
+            :key="bot.name"
+            class="bot-item"
+            :class="{ active: meshbotStore.activeBotName === bot.name }"
+            @click="switchTab(bot.name)"
+        >
+          {{ bot.name }}
+          <span class="bot-activity" :class="{ activated: bot.settings.isTradingActive }"></span>
+        </div>
+      </div>
     </div>
 
     <div v-for="bot in meshbotStore.bots" :key="bot.name" style="position: relative;">

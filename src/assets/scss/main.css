@@ -898,9 +898,10 @@ input:checked + .slider:before {
     margin-right: 1px;
     background: #3d4359;
     color: rgba(255,255,255,0.7);
-    margin-top: 1px;
     width: 42px;
     text-align: center;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }
 .mesh-bot .bot-item:last-child{}
 .mesh-bot .bot-item:hover{
@@ -1090,8 +1091,7 @@ input:checked + .slider:before {
 }
 .meshbot-section.meshbot-section-main{
     overflow: hidden;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
+    border-radius: 6px;
     background: #3d4259;
 }
 .meshbot-section{
@@ -1233,8 +1233,8 @@ input:checked + .slider:before {
     color: rgba(209, 214, 247, 0.8);
     padding: 36px 0;
     background: #32374c;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
+    border-radius: 5px;
+    margin: 20px 0;
 }
 
 
