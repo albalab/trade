@@ -95,7 +95,7 @@ onMounted(async () => {
     layout: {
       background: { type: LightweightCharts.ColorType.Solid, color: '#2b3043' },
       textColor: '#acacac',
-      fontSize: 8, // уменьшенный размер шрифта
+      fontSize: 6, // уменьшенный размер шрифта
       fontFamily: 'Arial, sans-serif',
     },
     grid: {
@@ -106,6 +106,9 @@ onMounted(async () => {
       mode: LightweightCharts.CrosshairMode.Normal,
       vertLine: { color: '#a8a8a8', width: 1, style: LightweightCharts.LineStyle.Solid },
       horzLine: { color: '#a1a2a2', width: 1, style: LightweightCharts.LineStyle.Solid },
+    },
+    rightPriceScale: {
+      //visible: false,
     },
     priceScale: {
       visible: false,

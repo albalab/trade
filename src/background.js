@@ -18,8 +18,8 @@ protocol.registerSchemesAsPrivileged([
 async function createWindow() {
 
   const { workAreaSize } = screen.getPrimaryDisplay();
-  const dynamicWidth = Math.floor(workAreaSize.width * 0.9);
-  const dynamicHeight = Math.floor(workAreaSize.height * 0.95);
+  const dynamicWidth = Math.floor(workAreaSize.width * 0.8);
+  const dynamicHeight = Math.floor(workAreaSize.height * 0.8);
 
   // Create the browser window.
   const win = new BrowserWindow({
@@ -55,7 +55,7 @@ function createPopup() {
   popupWindow = new BrowserWindow({
     titleBarStyle: 'hidden',
     width: 220,
-    height: 500,
+    height: 700,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,

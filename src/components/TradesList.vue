@@ -5,7 +5,7 @@
       <div style="width: 20px; height: 27px; position: fixed; left: 0; width: 100%; top: 0px; z-index: 250; background: red; opacity: 0.1; -webkit-app-region: drag;"></div>
     </div>
 
-    <div style="padding-top: 30px;">
+    <div style="padding-top: 30px; margin: 0 0 10px;">
 
       <CandlesChart
           exchange="MOEX"
@@ -26,18 +26,19 @@
       </button>
     </div>-->
 
-    <input
-        id="threshold"
-        v-model.number="threshold"
-        type="number"
-        placeholder="Введите порог"
-    />
-
     <!-- Кнопки управления отслеживанием -->
-    <div>
+    <div :style="{ background: trackingActive ? 'rgba(0,255,0,0.3)' : 'rgba(255,0,0,0.3)'}">
+      <div>
+        <input
+            id="threshold"
+            v-model.number="threshold"
+            type="number"
+            placeholder="Введите порог"
+        />
+      </div>
       <button @click="startTracking" :disabled="trackingActive">
         Start Tracking
-      </button><br>
+      </button>
       <button :disabled="!trackingActive" @click="stopTracking">
         Stop Tracking
       </button>

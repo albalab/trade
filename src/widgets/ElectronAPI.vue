@@ -2,9 +2,9 @@
   <div>
     <div v-if="isElectron">
       <!--    <div style="width: 20px; height: 27px; position: fixed; left: 0; width: 100%; top: 0px; z-index: 250; background: red; opacity: 0.05; -webkit-app-region: drag;"></div>-->
-      <button style="position: fixed; left: 20px; top: 40px; z-index: 10000" @click="electronResizeWindow(800, 600)">Изменить размер окна</button>
-      <button style="position: fixed; left: 20px; top: 80px; z-index: 10000" @click="electronResizeWindow(300, 200)">Изменить размер окна</button>
-      <button style="position: fixed; left: 20px; top: 100px; z-index: 10000" @click="electronOpenPopup">Открыть попап</button>
+      <button @click="electronResizeWindow(800, 600)">Изменить размер окна (800, 600)</button><br>
+      <button @click="electronResizeWindow(300, 200)">Изменить размер окна (300, 200)</button><br>
+      <button @click="electronOpenPopup">Открыть попап</button><br>
     </div>
     <div v-else>
       electronAPI недоступно, так как это браузерное приложение
